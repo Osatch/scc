@@ -1,0 +1,17 @@
+cd .. 
+cd ..
+cd scc
+cd backend
+python -m venv venv
+venv\Scripts\activate
+python manage.py runserver
+
+
+
+
+front 
+cd .. 
+cd ..
+cd scc
+cd frontend
+npm run dev
