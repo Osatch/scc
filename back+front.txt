@@ -15,3 +15,42 @@ cd ..
 cd scc
 cd frontend
 npm run dev
+
+
+
+
+requete pour les migrations 
+
+python manage.py makemigrations
+python manage.py migrate
+
+
+
+stucture du code 
+/backend/
+│── manage.py
+│── config/
+│   ├── __init__.py
+│   ├── settings.py
+│   ├── urls.py  # Ce fichier
+│   ├── wsgi.py
+│   ├── asgi.py
+│── core/
+│   ├── __init__.py
+│   ├── models.py
+│   ├── views.py
+│   ├── urls.py  # Ici, les routes spécifiques à l'application
+│   ├── serializers.py
+│   ├── admin.py
+│   ├── apps.py
+│   ├── migrations/
+│   ├── templates/
+│   ├── static/
+
+
+
+
+
+oussamadev
+
+solutioncandle2025
