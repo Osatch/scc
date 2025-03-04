@@ -22,3 +22,4 @@ urlpatterns = [
     path('api/', include('core.urls')),  # Vérifie bien que tu as cette ligne
     
 ]
+
