@@ -127,3 +127,50 @@ class RelanceJJ(models.Model):
 
     def __str__(self):
         return f"{self.jeton.jeton_commande} - {self.date_intervention} - {self.activite}"
+
+
+#model param 
+    
+class Parametres(models.Model):
+    # Choix pour les champs avec des options prédéfinies
+    COMPETENCE_CHOICES = [
+        ('SAV', 'SAV'),
+        ('', 'Vide'),  # Option vide
+    ]
+
+    CONTROLE_PHOTO_CHOICES = [
+        ('G1', 'G1'),
+        ('G2', 'G2'),
+    ]
+
+    GRILLE_ACTIF_CHOICES = [
+        ('OUI', 'OUI'),
+        ('NON', 'NON'),
+    ]
+
+    ZONE_CHOICES = [
+        ('Zone 1', 'Zone 1'),
+        ('Zone 2', 'Zone 2'),
+        # Ajoutez d'autres zones si nécessaire
+    ]
+
+    # Champs du modèle
+    id_tech = models.CharField(max_length=50, unique=True, verbose_name="ID Technicien")  # Identifiant unique du technicien
+    nom_tech = models.CharField(max_length=255, verbose_name="Nom du Technicien")  # Nom complet du technicien
+    departement = models.CharField(max_length=255, verbose_name="Département")  # Département du technicien
+    log_free = models.CharField(max_length=255, verbose_name="Log Free")  # Format : tsm_prenom_nom
+    competence = models.CharField(max_length=3, choices=COMPETENCE_CHOICES, blank=True, verbose_name="Compétence")  # Compétence SAV ou vide
+    actif_depuis = models.DateField(verbose_name="Actif depuis")  # Date depuis laquelle le technicien est actif
+    controle_photo = models.CharField(max_length=2, choices=CONTROLE_PHOTO_CHOICES, verbose_name="Contrôle Photo")  # G1 ou G2
+    manager = models.CharField(max_length=255, verbose_name="Manager")  # Nom du manager (ex: Rayane Balere)
+    zone = models.CharField(max_length=50, choices=ZONE_CHOICES, verbose_name="Zone")  # Zone 1, Zone 2, etc.
+    grille_actif = models.CharField(max_length=3, choices=GRILLE_ACTIF_CHOICES, verbose_name="Grille Actif")  # OUI ou NON
+    log_technicien = models.CharField(max_length=255, verbose_name="Log Technicien")  # Log du technicien
+    mdp = models.CharField(max_length=255, verbose_name="Mot de passe")  # Mot de passe
+
+    def __str__(self):
+        return f"{self.id_tech} - {self.nom_tech}"
+
+    class Meta:
+        verbose_name = "Paramètre"
+        verbose_name_plural = "Paramètres"

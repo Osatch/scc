@@ -2,7 +2,7 @@
   <div class="login-container">
     <!-- Logo -->
     <div class="logo-container">
-      <img src="https://via.placeholder.com/150" alt="Logo" class="logo" />
+      <img src="/logo.png" alt="Logo" class="logo" />
     </div>
 
     <!-- Titre -->
