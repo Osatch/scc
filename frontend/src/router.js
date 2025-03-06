@@ -4,16 +4,16 @@ import { createRouter, createWebHistory } from "vue-router";
 // 2️⃣ Importation des composants
 import Login from "./components/Login.vue";
 import Dashboard from "./components/Dashboard.vue";
-import Gantt from "./components/Gantt.vue";
-import RelanceJJ from "./components/RelanceJJ.vue";
-import DebriefRACC from "./components/DebriefRACC.vue";
-import DebriefSAV from "./components/DebriefSAV.vue";
-import ControlPhoto from "./components/ControlPhoto.vue";
-import ControlFroid from "./components/ControlFroid.vue";
-import Nok from "./components/Nok.vue";
-import InterventionsSAV from "./components/InterventionsSAV.vue";
-import InterventionsRACC from "./components/InterventionsRACC.vue";
-import Parametres from "./components/Parametres.vue";
+import Gantt from "./components/views/Gantt.vue";
+import RelanceJJ from "./components/views/Relancejj.vue";
+import DebriefRACC from "./components/views/DebriefRACC.vue";
+import DebriefSAV from "./components/views/DebriefSAV.vue";
+import ControlPhoto from "./components/views/ControlPhoto.vue";
+import ControlFroid from "./components/views/ControlFroid.vue";
+import Nok from "./components/views/Nok.vue";
+import InterventionsSAV from "./components/views/InterventionsSAV.vue";
+import InterventionsRACC from "./components/views/InterventionsRACC.vue";
+import Parametres from "./components/views/Parametres.vue";
 
 // 3️⃣ Définition des routes
 const routes = [

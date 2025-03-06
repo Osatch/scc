@@ -2,7 +2,7 @@
   <div class="login-container">
     <!-- Logo -->
     <div class="logo-container">
-      <img src="/logo.png" alt="Logo" class="logo" />
+      <img src="/logo3.png" alt="Logo" class="logo" />
     </div>
 
     <!-- Titre -->
@@ -31,7 +31,7 @@
     <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
 
     <!-- Texte supplémentaire -->
-    <p class="additional-text">Bienvenue sur notre plateforme. Connectez-vous pour accéder à votre espace.</p>
+    <p class="additional-text">Bienvenue sur notre Solution CandleCall. Connectez-vous pour accéder à votre espace.</p>
   </div>
 </template>
 
@@ -83,7 +83,7 @@ export default {
 }
 
 .logo {
-  width: 100px;
+  width: 200px;
   height: auto;
   filter: brightness(0) invert(1); /* Pour un logo blanc */
 }

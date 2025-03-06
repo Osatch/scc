@@ -1,33 +1,31 @@
 <template>
-  <div class="h-screen w-64 bg-gray-900 text-white flex flex-col">
-    <!-- Logo -->
-    <div class="p-4 text-lg font-bold border-b border-gray-700">
-      LTEnterprise
+  <div class="sidebar">
+    <div class="logo">
+      <img src="/logo3.png" alt="Logo de l'entreprise">
     </div>
-
-    <!-- Menu -->
-    <nav class="flex-1 p-4">
-      <ul class="space-y-2">
+    <nav class="nav-tabs">
+      <ul>
         <li v-for="item in menuItems" :key="item.label">
-          <div>
-            <button
-              @click="toggleSubMenu(item.label)"
-              class="flex items-center w-full p-2 rounded-lg hover:bg-gray-700 transition"
-            >
-              <component :is="item.icon" class="w-5 h-5 mr-2" />
-              <span>{{ item.label }}</span>
-            </button>
-            <!-- Sous-menu -->
-            <ul v-if="item.subItems && openSubMenus.includes(item.label)" class="pl-6 mt-1 space-y-1">
-              <li v-for="sub in item.subItems" :key="sub.label">
-                <router-link
-                  :to="sub.path"
-                  class="block p-2 rounded-lg hover:bg-gray-700 transition"
-                >
-                  {{ sub.label }}
-                </router-link>
-              </li>
-            </ul>
+          <a v-if="!item.subItems" href="#" @click="changeTab(item.path)">
+            {{ item.label }}
+          </a>
+          <div v-else>
+            <a href="#" @click="toggleSubMenu(item.label)">
+              {{ item.label }}
+              <ChevronDownIcon
+                class="arrow-icon"
+                :class="{ rotated: openSubMenus.includes(item.label) }"
+              />
+            </a>
+            <div v-if="openSubMenus.includes(item.label)" class="dropdown-content">
+              <ul>
+                <li v-for="subItem in item.subItems" :key="subItem.label">
+                  <a href="#" @click="changeTab(subItem.path)">
+                    {{ subItem.label }}
+                  </a>
+                </li>
+              </ul>
+            </div>
           </div>
         </li>
       </ul>
@@ -37,35 +35,36 @@
 
 <script>
 import { ref } from "vue";
-import { HomeIcon, CalendarIcon, SettingsIcon, CameraIcon, AlertCircleIcon } from "lucide-vue-next";
+import { ChevronDownIcon } from "lucide-vue-next";
 
 export default {
-  setup() {
+  components: {
+    ChevronDownIcon,
+  },
+  setup(props, { emit }) {
     const openSubMenus = ref([]);
 
     const menuItems = [
-      { label: "Gantt", path: "/gantt", icon: CalendarIcon },
-      { label: "Relance JJ", path: "/relancejj", icon: HomeIcon },
+      { label: "Gantt", path: "/gantt" },
+      { label: "Relance JJ", path: "/relancejj" },
       {
         label: "Débrief",
-        icon: AlertCircleIcon,
         subItems: [
           { label: "RACC", path: "/debrief-racc" },
           { label: "SAV", path: "/debrief-sav" },
         ],
       },
-      { label: "Contrôle Photo (à chaud)", path: "/control-photo", icon: CameraIcon },
-      { label: "Contrôle à Froid", path: "/control-froid", icon: CameraIcon },
-      { label: "Nok sans appel CA", path: "/nok", icon: AlertCircleIcon },
+      { label: "Contrôle Photo (à chaud)", path: "/control-photo" },
+      { label: "Contrôle à Froid", path: "/control-froid" },
+      { label: "Nok sans appel CA", path: "/nok" },
       {
         label: "Interventions Sécurisées",
-        icon: AlertCircleIcon,
         subItems: [
           { label: "SAV", path: "/interventions-sav" },
           { label: "RACC", path: "/interventions-racc" },
         ],
       },
-      { label: "Paramètres", path: "/parametres", icon: SettingsIcon },
+      { label: "Paramètres", path: "/parametres" },
     ];
 
     const toggleSubMenu = (label) => {
@@ -76,11 +75,11 @@ export default {
       }
     };
 
-    return { menuItems, openSubMenus, toggleSubMenu };
+    const changeTab = (path) => {
+      emit("change-tab", path);
+    };
+
+    return { menuItems, openSubMenus, toggleSubMenu, changeTab };
   },
 };
 </script>
-
-<style scoped>
-/* Ajout de styles supplémentaires si nécessaire */
-</style>
