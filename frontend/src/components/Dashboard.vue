@@ -1,31 +1,30 @@
 <template>
-  <div class="flex">
+  <div id="app" class="flex min-h-screen bg-gray-100">
     <!-- Barre latérale -->
     <Sidebar />
-        <!-- Contenu principal -->
-    <div class="flex-1 p-6">
-      <h2 class="text-2xl font-bold mb-4">Bienvenue sur le Dashboard</h2>
-      <button 
-        @click="logout"
-        class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
-      >
-        Se déconnecter
-      </button>
 
-      <!-- Contenu des sous-pages du dashboard -->
-      <router-view />
+    <!-- Contenu principal -->
+    <div class="flex-1 flex flex-col">
+      <!-- Header -->
+      <Header @logout="logout" />
+
+      <!-- Contenu du dashboard -->
+      <div class="flex-1 p-6">
+        <h2 class="text-2xl font-bold mb-4">Bienvenue sur le Dashboard</h2>
+        <!-- Contenu des sous-pages du dashboard -->
+        <router-view />
+      </div>
     </div>
-   
   </div>
 </template>
 
 <script>
 import Sidebar from "../components/Sidebar.vue";
-
+import Header from "../components/Header.vue";
 import axios from "axios";
 
 export default {
-  components: { Sidebar },
+  components: { Sidebar, Header },
   methods: {
     async logout() {
       try {
@@ -43,9 +42,12 @@ export default {
 </script>
 
 <style scoped>
-/* Ajoute du padding pour que le contenu ne colle pas à la sidebar */
-.flex-1 {
+/* Styles spécifiques au dashboard */
+.min-h-screen {
   min-height: 100vh;
+}
+
+.bg-gray-100 {
   background-color: #f8f9fa;
 }
 </style>

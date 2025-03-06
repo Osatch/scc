@@ -61,7 +61,27 @@ github
 
 git init
 git add .
-git commit -m "05-03"
+git commit -m "06-03"
 git remote add origin https://github.com/Osatch/scc.git
 git branch -M main
 git push -u origin main
+
+
+
+src/
+├── components/
+│   ├── views/
+│   │   ├── Gantt.vue
+│   │   ├── RelanceJJ.vue
+│   │   ├── DebriefRACC.vue
+│   │   ├── DebriefSAV.vue
+│   │   ├── ControlPhoto.vue
+│   │   ├── ControlFroid.vue
+│   │   ├── NokSansAppel.vue
+│   │   ├── InterventionSAV.vue
+│   │   ├── InterventionRACC.vue
+│   │   └── Parametres.vue
+│   ├── Sidebar.vue
+│   └── Header.vue
+├── App.vue
+└── main.js
