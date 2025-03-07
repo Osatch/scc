@@ -1,17 +1,526 @@
-Jeton de commande	D�but d'intervention	Fin d'intervention	Termin�e	�tat de l'intervention	Techniciens	D�partement	PM
-10796780	25/02/2025 09:34	25/02/2025 11:22	OUI	OK	ABADJA Mohamed	54	GNY-SITE-LAN23
-19563314	25/02/2025 11:01			OK	ABBADI Anis	49	ANFI-MAUSL06
-17588138	25/02/2025 12:31			NOK	ABBOU Ali	44	FI-44013-000C
-19559201	25/02/2025 10:26	25/02/2025 11:25	OUI	NOK	AISSAOUI Sayf-Eldine Hamza	34	SRO-BPI-3433709
-6007507	25/02/2025 12:48	25/02/2025 13:04	OUI	OK	ASAMOAH Kan	71	FI-71306-000T
-15732570	25/02/2025 07:32	25/02/2025 09:16	OUI	OK	BENBELI Oussama	2	SHL_02011_STA2
-16624905	25/02/2025 07:42	25/02/2025 09:38	OUI	OK	FOURMENT Aymeric	2	ADR_02231_POUI
-13307971	25/02/2025 08:07	25/02/2025 10:00	OUI	OK	GRIMONT Leo	2	ADR_02268_FON2
-19639749	25/02/2025 10:24	25/02/2025 13:06	OUI	OK	HAFNAOUI Alaeddine	22	FI-22187-000D
-19434578	25/02/2025 09:46	25/02/2025 10:18	OUI	NOK	HASSAD Ramzi	54	FI-54329-0004
-19540356	25/02/2025 08:04	25/02/2025 13:05	OUI	OK	MAKHLOUFI Ayoub	57	SRO-BPI-11949635
-19104581	25/02/2025 08:02	25/02/2025 09:46	OUI	OK	MANY Karim	22	FI-22215-0001
-19527642	25/02/2025 08:00	25/02/2025 09:01	OUI	NOK	MKADMI Achraf	28	SRO-BPI-11826617
-14107735	25/02/2025 07:51	25/02/2025 08:45	OUI	OK	PUECH Simon	29	FI-29162-0000
-10336445	25/02/2025 11:41	25/02/2025 13:05	OUI	NOK	VERNAD Elias	42	FI-42183-000J
-19581272	25/02/2025 09:10	25/02/2025 11:41	OUI	OK	ZARAY Samir	69	FI-69145-0001
+Id tech	Nom tech	Département	Log free	Compétence	Numéro	Actif depuis	Controle photo	Manager	Zone	grille actfi	Log technicien	MDP
+bkahlaoui2	KAHLAOUI Bilel	13	tsm_bilel_kahlaoui				G2	Rayane	Zone 1	OUI		
+ybenedif	BENEDIF Yacine	13	tsm_yacine_benedif			24/12/2024	G2	Rayane	Zone 1	OUI		
+abenaoun	BENAOUN Aziz	13	tsm_aziz_benaoun_backup				G1	Rayane	Zone 1	NON	abenaoun 	Techno2024!
+camalou	AMALOU Cherif	13	tsm_cherif_amalou				G1	Rayane	Zone 1	NON		
+ychaibi	CHAIBI Younes	57	tsm_younes_chaibi				G2	Rayane	Zone 1	NON		
+mfahad	FAHAD Moussa	13	tsm_moussa_fahad_sav			5/11/2024	G2	Rayane	Zone 1	NON		
+drouissi	ROUISSI Djalel	13	tsm_djalel_rouissi_sav			04/11/2024	G2	Rayane	Zone 1	OUI		
+hhammami5	HAMMAMI Hamza	13	tsm_hamza_hammami_sav			06/11/2024	G2	Rayane	Zone 1	NON		
+ykennouche3	KENNOUCHE Yacine	13	tsm_yacine_kennouche				G1	Rayane	Zone 1	NON		
+krachidi2	RACHIDI Kassim	13	tsm_kassim_rachidi				G2	Rayane	Zone 1	NON		
+salmhadhbi	ALMHADHBI Sabri	65	tsm_sabri_almhadhbi				G1	Rayane	Zone 1	OUI		
+hzemirli3	ZEMIRLI Hocine	11	tsm_hocine_zemirli_sav			06/11/2024	G2	rayane	Zone 1	NON		
+ychikhaoui	CHIKHAOUI Yacine	13	tsm_yacine_chikhaoui				G2	Rayane	Zone 1	OUI		
+btrabelsi	TRABELSI Belkir	13	tsm_belkir_trabelsi_sav			05/11/2024	G2	Rayane	Zone 1	NON		
+mbalhi	BALHI Mounir	55	tsm_mounir_balhi_sav			05/11/2024	G2	Rayane	Zone 1	NON		
+mcoulibaly6	COULIBALY Mamadou	13	tsm_mamadou_coulibaly				G2	Rayane	Zone 1	OUI		
+sclaude6	CLAUDE Steven	57	tsm_steven_claude				G2	Rayane	Zone 1	NON		
+jkodo	KODO Joseph	13	tsm_joseph_kodo				G2	Rayane	Zone 1	NON		
+mfayali3	FAYALI Mohamed	13	tsm_mohamed_fayali				G2	Rayane	Zone 1	OUI		
+jamari2	AMARI Jonas	13	tsm_jonas_amari				G2	Rayane	Zone 1	NON		
+cbensass	BENSASS Chemseddin	57	tsm_chemseddin_bensass_sav			29/11/2024	G2	Rayane	Zone 1	NON		
+dberrabah2	BERRABAH Djamel	13	tsm_djamel_berrabah				G2	Rayane	Zone 1	NON		
+fboujdidi	BOUJDIDI Fouad	13	tsm_fouad_boujdidi				G2	Rayane	Zone 1	NON		
+kbelhamoud	BELHAMOUD Karim	55	tsm_karim_belhamoud_sav			04/11/2024	G2	Rayane	Zone 1	NON		
+acheik	CHEIK Anfane	13	tsm_anfane_cheik_sav			07/11/2024	G2	Rayane	Zone 1	NON		
+tgueli	GUELI Tarek	55	tsm_tarek_gueli_sav			05/11/2024	G2	Rayane	Zone 1	NON		
+mharby	HARBY Mohamed	13	tsm_mohamed_harby				G2	Rayane	Zone 1	NON		
+rguemouri5	GUEMOURI Rames	55	tsm_rames_guemouri_sav			04/11/2024	G2	Rayane	Zone 1	NON		
+alukombo4	LUKOMBO Antony	31	tsm_antony_lukombo_sav			12/11/2024	G1	Valère	Zone 2	NON		
+ahamoud	HAMOUD Ali	57	tsm_ali_hamoud_backup			25/11/2024	G2	Rayane	Zone 1	OUI		
+mrahmdani	RAHMDANI Maher	65	tsm_maher_rahmdani				G2	Rayane	Zone 1	NON		
+mbelabbas3	BELABBAS Mohamed	65	tsm_mohamed_belabbas				G2	Rayane	Zone 1	NON		
+nrahmani3	RAHMANI Nacim	65	tsm_nacim_rahmani				G2	Rayane	Zone 1	NON		
+fzouaoui6	ZOUAOUI Farid	65	tsm_farid_zouaoui_sav			06/11/2024	G2	Rayane	Zone 1	NON		
+selkechebour	EL KECHEBOUR Soheib	69	tsm_soheib_el_kechebour				G2	Rayane	Zone 1	NON		
+tghilassene6	GHILASSENE Taoufik	65	tsm_taoufik_ghilassene_sav			07/11/2024	G2	Rayane	Zone 1	OUI		
+akali	KALI Ala	69	tsm_ala_kali_backup			12/11/2024	G1	Rayane	Zone 1	NON		
+iamri	AMRI Imad	69	tsm_imad_amri_sav				G2	Rayane	Zone 1	NON		
+mborin5	BORIN Maxime	69	tsm_maxime_borin_backup				G2	Rayane	Zone 1	NON		
+pcahuc	CAHUC Paul	69	tsm_paul_cahuc_sav			07/12/2024	G2	Rayane	Zone 1	NON	pcahuc 	Pcahuc2024
+ydjahra	DJAHRA Yassine	69	tsm_yassine_djahra			09/12/2024	G2	Rayane	Zone 1	NON		
+ojules	JULES Olivier	69	tsm_olivier_jules				G2	Rayane	Zone 1	NON		
+hkhalil2	KHALIL Hassan	69	tsm_hassan_khalil_sav			05/11/2024	G2	Rayane	Zone 1	NON		
+ukouadriboudjelthia	KOUADRI-BOUDJELTHIA Ulysse	69	tsm_ulysse_kouadri_boudjelthia_backup				G2	Rayane	Zone 1	NON		
+imansar	MANSAR Ismael	69	tsm_ismael_mansar_sav			12/11/2024	G2	Rayane	Zone 1	NON		
+jbelabbas	BELABBAS Juba	65	tsm_juba_belabbas				G2	Rayane	Zone 1	OUI		
+imeba	MEBA Issam	69	tsm_issam_meba_backup			12/11/2024	G1	Rayane	Zone 1	NON		
+wbenmechta3	BENMECHTA Walid	69	tsm_walid_benmechta				G2	Rayane	Zone 1	OUI		
+zrebbah	REBBAH Zineddine	69	tsm_zineddine_rebbah_sav				G2	Rayane	Zone 1	NON		
+isoltani2	SOLTANI Ilyass	69	tsm_ilyass_soltani_sav				G2	Rayane	Zone 1	NON		
+anaguez3	NAGUEZ Aymen	69	tsm_aymen_naguez_sav	Compétence SAV			G2	Rayane	Zone 1	OUI		
+miboudghacen2	IBOUDGHACEN Mael	69	tsm_mael_iboudghacen				G2	Rayane	Zone 1	OUI		
+kayadi	AYADI Kais	69	tsm_kais_ayadi_backup				G2	Rayane	Zone 1	OUI		
+zbekhaled3	BEKHALED Zoheir	69	tsm_zoheir_bekhaled_sav				G2	Rayane	Zone 1	OUI	zbekhaled3 	Techno2024!
+ediaz	DIAZ Estaban	77	tsm_estaban_diaz_sav			10/12/2024	G2	Rayane	Zone 1	OUI	ediaz 	Ediaz2024
+aemboué	EMBOUé Alexandre	69	tsm_alexandre_emboué_sav			6/1/2025	G2	Rayane	Zone 1	OUI		
+ftamani3	TAMANI Fahem	69	tsm_fehem_tamani_backup			6/12/2024	G2	Rayane	Zone 1	OUI	ftamani3	Techno2024!
+staguemount4	TAGUEMOUNT Sofiane	69	tsm_sofiane_taguemount_backup				G2	Rayane	Zone 1	NON		
+mhbouzy	BOUZY Marc-Henry	93	tsm_marc_henry_bouzy_sav	Compétence SAV			G2	Rayane	Zone 1	NON		
+rboro2	BORO Rodrigue	93	tsm_rodrigue_boro_sav	Compétence SAV			G2	Rayane	Zone 1	NON		
+												
+												
+												
+												
+												
+												
+												
+												
+												
+												
+												
+												
+												
+												
+												
+												
+												
+												
+												
+												
+												
+												
+												
+												
+												
+												
+												
+												
+												
+												
+												
+												
+												
+												
+												
+												
+												
+												
+												
+												
+												
+												
+												
+												
+												
+												
+												
+												
+												
+fbrahim	BRAHIM Fetih	31				31/01/2025	G2	Valère	Zone 2	OUI		
+asobhy	SOBHY Abou	31				10/02/2025	G2	Valère	Zone 2			
+dblind	BLIND Dan	31				10/02/2025	G2	Valère	Zone 2			
+jkoka	KOKA Jamal	31				10/02/2025	G2	Valère	Zone 2			
+smarmoush	MARMOUSH Salah	31				10/02/2025	G2	Valère	Zone 2			
+ajamai3	JAMAI Anas	34	tsm_anas_jamai				G2	Valère	Zone 2	NON		
+melkadari2	EL KADARI Mohamed	34	tsm_mohamed_el_kadari				G2	Valère	Zone 2	NON		
+ybenamara	BEN AMARA Younouss	34	tsm_younouss_ben_amara_sav	Compétence SAV			G2	Valère	Zone 2	NON		
+aedles	EDLES Amrouche	34	tsm_amrouche_edles_sav				G2	Valère	Zone 2	NON		
+aessriej	ESSRIEJ Azziz	34	tsm_azziz_essriej_sav	Compétence SAV			G2	Valère	Zone 2	NON		
+kbenhammou3	BENHAMMOU Karim	34	tsm_karim_benhammou				G2	Valère	Zone 2	NON		
+rbelhadj5	BELHADJ Radouan	34	tsm_radouan_belhadj_sav	Compétence SAV			G2	Valère	Zone 2	NON		
+amissoum2	MISSOUM Abderrahmane	34	tsm_abderrahmane_missoum				G2	Valère	Zone 2	NON		
+ysaadi12	SAADI Yacine	34	tsm_yacine_saadi				G2	Valère	Zone 2	NON		
+hmamache5	MAMACHE Halim	34	tsm_halim_mamache_sav				G2	Valère	Zone 2	NON		
+kmokhtari2	MOKHTARI Khayreddine	34	tsm_khayreddine_mokhtari				G1	Valère	Zone 2	OUI		
+rbenmedjber2	BEN MEDJBER Rabah	34	tsm_rabah_ben_medjber				G1	Valère	Zone 2	OUI		
+osouinia4	SOUINIA Ouweisse	34	tsm_ouweisse_souinia				G2	Valère	Zone 2	OUI		
+abensadi4	BENSADI Abdelkader	34	tsm_abdelkader_bensadi				G2	Valère	Zone 2	OUI		
+aboma	BOMA Azziz	34	tsm_azziz_boma_sav			04/11/2024	G2	Valère	Zone 2	OUI		
+ahenider3	HENIDER Abderrahamane	34	tsm_abderrahamane_henider_sav				G2	Valère	Zone 2	OUI		
+hboublat5	BOUBLAT Hatem	34	tsm_hatem_boublat_sav				G2	Valère	Zone 2	OUI		
+helkadari11	EL KADARI Halid	34	tsm_halid_el_kadari_backup				G2	Valère	Zone 2	OUI		
+hilyas	ILYAS Hassani	34	tsm_hassani_ilyas				G2	Valère	Zone 2	OUI		
+imaraoui3	MARAOUI Iliesse	34	tsm_iliesse_maraoui_sav			12/11/2024	G2	Valère	Zone 2	OUI		
+kboumana2	BOUMANA Kader	34	tsm_kader_boumana			12/11/2024	G2	Valère	Zone 2	OUI		
+kduris	DURIS Kenny	34	tsm_kenny_duris_sav			04/11/2024	G2	Valère	Zone 2	OUI		
+kselab3	SELAB Karim	34	tsm_karim_selab_sav				G2	Valère	Zone 2	OUI		
+malim	ALIM Mocrane	34	tsm_mocrane_alim_sav				G2	Valère	Zone 2	OUI		
+mbellout	BELLOUT Mouloud	34	tsm_mouloud_bellout				G2	Valère	Zone 2	OUI		
+mbenmessaoud5	BENMESSAOUD Madani	34	tsm_madani_benmessaoud_sav			4/11/2024	G2	Valère	Zone 2	OUI		
+nboushaba9	BOUSHABA Nabil	34	tsm_nabil_boushaba				G2	Valère	Zone 2	OUI		
+oamokrane	AMOKRANE Ouakour	34	tsm_ouakour_amokrane_sav			27/12/2024	G2	Valère	Zone 2	OUI		
+rridouan	RIDOUAN Riad	34	tsm_riad_ridouan_sav			15/11/2024	G2	Valère	Zone 2	OUI		
+rzidanie	ZIDANIE Redouan	34	tsm_redouan_zidanie_sav			4/11/2024	G2	Valère	Zone 2	OUI		
+sdjeziri2	DJEZIRI Sofiane	34	tsm_sofiane_djeziri_sav				G2	Valère	Zone 2	OUI		
+welboukili2	EL BOUKILI Wassim	34	tsm_wassim_el_boukili_backup				G2	Valère	Zone 2	OUI		
+yhaddad	HADDAD Yacine	34	tsm_yacine_haddad_backup				G2	Valère	Zone 2	OUI		
+ebamba	BAMBA Eric	34	tsm_eric_bamba_sav			10/01/2025	G2	Valère	Zone 2	OUI		
+kzuma	ZUMA Karl	34	tsm_karl_zuma_sav			05/12/2024	G2	Valère	Zone 2	OUI		
+nnour	NOUR Noah	34	tsm_noah_nour_backup				G2	Valère	Zone 2	OUI		
+abenelmandi	BENELMANDI Abdelouahed	34				30/01/2025	G2	Valère	Zone 2	OUI		
+akhelasse	KHELASSE Ahmed	34				30/01/2025	G2	Valère	Zone 2	OUI		
+amoc	MOC Ali	34				30/01/2025	G2	Valère	Zone 2	OUI		
+aouldamri5	OULDAMRI Ahmed	34				30/01/2025	G2	Valère	Zone 2	OUI		
+aselmi10	SELMI Adel	34				30/01/2025	G2	Valère	Zone 2	OUI		
+bhiddaoui3	HIDDAOUI Billal	34				30/01/2025	G2	Valère	Zone 2	OUI		
+hghram	GHRAM Hamada	34				30/01/2025	G2	Valère	Zone 2	OUI		
+hjaziri	JAZIRI Hatem	34				30/01/2025	G2	Valère	Zone 2	OUI		
+hzemerli	ZEMERLI Hocine	34				30/01/2025	G2	Valère	Zone 2	OUI		
+ibouzergan	BOUZERGAN Ismail	34				30/01/2025	G2	Valère	Zone 2	OUI		
+kbalas	BELAS Karim	34				30/01/2025	G2	Valère	Zone 2	OUI		
+mhamidi14	HAMIDI Merzouk	34				30/01/2025	G2	Valère	Zone 2	OUI		
+nmrabet	MRABET Nadir	34				30/01/2025	G2	Valère	Zone 2	OUI		
+oabdi	ABDI Oussama	34				30/01/2025	G2	Valère	Zone 2	OUI		
+rnani	NANI Reda	34				30/01/2025	G2	Valère	Zone 2	OUI		
+sboumerfeg3	BOUMERFEG Salah	34				30/01/2025	G2	Valère	Zone 2	OUI		
+"sehaissaoui
+"	AISSAOUI Sayf-Eldine Hamza	34				30/01/2025	G2	Valère	Zone 2	OUI		
+yachouri3	ACHOURI Younès	34				30/01/2025	G2	Valère	Zone 2	OUI		
+ysaada4	SAADA Yacine	34				30/01/2025	G2	Valère	Zone 2	OUI		
+sdihaj2 	DIHAJ Samy	34				30/01/2025	G2	Valère	Zone 2	OUI		
+ebadara	BADARA Enis	34				03/02/2025	G2	Valère	Zone 2			
+krafia	RAFIA Khaled	34				03/02/2025	G2	Valère	Zone 2			
+sakoudad4	AKOUDAD Salim	34				04/02/2025	G2	Valère	Zone 2			
+akzarouri2	ZAROURI Ahmed Khalil	34				05/02/2025	G2	Valère	Zone 2			
+fammam2	AMMAM Farid	34				05/02/2025	G2	Valère	Zone 2			
+kyounsi2	YOUNSI Karim	34				05/02/2025	G2	Valère	Zone 2			
+mbouslama3	BOUSLAMA Massinissa	34				05/02/2025	G2	Valère	Zone 2			
+mfares2	FARES Mohand	34				05/02/2025	G2	Valère	Zone 2			
+sbenkaci5	BENKACI Samir	34				05/02/2025	G2	Valère	Zone 2			
+sgoudfel	GOUDFEL Salah	34				05/02/2025	G2	Valère	Zone 2			
+szambo2	ZAMBO Stéphane	37	tsm_stephane_zambo				G2	Valère	Zone 2	NON		
+khoublon3	HOUBLON Kévin	37	tsm_kevin_houblon				G2	Valère	Zone 2	OUI		
+abriaudeau2	BRIAUDEAU Arnault	37	tsm_arnault_briaudeau				G2	Valère	Zone 2	OUI		
+adiallo6	DIALLO Alasanne	37	tsm_alasanne_diallo_backup	Compétence SAV			G1	Valère	Zone 2	OUI		
+ashukur	SHUKUR Akan	34	tsm_akan_shukur_backup			18/12/2024	G2	Valère	Zone 2	OUI		
+jgodinho2	GODINHO Jérôme	37	tsm_jerome_godinho				G2	Valère	Zone 2	OUI		
+omouapi3	MOUAPI Olivier	37	tsm_olivier_mouapi_sav	Compétence SAV			G2	Valère	Zone 2	OUI		
+ybenaied4	BENAIED Youcef	37	tsm_youcef_benaied_sav				G2	Valère	Zone 2	OUI		
+saksoy2	AKSOY Semih	37				27/01/2025	G2	Valère	Zone 2	OUI		
+sgary	GARY Simon	37				03/02/2025	G2	Valère	Zone 2			
+matalay4	ATALAY Mevlut	42					G2	Rayane	Zone 1	OUI		
+aboumej	BOUMEJ Anas	42				30/01/2025	G2	Rayane	Zone 1	OUI		
+aelmarid	ELMARID Ariq	42				30/01/2025	G2	Rayane	Zone 1	OUI		
+asart	SART Allen	42				30/01/2025	G2	Rayane	Zone 1	OUI		
+ebletor	BLETOR Enzo	42				30/01/2025	G2	Rayane	Zone 1	OUI		
+fdalith	DALITH Faris	42				30/01/2025	G2	Rayane	Zone 1	OUI		
+lbahlis	BAHLIS Laymar	42				30/01/2025	G2	Rayane	Zone 1	OUI		
+lbelgraa	BELGRAA Lyes	42				30/01/2025	G2	Rayane	Zone 1	OUI		
+melwanid	ELWANID Maysar	42				30/01/2025	G2	Rayane	Zone 1	OUI		
+nfayrani	FAYRANI Nader	42				30/01/2025	G2	Rayane	Zone 1	OUI		
+nzarak	ZARAK Nahil	42				30/01/2025	G2	Rayane	Zone 1	OUI		
+rmerdil	MERDIL Rihal	42				30/01/2025	G2	Rayane	Zone 1	OUI		
+sfauzan	FAUZAN Samirad	42				30/01/2025	G2	Rayane	Zone 1	OUI		
+sjalith	JALITH Sarim	42				30/01/2025	G2	Rayane	Zone 1	OUI		
+zfahlim	FAHLIM Zareen	42				30/01/2025	G2	Rayane	Zone 1	OUI		
+rkahrim	KAHRIM Rami	42				31/01/2025	G2	Rayane	Zone 1	OUI		
+fharb	HARB Fayssal	78	tsm_fayssal_harb_sav			27/01/2025	G2	Valère	Zone 2	OUI		
+nnsangunsimba	NSANGU NSIMBA Nestor	44				27/01/2025	G2	Valère	Zone 2	OUI		
+sgouedard2	GOUEDARD Steven	44				27/01/2025	G2	Valère	Zone 2	OUI		
+mbecha	BECHA Malik	44				10/02/2025	G2	Valère	Zone 2			
+mgalloc	GALLOC Maxance	44				10/02/2025	G2	Valère	Zone 2			
+aboukhemira	BOUKHEMIRA Ali	45	tsm_ali_boukhemira				G1	Valère	Zone 2	OUI		
+aboukhemira2	BOUKHEMIRA Ali	45	tsm_ali_boukhemira				G1	Valère	Zone 2	OUI		
+abenntaous	BENNTAOUS Ammar	45	tsm_ammar_benntaous			12/12/2024	G2	Valère	Zone 2	OUI		
+yboutemine	BOUTEMINE Youcef	45	tsm_youcef_boutemine			12/12/2024	G2	Valère	Zone 2	OUI		
+asaheli	SAHELI Amine	45	tsm_amine_saheli			12/12/2024	G2	Valère	Zone 2	OUI		
+ioufkir4	OUFKIR Ilies	45	tsm_ilies_oufkir_backup				G1	Valère	Zone 2	OUI		
+mwchaouati	CHAOUATI Mohamed Walid	45	tsm_mohamed_walid_chaouati_backup				G2	Valère	Zone 2	OUI		
+sboukhemira6	BOUKHEMIRA Samir	45	tsm_samir_boukhemira_sav				G2	Valère	Zone 2	OUI		
+sledjeroud	LEDJEROUD Saad	45	tsm_saad_ledjeroud				G2	Valère	Zone 2	OUI		
+tmarkovic	MARKOVIC Tomi	45				20/01/2025	G2	Valère	Zone 2			
+sfaldi	FALDI SOFIANE	49	tsm_sofiane_faldi_sav			12/11/2024	G2	Valère	Zone 2	NON		
+lmaloku2	MALOKU Leuart	49	tsm_leuart_maloku_sav			04/11/2024	G2	Valère	Zone 2	NON		
+ndiaby2	DIABY Naby	49	tsm_naby_diaby_sav			4/11/2024	G2	Valère	Zone 2	NON		
+slasry	LASRY Salim	49	tsm_salim_lasry_backup				G2	Valère	Zone 2	OUI		
+iguermassi	GUERMASSI Ibrahim	49	tsm_ibrahim_guermassi_sav			25/11/2024	G2	Valère	Zone 2	OUI		
+khamdani4	HAMDANI Kamel	49	tsm_kamel_hamdani_sav			04/11/2024	G2	Valère	Zone 2	OUI		
+lmaloku3	MALOKU Lakdar	49	tsm_lakdar_maloku_sav			05/11/2024	G2	Valère	Zone 2	OUI		
+sbelkacemi5	BELKACEMI Sofiane	49	tsm_sofiane_belkacemi_sav			02/12/2024	G2	Valère	Zone 2	OUI		
+skaba	KABA Soufiane	49	tsm_soufiane_kaba_sav			12/11/2024	G2	Valère	Zone 2	OUI		
+ygolovin	GOLOVIN Youri	49	tsm_youri_golovin_sav			17/12/2024	G2	Valère	Zone 2	OUI		
+adahmani9	DAHMANI Anis	51				10/02/2025	G2	Rayane	Zone 1			
+dsabir	SABIR Dadi	51				10/02/2025	G2	Rayane	Zone 1			
+sboukhemira7	BOUKHEMIRA Seddik	51				10/02/2025	G2	Rayane	Zone 1			
+asabir	SABIR Abdelghani	51				11/02/2025	G2	Rayane	Zone 1			
+skhoubai2	KHOUBAI Samy	51				11/02/2025	G2	Rayane	Zone 1			
+hsaid	SAID Habib	54	tsm_habib_said			13/01/2025	G2	Rayane	Zone 1	OUI		
+kbentaib3	BENTAIB Karim	54	tsm_karim_bentaib			13/01/2025	G2	Rayane	Zone 1	OUI		
+mchakib4	CHAKIB Mourad	54	tsm_mourad_chakib			13/01/2025	G2	Rayane	Zone 1	OUI		
+rhassad3	HASSAD Ramzi	54	tsm_ramzi_hassad			13/01/2025	G2	Rayane	Zone 1	OUI		
+idjalel	DJALEL Issam	54	tsm_issam_djalel_sav			13/01/2025	G2	Rayane	Zone 1	OUI		
+hkaid	KAID Hakim	54	tsm_hakim_kaid			14/01/2025	G2	Rayane	Zone 1	OUI		
+fouchani	OUCHANI Fares	54	tsm_fares_ouchani_sav			15/01/2025	G2	Rayane	Zone 1	OUI		
+raxelrad	AXELRAD Robert	54					G2	Rayane	Zone 1			
+hleulmi	LEULMI Hocine	54	tsm_hocine_leulmi_sav			27/01/2025	G2	Rayane	Zone 1	OUI		
+mabadja3	ABADJA Mohamed	54				27/01/2025	G2	Rayane	Zone 1	OUI		
+gackerman	ACKERMAN Gilbert	54				28/01/2025	G2	Rayane	Zone 1	OUI		
+hnaib4	NAIB Hacene	54				28/01/2025	G2	Rayane	Zone 1	OUI		
+jtalente	TALENTE Jabib	54				29/01/2025	G2	Rayane	Zone 1	OUI		
+smebarki	MEBARKI Salem	54				29/01/2025	G2	Rayane	Zone 1	OUI		
+wounahi	OUNAHI Walid	54				29/01/2025	G2	Rayane	Zone 1	OUI		
+ayugarithen	YUGARITHEN Aderar	54				10/02/2025	G2	Rayane	Zone 1			
+bnadim2	NADIM Bouadlaoui	54				10/02/2025	G2	Rayane	Zone 1			
+rboucherk5	BOUCHERK Rabah	54				10/02/2025	G2	Rayane	Zone 1			
+ykacem5	KACEM Yanis	55	tsm_yanis_kacem_sav			10/12/2024	G2	Rayane	Zone 1	OUI		
+rletreche	LETRECHE Rayan	55	tsm_rayan_letreche_sav			19/12/2024	G2	Rayane	Zone 1	OUI		
+dkaramba2	KARAMBA Diaby	55	tsm_diaby_karamba_sav			29/11/2024	G2	Rayane	Zone 1	OUI		
+kmakram	MAKRAM Karboub	55				07/02/2025	G2	Rayane	Zone 1			
+mlarby	LARBY Mohamed	55				07/02/2025	G2	Rayane	Zone 1			
+skarboub6	KARBOUB Salim	55				07/02/2025	G2	Rayane	Zone 1			
+nbenmbarek4	BENMBAREK Nabil	55				07/02/2025	G2	Rayane	Zone 1			
+kawini	AWINI Karim	55				10/02/2025	G2	Rayane	Zone 1			
+skarboub7	KARBOUB Sami	55				11/02/2025	G2	Rayane	Zone 1			
+aagoudier	AGOUDIER Achraf	56				10/02/2025	G2	Valère	Zone 2			
+mhassine2	HASSINE Mabrouk	56				10/02/2025	G2	Valère	Zone 2			
+hkhalili5	KHALILI Hamed	56				11/02/2025	G2	Valère	Zone 2			
+mali2	ALI Mouhamed	56				11/02/2025	G2	Valère	Zone 2			
+yennasri2	ENNASRI Yasin	57	tsm_yasin_ennasri				G1	Rayane	Zone 1	OUI		
+makifi	AKIFI Mohcen	57	tsm_mohcen_akifi_sav				G2	Rayane	Zone 1	OUI		
+stheleb6	THELEB Sami	57	tsm_sami_theleb_sav			04/11/2024	G2	Rayane	Zone 1	OUI		
+zhamdi2	HAMDI Zakir	57	tsm_zakir_hamdi_sav			4/11/2024	G2	Rayane	Zone 1	NON		
+aelboukhliki	EL BOUKHLIKI Ayoub	57	tsm_ayoub_el_boukhliki				G2	Rayane	Zone 1	NON		
+tmatis	MATIS Thalet	57	tsm_thalet_matis_sav				G2	Rayane	Zone 1	NON		
+jflores	FLORES José	57	tsm_jose_flores_sav	Compétence SAV			G2	Rayane	Zone 1	NON		
+kgrioua2	GRIOUA Karim	57	tsm_karim_grioua_sav	Compétence SAV			G2	Rayane	Zone 1	NON		
+jmreis	REIS Jean-Marc	57	tsm_jean_marc_reis				G2	Rayane	Zone 1	NON		
+ybeldjilali	BELDJILALI Yassine	57	tsm_yassine_beldjilali				G2	Rayane	Zone 1	OUI		
+hkerrab	KERRAB Hedi	57	tsm_hedi_kerrab				G1	Rayane	Zone 1	OUI		
+mbenhaddou3	BEN HADDOU Mourad	57	tsm_mourad_ben_haddou_sav				G2	Rayane	Zone 1	OUI		
+jboujneh3	BOUJNEH Jamel	57	tsm_jamel_boujneh_backup				G2	Rayane	Zone 1	OUI	jboujneh3 	Jboujneh2024
+ahamzaoui10	HAMZAOUI Aomar	57	tsm_aomar_hamzaoui_sav			11/12/2024	G2	Rayane	Zone 1	OUI		
+iletaif	LETAIF Ismael	57	tsm_ismael_letaif_sav			4/11/2024	G2	Rayane	Zone 1	OUI		
+okoudi2	KOUDI Oussama	57	tsm_oussama_koudi_sav				G2	Rayane	Zone 1	OUI		
+trosin2	ROSIN Theo	57	tsm_theo_ro				G2	Rayane	Zone 1	OUI		
+sroux6	ROUX Stephane	57	tsm_stephane_roux_sav				G2	Rayane	Zone 1	OUI		
+dsedat3	SEDAT Demir	57	tsm_demir_sedat				G2	Rayane	Zone 1	OUI		
+yaitabdellah2	AIT ABDELLAH Yassine	57	tsm_yassine_ait_abdellah_sav			4/11/2024	G2	Rayane	Zone 1	OUI		
+koussama2	OUSSAMA Koudi	57	tsm_koudi_oussama_sav			11/12/2024	G2	Rayane	Zone 1	OUI		
+itheleb	THELEB Islam	57	tsm_islam_theleb_sav			04/11/2024	G2	Rayane	Zone 1	OUI		
+mhamidi13	HAMIDI Mohamed	57	tsm_mohamed_hamidi			10/01/2025	G2	Rayane	Zone 1	OUI		
+amansour4	MANSOUR Adam	57	tsm_adam_mansour_backup			07/11/2024	G2	Rayane	Zone 1	OUI		
+amakhloufi	MAKHLOUFI Ayoub	57				12/02/2025	G2	Rayane	Zone 1			
+pgouriou2	GOURIOU Philippe	65	tsm_philippe_gouriou_sav			4/11/2024	G2	Rayane	Zone 1	OUI		
+iboukhemira5	BOUKHEMIRA Idrisse	65	tsm_idrisse_boukhemira				G2	Rayane	Zone 1	OUI		
+lbelkacem3	BELKACEM Larbi	65	tsm_larbi_belkacem_sav			26/12/2024	G2	Rayane	Zone 1	OUI		
+oboufroua3	BOUFROUA Oussama	65	tsm_oussama_boufroua				G1	Rayane	Zone 1	OUI		
+kibiev2	IBIEV Khassan	65	tsm_khassan_ibiev_sav			23/12/2024	G2	Rayane	Zone 1	OUI		
+akhoubai	KHOUBAI Amine	65	tsm_amine_khoubai				G2	Rayane	Zone 1	OUI		
+mdifallah2	DIFALLAH Marwan	65	tsm_marwan_difallah				G1	Rayane	Zone 1	NON		
+oayadi4	AYADI Oussama	69	tsm_oussama_ayadi_sav			04/11/2024	G2	Rayane	Zone 1	OUI		
+anaguez4	NAGUEZ Anis	69	tsm_anis_naguez			07/11/2024	G2	Rayane	Zone 1	OUI		
+tbourdane	BOURDANE Tarek	69	tsm_tarek_bourdane				G2	Rayane	Zone 1	OUI		
+lkaba	KABA Larbi	69	tsm_faycal_benh_sav			6/1/2025	G2	Rayane	Zone 1	OUI		
+bnatfi	NATFI Bacem	69	tsm_bacem_natfi_backup				G2	Rayane	Zone 1	OUI		
+ybekhaled	BEKHALED Yassine	69	tsm_yassine_bekhaled_sav			06/12/2024	G2	Rayane	Zone 1	OUI		
+rhouchine	HOUCHINE Rabih	69	tsm_rabih_houchine				G1	Rayane	Zone 1	OUI		
+nbenacer3	BENACER Nordine	69	tsm_nordine_benacer_sav			06/12/2024	G2	Rayane	Zone 1	OUI		
+kkeriker	KERIKER Khelil	69	tsm_khelil_keriker			10/01/2025	G2	Rayane	Zone 1	OUI		
+"aslimani17
+"	SLIMANI Anès	69	tsm_anes_slimani_sav			27/01/2025	G2	Rayane	Zone 1	OUI		
+fchiker2	CHIKER Ferhane	69				28/01/2025	G2	Rayane	Zone 1	OUI		
+hdahmane	DAHMANE Hamid	69				28/01/2025	G2	Rayane	Zone 1	OUI		
+mvignaud	VIGNAUD Mathieu	69				05/02/2025	G2	Rayane	Zone 1			
+atayari6	TAYARI Aymen	69				11/02/2025	G2	Rayane	Zone 1			
+mbeggaz7	BEGGAZ Mohamed	69				11/02/2025	G2	Rayane	Zone 1			
+zbraik3	BRAIK Zidane	69				11/02/2025	G2	Rayane	Zone 1			
+jkachaou2	KACHAOU Jordan	69				12/02/2025	G2	Rayane	Zone 1			
+gbakir	BAKIR Goulam	71	tsm_goulam_bakir_sav			10/12/2024	G2	Valère	Zone 2	OUI		
+mmahiout3	MAHIOUT Massina	71	tsm_massina_mahiout				G2	Valère	Zone 2	OUI		
+sselmi10	SELMI Smaïl	71	tsm_smail_selmi				G2	Valère	Zone 2	OUI		
+adechache5	DECHACHE Amine	71	tsm_amine_dechache			03/12/2024	G1	Valère	Zone 2	OUI		
+anekkache	NEKKACHE Amir	71	tsm_amir_nekkache			22/11/2024	G2	Valère	Zone 2	OUI		
+lbenatia	BENATIA Liam	71	tsm_liam_benatia_sav			02/12/2024	G2	Valère	Zone 2	OUI		
+mbadaoui3	BADAOUI Mahdi	71	tsm_mahdi_badaoui_sav			10/12/2024	G2	Valère	Zone 2	OUI		
+mbeggaz6	BEGGAZ Mohamed	71	tsm_mohamed_beggaz				G2	Valère	Zone 2	OUI		
+mjabeur	JABEUR Mohamed	71	tsm_mohamed_jabeur			22/11/2024	G2	Valère	Zone 2	OUI		
+mrouas	ROUAS Mathis	71	tsm_mathis_rouas_sav			12/12/2024	G2	Valère	Zone 2	OUI		
+msekli2	SEKLI Mecipsa	71	tsm_mecipsa_sekli			02/12/2024	G2	Valère	Zone 2	OUI		
+stajouri	TAJOURI Salem	71	tsm_salem_tajouri				G2	Valère	Zone 2	OUI		
+yrouas4	ROUAS Yanis	71	tsm_yanis_rouas_sav			12/12/2024	G2	Valère	Zone 2	OUI		
+zlamouchi	LAMOUCHI Zer	71	tsm_zer_lamouchi_sav			02/12/2024	G2	Valère	Zone 2	OUI		
+zrebai2	REBAI Zayed	71	tsm_zayed_rebai				G2	Valère	Zone 2	OUI		
+hbenasla	BENASLA Houari	71	tsm_houari_benasla			10/01/2025	G2	Valère	Zone 2	OUI		
+ajeddour	JEDDOUR Ahmed	71	tsm_ahmed_jeddour_sav			15/01/2025	G2	Valère	Zone 2	OUI		
+arachedi	RACHEDI Amar	71	tsm_amar_rachedi_sav			15/01/2025	G2	Valère	Zone 2	OUI		
+amarmoud	MARMOUD Ayoub	71				03/02/2025	G2	Valère	Zone 2			
+etololo	TOLOLO Edna	71				03/02/2025	G2	Valère	Zone 2			
+iiytutencu	IYTUTENCU Ibrahim	71				03/02/2025	G2	Valère	Zone 2			
+"imsadk
+"	SADK Icham Malik	71				03/02/2025	G2	Valère	Zone 2			
+imala	MALA Idrisse	71				10/02/2025	G2	Valère	Zone 2			
+jsage	SAGE Jimmy	71				10/02/2025	G2	Valère	Zone 2			
+kasamoah	ASAMOAH Kan	71				11/02/2025	G2	Valère	Zone 2			
+abamba5	BAMBA Aboubakar	77	tsm_aboubakar_bamba_sav			11/12/2024	G2	Rayane	Zone 1	OUI		
+aalmanoui	ALMANOUI Abdelkader	77	tsm_abdelkader_almanoui_sav			09/12/2024	G2	Rayane	Zone 1	OUI		
+bdufauret4	DUFAURET Brendan	77	tsm_brendan_dufauret_sav			09/12/2024	G2	Rayane	Zone 1	OUI		
+fkalil	KALIL Fouad	77	tsm_fouad_khalil_sav			9/12/2024	G2	Rayane	Zone 1	OUI		
+couled2	OULED Chaieb	77	tsm_chaieb_ouled				G2	Rayane	Zone 1	OUI		
+vyamben3	YAMBEN Victorien	77	tsm_victorien_yamben_sav			09/12/2024	G2	Rayane	Zone 1	OUI		
+fbenh	BENH Faycal	77	tsm_faycal_benh_sav			06/01/2025	G2	Rayane	Zone 1	OUI		
+mniakate7	NIAKATE Mamadou	77	tsm_mamadou_niakate_sav			6/1/2025	G2	Rayane	Zone 1	OUI		
+bjawara	JAWARA Baba	77	tsm_baba_jawara_sav			07/01/2025	G2	Rayane	Zone 1	OUI		
+mjeambreau	JEAMBREAU Mathéo	77	tsm_matheo_jeambreau_sav			07/01/2025	G2	Rayane	Zone 1	OUI		
+mlatifi2	LATIFI Mohamed	77	tsm_mohamed_latifi_sav			07/01/2025	G2	Rayane	Zone 1	OUI		
+tgille	GILLE Tom	77	tsm_tom_gille_sav			07/01/2025	G2	Rayane	Zone 1	OUI		
+yabanda	ABANDA Yannick	77	tsm_yannick_abanda_sav			11/01/2025	G2	Rayane	Zone 1	OUI		
+mbouaoun3	BOUAOUN Moez	77	tsm_moez_bouaoun_sav			13/01/2025	G2	Rayane	Zone 1	OUI		
+jeludovic	LUDOVIC Jean Elie	77	tsm_jean_elie_ludovic_sav			14/01/2025	G2	Rayane	Zone 1	OUI		
+bzghonda	ZGHONDA Brahim	77				10/02/2025	G2	Rayane	Zone 1			
+jjossaud	JOSSAUD Jonathan	77				10/02/2025	G2	Rayane	Zone 1			
+mkone3	Koné Mohamed	77				10/02/2025	G2	Rayane	Zone 1			
+ovaciri	VACIRI Oscar	77				10/02/2025	G2	Rayane	Zone 1			
+rmirabette	MIRABETTE Riyene	77				10/02/2025	G2	Rayane	Zone 1			
+akhilali	KHILALI Amine	77				11/02/2025	G2	Rayane	Zone 1			
+apierre_650788	PIERRE Adan	77				11/02/2025	G2	Rayane	Zone 1			
+cnejjari	NEJJARI Chakil	77				11/02/2025	G2	Rayane	Zone 1			
+malexandre2	ALEXANDRE Moussoundi	77				11/02/2025	G2	Rayane	Zone 1			
+abouchie	BOUCHIE Abdelmadjid	77				11/02/2025	G2	Rayane	Zone 1			
+bboutaibe	BOUTAIBE Bilel	77				11/02/2025	G2	Rayane	Zone 1			
+aharit	HARIT Adil	78	tsm_adil_harit_sav				G2	Valère	Zone 2	OUI		
+hameur4	AMEUR Houari	78	tsm_houari_ameur_sav			09/12/2024	G2	Valère	Zone 2	OUI		
+iameur	AMEUR Idrisse	78	tsm_idrisse_ameur_sav			10/12/2024	G2	Valère	Zone 2	OUI		
+sameur	AMEUR Saïd	78	tsm_said_ameur_sav			9/12/2024	G2	Valère	Zone 2	OUI		
+sboudia	BOUDIA Smail	78	tsm_smail_boudia_sav			10/12/2024	G2	Valère	Zone 2	OUI		
+staalbi2	TAALBI Samir	78	tsm_samir_taalbi_sav			09/12/2024	G2	Valère	Zone 2	OUI		
+yboudia2	BOUDIA Yacine	78	tsm_yacine_boudia_sav			09/12/2024	G2	Valère	Zone 2	OUI		
+ybouda	BOUDA Yass	78				27/01/2025	G2	Valère	Zone 2	OUI		
+basli	ASLI Belkacem	44				28/01/2025	G2	Valère	Zone 2	OUI		
+kmarby	MARBY Kays	78				28/01/2025	G2	Valère	Zone 2	OUI		
+haibi	AIBI Haytem	78				03/02/2025	G2	Valère	Zone 2			
+fzerrouk2	ZERROUK Fouad	78				10/02/2025	G2	Valère	Zone 2			
+rawad	AWAD Rami	78				10/02/2025	G2	Valère	Zone 2			
+dkouze	KOUZE Dany	78				11/02/2025	G2	Valère	Zone 2			
+msobhi	SOBHI Morsy	78				11/02/2025	G2	Valère	Zone 2			
+bbenhammou	BENHAMMOU Brahim	93	tsm_brahim_benhammou_sav			06/01/2025	G2	Rayane	Zone 1	OUI		
+haraja2	RAJA Haroon-Asad	93	tsm_haroon_asad_raja				G2	Rayane	Zone 1	OUI		
+rboro3	BORO Rodrigue	93	tsm_rodrigue_boro_sav				G2	Rayane	Zone 1	OUI		
+rboro2	BORO Rodrigue	93	tsm_rodrigue_boro_sav				G2	Rayane	Zone 1	OUI		
+hbaitiche2	BAITICHE Hamza	93	tsm_hamza_baitiche				G2	Rayane	Zone 1	OUI		
+fmimouni2	MIMOUNI Faycal	93	tsm_faycal_mimouni_sav			04/11/2024	G2	Rayane	Zone 1	OUI		
+swilfrid	WILFRID Silva	93	tsm_silva_wilfrid_sav			09/12/2024	G2	Rayane	Zone 1	OUI	swilfrid 	Wsilva2024
+otoure2	TOURE Omar	93	tsm_omar_toure				G2	Rayane	Zone 1	OUI	otoure2 	Bioderma93#
+aagbessi	AGBESSI Adame	93	tsm_adame_agbessi_sav	Compétence SAV			G2	Rayane	Zone 1	OUI		
+sdekhil_642528	DEKHIL Shahin	93	tsm_shahin_dekhil_backup				G2	Rayane	Zone 1	OUI		
+mdomrane	DOMRANE Mohamed	93	tsm_mohamed_domrane			24/12/2024	G2	Rayane	Zone 1	OUI		
+mfaraji	FARAJI Maroine	93	tsm_maroine_faraji_sav	Compétence SAV			G2	Rayane	Zone 1	OUI		
+ahamouch2	HAMOUCH Ali	93	tsm_ali_hamouch_sav			04/11/2024	G2	Rayane	Zone 1	OUI		
+skhalil	KHALIL Soufian	93	tsm_soufian_khalil_sav				G2	Rayane	Zone 1	OUI		
+ukhizar2	KHIZAR Ubeid	93	tsm_ubeid_khizar_backup				G2	Rayane	Zone 1	OUI		
+smanai3	MANAI Safwane	93	tsm_safwane_manai_sav			04/11/2024	G2	Rayane	Zone 1	OUI		
+adandiaye	NDIAYE Adama	93	tsm_adama_ndiaye_sav	Compétence SAV			G2	Rayane	Zone 1	OUI		
+crezkallah	REZKALLAH Come	93	tsm_come_rezkallah_sav			19/11/2024	G2	Rayane	Zone 1	OUI		
+bseghiri	SEGHIRI Brahim	93	tsm_brahim_seghiri			04/11/2024	G2	Rayane	Zone 1	OUI		
+sseguirhi	SEGUIRHI Smain	93	tsm_smain_seguirhi			24/12/2024	G2	Rayane	Zone 1	OUI		
+htahed	TAHED Hakim	93	tsm_hakim_tahed			04/11/2024	G2	Rayane	Zone 1	OUI		
+kmiloud	MILOUD Krater	93	tsm_krater_miloud			10/01/2025	G2	Rayane	Zone 1	OUI		
+agater6	GATER Ali	93	tsm_ali_gater_sav			13/01/2025	G2	Rayane	Zone 1	OUI		
+cbenabdallah11	BENABDALLAH Choukri	93	tsm_choukri_benabdallah_sav			13/01/2025	G2	Rayane	Zone 1	OUI		
+melbouazzaoui5	ELBOUAZZAOUI Mustapha	93	tsm_mustapha_elbouazzaoui_sav			13/01/2025	G2	Rayane	Zone 1	OUI		
+sissad10	ISSAD Samir	93	tsm_samir_issad_sav			13/01/2025	G2	Rayane	Zone 1	OUI		
+awahab	WAHAB Abdul	93	tsm_abdul_wahab_sav			13/01/2025	G2	Rayane	Zone 1	OUI	awahab 	Awahab2025
+yghazijerniti	Ghazi Jerniti Yassine	93	tsm_yassine_ghazi_jerniti_sav			17/01/2025	G2	Rayane	Zone 1	OUI		
+ldziri4	DZIRI Lyes	93				20/01/2025	G2	Rayane	Zone 1			
+dbouchemal 	BOUCHEMAL Djallal	93	tsm_djallal_bouchemal_sav			27/01/2025	G2	Rayane	Zone 1	OUI		
+ymejbar	MEJBAR Yousef	93				27/01/2025	G2	Rayane	Zone 1	OUI		
+aguenoun	GUENOUN Ali	93				28/01/2025	G2	Rayane	Zone 1	OUI		
+cperez2	PEREZ Claude	93				28/01/2025	G2	Rayane	Zone 1	OUI		
+mgherbi	GHERBI Mourad	93				28/01/2025	G2	Rayane	Zone 1	OUI		
+tbaler	BALER Theodore	93				28/01/2025	G2	Rayane	Zone 1	OUI		
+wchoukhi	CHOUKHI Wassim	93				28/01/2025	G2	Rayane	Zone 1	OUI		
+agali	GALI Aymen	93				31/01/2025	G2	Rayane	Zone 1	OUI		
+aguerdane2	GUERDANE Ali	93				07/02/2025	G2	Rayane	Zone 1			
+fognanguet3	OGNANGUET Fabrice	93				07/02/2025	G2	Rayane	Zone 1			
+itambara3	TAMBARA Ibrahim	93				07/02/2025	G2	Rayane	Zone 1			
+mbaradji	BARADJI Massire	93	tsm_massire_baradji			07/02/2025	G2	Rayane	Zone 1			
+mvolant	VOLANT Maxence	93				07/02/2025	G2	Rayane	Zone 1			
+rmouloud4	MOULOUD Rachid	93	tsm_rachid_mouloud			07/02/2025	G2	Rayane	Zone 1			
+rouared	OUARED Rafik	93				07/02/2025	G2	Rayane	Zone 1			
+ajaziri7	JAZIRI Aymen	93				10/02/2025	G2	Rayane	Zone 1			
+amaaloul2	MAALOUL Achraf	93				10/02/2025	G2	Rayane	Zone 1			
+gjangola	JANGOLA Giornno	93				10/02/2025	G2	Rayane	Zone 1			
+mamellal3	AMELLAL Meziane	93				10/02/2025	G2	Rayane	Zone 1			
+rkherkhour	KHERKHOUR Rabah	93				10/02/2025	G2	Rayane	Zone 1			
+wkercoush	KERCOUSH Walid	93				10/02/2025	G2	Rayane	Zone 1			
+jgradio	GRADIO Joseph	93				11/02/2025	G2	Rayane	Zone 1			
+jjarette	JARETTE Jonathan	93				11/02/2025	G2	Rayane	Zone 1			
+mkacher	KACHER Massil	93				11/02/2025	G2	Rayane	Zone 1			
+mtouat	TOUAT Manis	93				11/02/2025	G2	Rayane	Zone 1			
+nmouhoubi5	MOUHOUBI Nadir	93				11/02/2025	G2	Rayane	Zone 1			
+yamri	AMRI Yanis	93				11/02/2025	G2	Rayane	Zone 1			
+dcherguire	CHERGUIRE Dalile	94	tsm_dalile_cherguire_backup				G2	Valère	Zone 2	NON		
+fhosni	HOSNI Farid	94				07/02/2025	G2	Valère	Zone 2			
+abennefissa	BEN NEFISSA Abdallah	93				13/02/2025	G2	Rayane	Zone 1			
+aboulhres	BOULHRES Ahcene	77				13/02/2025	G2	Rayane	Zone 1			
+amkideche	MKIDECHE Abdellah	69				13/02/2025	G2	Rayane	Zone 1			
+emhamadou4	HAMADOU El Mehdi	69				13/02/2025	G2	Rayane	Zone 1			
+lpetecchia3	PETECCHIA Lonardo	77				13/02/2025	G2	Rayane	Zone 1			
+mfiniel	FINIEL Micheal	77				13/02/2025	G2	Rayane	Zone 1			
+obenbrahim3	BEN BRAHIM Oussama	93				13/02/2025	G2	Rayane	Zone 1			
+achebili2	CHEBILI Ahcene	42				14/02/2025	G2	Rayane	Zone 1			
+bsaidi4	SAIDI Badis	42				14/02/2025	G2	Rayane	Zone 1			
+fkhelif	KHELIF Fatah	42				14/02/2025	G2	Rayane	Zone 1			
+hitache	ITACHE Hocine	42				14/02/2025	G2	Rayane	Zone 1			
+mkhaled5	KHALED Malek	42				14/02/2025	G2	Rayane	Zone 1			
+msiyoucef4	SI YOUCEF Mounir	93				14/02/2025	G2	Rayane	Zone 1			
+rmahdhi4	MAHDHI Radhouane	42				14/02/2025	G2	Rayane	Zone 1			
+arivet	RIVET Anthoine	57				17/02/2025	G2	Rayane	Zone 1			
+atizaoui3	TIZAOUI Alaeddine	42				17/02/2025	G2	Rayane	Zone 1			
+bagoudjil	AGOUDJIL Brahim	93				17/02/2025	G2	Rayane	Zone 1			
+cmoumen	MOUMEN Chafik	71				17/02/2025	G2	Valère	Zone 2			
+dlarbi2	LARBI Djella	77				17/02/2025	G2	Rayane	Zone 1			
+hbenammar4	BENAMMAR Hadi	57				17/02/2025	G2	Rayane	Zone 1			
+kziak	ZIAK Kassem	71				17/02/2025	G2	Valère	Zone 2			
+lbouzidi	BOUZIDI Lyes	42				17/02/2025	G2	Rayane	Zone 1			
+mjedour	JEDOUR Mahmoud	44				17/02/2025	G2	Valère	Zone 2			
+skandil2	KANDIL Salim	41				17/02/2025	G2	Valère	Zone 2			
+wmejri3	MEJRI Wajdi	42				17/02/2025	G2	Rayane	Zone 1			
+xmenoil	MENOIL Xavier	77				17/02/2025	G2	Rayane	Zone 1			
+ymassim	MASSIM Yacine	71				17/02/2025	G2	Valère	Zone 2			
+kmoussoum2	MOUSSOUM Kaci	42				18/02/2025	G2	Rayane	Zone 1			
+lkochbati2	KOCHBATI Lotfi	42				18/02/2025	G2	Rayane	Zone 1			
+mifsit	IFSIT Mourad	69				18/02/2025	G2	Rayane	Zone 1			
+rhajji3	HAJJI Rachid	41				18/02/2025	G2	Valère	Zone 2			
+saissani	AISSANI Samy	93				18/02/2025	G2	Rayane	Zone 1			
+smahda	MAHDA Salim	42				18/02/2025	G2	Rayane	Zone 1			
+aouassef2	OUASSEF Athman	71				19/02/2025	G2	Valère	Zone 2			
+mamekkaoui2	MEKKAOUI Mohamed Amine	42				19/02/2025	G2	Rayane	Zone 1			
+marroum3	ARROUM Mohamed	42				19/02/2025	G2	Rayane	Zone 1			
+melhoch2	ELHOCH Mohamed	42				19/02/2025	G2	Rayane	Zone 1			
+mhmidi_651443	HMIDI Mohamed	57				19/02/2025	G2	Rayane	Zone 1			
+lgrimont3	GRIMONT Leo	2				20/02/2025	G2	Rayane	Zone 1			
+mladj	LADJ Malmine	34				20/02/2025	G2	Valère	Zone 2			
+xfert	FERT Xavier	42				20/02/2025	G2	Rayane	Zone 1			
+ybenali6	BENALI Yassine	2				20/02/2025	G2	Rayane	Zone 1			
+yhassouni2	HASSOUNI Younes	37				20/02/2025	G2	Valère	Zone 2			
+sisaac	ISAAC Sabeur	2				20/02/2025	G2	Rayane	Zone 1			
+afourment3	FOURMENT Aymeric	2				21/02/2025	G2	Rayane	Zone 1			
+eetokabeka	ETOKABEKA Eldon	77				21/02/2025	G2	Rayane	Zone 1			
+fdecan	DECAN Flavien	77				21/02/2025	G2	Rayane	Zone 1			
+fzouaoui7	ZOUAOUI Farid	34				21/02/2025	G2	Valère	Zone 2			
+inaji3	NAJI Ihab	31				21/02/2025	G2	Valère	Zone 2			
+jlrosini	ROSINI Jean-Loui	77				21/02/2025	G2	Rayane	Zone 1			
+kbass	BASS Kamy	31				21/02/2025	G2	Valère	Zone 2			
+kbraimi	BRAIMI Koussa	78				21/02/2025	G2	Valère	Zone 2			
+lachour4	ACHOUR Lam	31				21/02/2025	G2	Valère	Zone 2			
+mbelgha	BELGHA Majoub	78				21/02/2025	G2	Valère	Zone 2			
+mlefebvre3	LEFEBVRE Maurice	2				21/02/2025	G2	Rayane	Zone 1			
+soriente	ORIENTE Sebastien	31				21/02/2025	G2	Valère	Zone 2			
+sramd	RAMD Stephane	31				21/02/2025	G2	Valère	Zone 2			
+avivas	VIVAS Athis	22				22/02/2025	G2	Valère	Zone 2			
+obenbeli	BENBELI Oussama	2				22/02/2025	G2	Rayane	Zone 1			
+youamer4	OUAMER Younes	34					G2	Valère	Zone 2			
+aabbadi4	ABBADI Anis	49				24/02/2025	G2	Valère	Zone 2			
+aabbou12	ABBOU Ali	44				24/02/2025	G2	Valère	Zone 2			
+abehic	BEHIC Ael	44				24/02/2025	G2	Valère	Zone 2			
+acambell	CAMBELL Allen	77				24/02/2025	G2	Rayane	Zone 1			
+adurand3	DURAND Arthur	57				24/02/2025	G2	Rayane	Zone 1			
+amitrov	MITROV Alan	78				24/02/2025	G2	Valère	Zone 2			
+cbahuon2	BAHUON Corentin	49				24/02/2025	G2	Valère	Zone 2			
+elaster	LASTER Eliade	77				24/02/2025	G2	Rayane	Zone 1			
+flilad	LILAD Fall	78				24/02/2025	G2	Valère	Zone 2			
+hbessassi4	BESSASSI Hamza	49				24/02/2025	G2	Valère	Zone 2			
+iferrat2	FERRAT Ismaïl	49				24/02/2025	G2	Valère	Zone 2			
+jmeddour	MEDDOUR Jugurta	93				24/02/2025	G2	Rayane	Zone 1			
+kfarchi5	FARCHI Kamal	37				24/02/2025	G2	Valère	Zone 2			
+mfarran2	FARRAN Malik	49				24/02/2025	G2	Valère	Zone 2			
+msanlud	SANLUD Maxim	57				24/02/2025	G2	Rayane	Zone 1			
+myami	YAMI Malik	31				24/02/2025	G2	Valère	Zone 2			
+ncambell	CAMBELL Neah	77				24/02/2025	G2	Rayane	Zone 1			
+ssami	SAMI Sofiane	78				24/02/2025	G2	Valère	Zone 2			
+szaray4	ZARAY Samir	69				24/02/2025	G2	Rayane	Zone 1			
+tpousin2	POUSIN Thibaut	37				24/02/2025	G2	Valère	Zone 2			
+wmartin	MARTIN William	77				24/02/2025	G2	Rayane	Zone 1			
+ykammil	KAMMIL Younes	34				24/02/2025	G2	Valère	Zone 2			
