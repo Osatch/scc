@@ -1,28 +1,25 @@
 <template>
-  <div class="sidebar">
-    <div class="logo">
-      <img src="/logo3.png" alt="Logo de l'entreprise">
+  <div class="sidebar fixed h-full bg-white shadow-md">
+    <div class="logo p-4">
+      <img src="/logo4.png" alt="Logo de l'entreprise">
     </div>
-    <nav class="nav-tabs">
+    <nav class="nav-tabs p-4">
       <ul>
         <li v-for="item in menuItems" :key="item.label">
-          <a v-if="!item.subItems" href="#" @click="changeTab(item.path)">
+          <router-link v-if="!item.subItems" :to="item.path" class="nav-link">
             {{ item.label }}
-          </a>
+          </router-link>
           <div v-else>
-            <a href="#" @click="toggleSubMenu(item.label)">
+            <a href="#" @click="toggleSubMenu(item.label)" class="nav-link">
               {{ item.label }}
-              <ChevronDownIcon
-                class="arrow-icon"
-                :class="{ rotated: openSubMenus.includes(item.label) }"
-              />
+              <ChevronDownIcon class="arrow-icon" :class="{ rotated: openSubMenus.includes(item.label) }" />
             </a>
             <div v-if="openSubMenus.includes(item.label)" class="dropdown-content">
               <ul>
                 <li v-for="subItem in item.subItems" :key="subItem.label">
-                  <a href="#" @click="changeTab(subItem.path)">
+                  <router-link :to="subItem.path" class="nav-link">
                     {{ subItem.label }}
-                  </a>
+                  </router-link>
                 </li>
               </ul>
             </div>
@@ -83,3 +80,4 @@ export default {
   },
 };
 </script>
+

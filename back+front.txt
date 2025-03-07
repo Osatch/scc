@@ -72,16 +72,17 @@ src/
 ├── components/
 │   ├── views/
 │   │   ├── Gantt.vue
-│   │   ├── RelanceJJ.vue
+│   │   ├── Relancejj.vue
 │   │   ├── DebriefRACC.vue
 │   │   ├── DebriefSAV.vue
 │   │   ├── ControlPhoto.vue
 │   │   ├── ControlFroid.vue
-│   │   ├── NokSansAppel.vue
-│   │   ├── InterventionSAV.vue
-│   │   ├── InterventionRACC.vue
+│   │   ├── Nok.vue
+│   │   ├── InterventionsSAV.vue
+│   │   ├── InterventionsRACC.vue
 │   │   └── Parametres.vue
 │   ├── Sidebar.vue
 │   └── Header.vue
+    └── Dashboard.vue
 ├── App.vue
 └── main.js

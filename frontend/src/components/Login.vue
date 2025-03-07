@@ -2,7 +2,7 @@
   <div class="login-container">
     <!-- Logo -->
     <div class="logo-container">
-      <img src="/logo3.png" alt="Logo" class="logo" />
+      <img src="/logo4.png" alt="Logo" class="logo" />
     </div>
 
     <!-- Titre -->
