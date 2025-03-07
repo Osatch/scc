@@ -8,6 +8,8 @@ from .models import Gantt
 from .serializers import GanttSerializer
 from .models import ARD2
 from .serializers import ARD2Serializer
+from .models import Parametres
+from .serializers import ParametresSerializer
 
 @api_view(['GET'])
 def gantt_list(request):
@@ -48,4 +50,14 @@ def ard2_list(request):
     """Retourne la liste des interventions ARD2 avec date d'importation"""
     ard2_data = ARD2.objects.all().order_by('-date_importation')  # Trier par la plus récente
     serializer = ARD2Serializer(ard2_data, many=True)
+    return Response(serializer.data)
+
+#apifor parametres 
+
+
+@api_view(['GET'])
+def parametres_list(request):
+    """Retourne la liste des paramètres"""
+    parametres = Parametres.objects.all().order_by('id_tech')  # Trier par ID Technicien
+    serializer = ParametresSerializer(parametres, many=True)
     return Response(serializer.data)

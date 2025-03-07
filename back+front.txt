@@ -78,7 +78,7 @@ github
 
 git init
 git add .
-git commit -m "07-03 / 13h30"
+git commit -m "07-03 / 13h35"
 git remote add origin https://github.com/Osatch/scc.git
 git branch -M main
 git push -u origin main
