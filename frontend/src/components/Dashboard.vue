@@ -9,7 +9,7 @@
       <Header />
 
       <!-- Contenu des vues -->
-      <div class="flex-1 p-6 mt-16">
+      <div class="flex-1 p-6 mt-16 overflow-x-auto"> <!-- Ajout de overflow-x-auto -->
         <router-view /> <!-- 🔥 Affiche les vues comme Gantt, RelanceJJ, etc. -->
       </div>
     </div>

@@ -11,8 +11,8 @@ urlpatterns = [
     path('login/', login_view, name='login'),
     path('logout/', logout_view, name='logout'),
     path('ARD2/', ard2_list, name='ard2-list'), #ca c'est pour ard2
-    path('api/parametres/', parametres_list, name='parametres_list'),#paramètres
-     path('api/relances/', relancejj_list, name='relancejj-list'),#relancejj
+    path('parametres/', parametres_list, name='parametres_list'),#paramètres
+     path('relances/', relancejj_list, name='relancejj-list'),#relancejj
     
 
     

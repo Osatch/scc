@@ -27,12 +27,14 @@ a:hover {
 }
 
 body, html {
-  overflow-x: hidden;
+  overflow-x: hidden; /* Désactive le défilement horizontal global */
   width: 100%;
   margin: 0;
   padding: 0;
   background-color: white; /* Fond blanc pour le contenu principal */
 }
+
+
 
 h1 {
   font-size: 3.2em;
@@ -181,6 +183,7 @@ header .header-button:hover {
   width: calc(100% - 250px); /* Largeur en tenant compte de la sidebar */
   padding: 1rem;
   overflow-y: auto; /* Permet le défilement vertical si nécessaire */
+  overflow-x: hidden; /* Désactive le défilement horizontal global */
 }
 
 /* Styles pour le mode clair */
@@ -195,4 +198,11 @@ header .header-button:hover {
   button {
     background-color: #f9f9f9;
   }
+}
+/* Conteneur pour la barre de défilement horizontale */
+.table-container {
+  width: 100%; /* Prend toute la largeur disponible */
+  overflow-x: auto; /* Active la barre de défilement horizontale */
+  border-radius: 8px; /* Coins arrondis pour correspondre au design */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Ombre pour le conteneur */
 }
