@@ -1,18 +1,16 @@
 <template>
   <div id="app" class="flex min-h-screen bg-gray-100">
     <!-- Barre latérale -->
-    <Sidebar />
+    <Sidebar class="w-64" /> <!-- Largeur fixe pour la sidebar -->
 
     <!-- Contenu principal -->
     <div class="flex-1 flex flex-col">
       <!-- Header -->
-      <Header @logout="logout" />
+      <Header @logout="logout" class="fixed w-full top-0 left-0 z-10" />
 
-      <!-- Contenu du dashboard -->
-      <div class="flex-1 p-6">
-        <h2 class="text-2xl font-bold mb-4">Bienvenue sur le Dashboard</h2>
-        <!-- Contenu des sous-pages du dashboard -->
-        <router-view />
+      <!-- Conteneur des vues -->
+      <div class="flex-1 p-6 mt-16 ml-64">
+        <router-view /> <!-- 🚀 L'affichage des vues se fait ici -->
       </div>
     </div>
   </div>
@@ -41,13 +39,3 @@ export default {
 };
 </script>
 
-<style scoped>
-/* Styles spécifiques au dashboard */
-.min-h-screen {
-  min-height: 100vh;
-}
-
-.bg-gray-100 {
-  background-color: #f8f9fa;
-}
-</style>
