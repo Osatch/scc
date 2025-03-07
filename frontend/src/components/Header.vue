@@ -1,20 +1,20 @@
 <template>
-  <header class="bg-white shadow-md p-4 flex justify-between items-center">
+  <header class="bg-white shadow-md p-4 flex justify-between items-center ml-4">
     <!-- Nom du compte actif -->
     <div class="flex items-center">
       <span class="text-lg font-semibold">{{ activeAccountName }}</span>
     </div>
 
     <!-- Boutons de rafraîchissement et déconnexion -->
-    <div class="flex items-center space-x-4">
+    <div class="flex items-center gap-4">
       <button
-        class="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition flex items-center"
+        class="bg-gray-500 text-white p-3 rounded-full hover:bg-gray-600 transition flex items-center justify-center !border-none"
         @click="refresh"
       >
         <RefreshIcon class="w-5 h-5" />
       </button>
       <button
-        class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition flex items-center"
+        class="bg-red-500 text-white p-3 rounded-full hover:bg-red-600 transition flex items-center justify-center !border-none"
         @click="logout"
       >
         <PowerIcon class="w-5 h-5" />
