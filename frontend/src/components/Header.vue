@@ -33,12 +33,14 @@ export default {
   },
   data() {
     return {
-      activeAccountName: "Nom du Compte Actif", // Remplacez par le nom dynamique du compte
+      activeAccountName: "Nom du Compte Actif", // Peut être remplacé dynamiquement
     };
   },
   methods: {
     logout() {
-      this.$emit("logout");
+      localStorage.removeItem("access");
+      localStorage.removeItem("refresh");
+      this.$router.push("/"); // 🔥 Redirige directement après la suppression du token
     },
     refresh() {
       console.log("Rafraîchissement en cours...");

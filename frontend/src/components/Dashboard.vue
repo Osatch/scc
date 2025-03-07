@@ -1,16 +1,16 @@
 <template>
-  <div id="app" class="flex min-h-screen bg-gray-100">
+  <div class="flex min-h-screen">
     <!-- Barre latérale -->
-    <Sidebar class="w-64" /> <!-- Largeur fixe pour la sidebar -->
+    <Sidebar class="w-64 fixed left-0 top-0 h-full bg-white shadow-md" />
 
     <!-- Contenu principal -->
-    <div class="flex-1 flex flex-col">
+    <div class="flex-1 flex flex-col ml-64">
       <!-- Header -->
-      <Header @logout="logout" class="fixed w-full top-0 left-0 z-10" />
+      <Header />
 
-      <!-- Conteneur des vues -->
-      <div class="flex-1 p-6 mt-16 ml-64">
-        <router-view /> <!-- 🚀 L'affichage des vues se fait ici -->
+      <!-- Contenu des vues -->
+      <div class="flex-1 p-6 mt-16">
+        <router-view /> <!-- 🔥 Affiche les vues comme Gantt, RelanceJJ, etc. -->
       </div>
     </div>
   </div>
@@ -38,4 +38,3 @@ export default {
   },
 };
 </script>
-
