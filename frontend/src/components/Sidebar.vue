@@ -1,23 +1,23 @@
 <template>
-  <div class="sidebar fixed h-full bg-white shadow-md">
-    <div class="logo p-4">
+  <div class="sidebar">
+    <div class="logo">
       <img src="/logo4.png" alt="Logo de l'entreprise">
     </div>
-    <nav class="nav-tabs p-4">
+    <nav class="nav-tabs">
       <ul>
         <li v-for="item in menuItems" :key="item.label">
-          <router-link v-if="!item.subItems" :to="item.path" class="nav-link">
+          <router-link v-if="!item.subItems" :to="'/dashboard' + item.path">
             {{ item.label }}
           </router-link>
           <div v-else>
-            <a href="#" @click="toggleSubMenu(item.label)" class="nav-link">
+            <a href="#" @click="toggleSubMenu(item.label)">
               {{ item.label }}
               <ChevronDownIcon class="arrow-icon" :class="{ rotated: openSubMenus.includes(item.label) }" />
             </a>
             <div v-if="openSubMenus.includes(item.label)" class="dropdown-content">
               <ul>
                 <li v-for="subItem in item.subItems" :key="subItem.label">
-                  <router-link :to="subItem.path" class="nav-link">
+                  <router-link :to="'/dashboard' + subItem.path">
                     {{ subItem.label }}
                   </router-link>
                 </li>
@@ -35,10 +35,8 @@ import { ref } from "vue";
 import { ChevronDownIcon } from "lucide-vue-next";
 
 export default {
-  components: {
-    ChevronDownIcon,
-  },
-  setup(props, { emit }) {
+  components: { ChevronDownIcon },
+  setup() {
     const openSubMenus = ref([]);
 
     const menuItems = [
@@ -47,8 +45,8 @@ export default {
       {
         label: "Débrief",
         subItems: [
-          { label: "RACC", path: "/debrief-racc" },
-          { label: "SAV", path: "/debrief-sav" },
+          { label: "RACC", path: "/debrief/racc" },
+          { label: "SAV", path: "/debrief/sav" },
         ],
       },
       { label: "Contrôle Photo (à chaud)", path: "/control-photo" },
@@ -57,8 +55,8 @@ export default {
       {
         label: "Interventions Sécurisées",
         subItems: [
-          { label: "SAV", path: "/interventions-sav" },
-          { label: "RACC", path: "/interventions-racc" },
+          { label: "SAV", path: "/interventions/sav" },
+          { label: "RACC", path: "/interventions/racc" },
         ],
       },
       { label: "Paramètres", path: "/parametres" },
@@ -72,12 +70,7 @@ export default {
       }
     };
 
-    const changeTab = (path) => {
-      emit("change-tab", path);
-    };
-
-    return { menuItems, openSubMenus, toggleSubMenu, changeTab };
+    return { menuItems, openSubMenus, toggleSubMenu };
   },
 };
 </script>
-

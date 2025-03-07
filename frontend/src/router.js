@@ -1,7 +1,4 @@
-// 1️⃣ Importation de Vue Router
 import { createRouter, createWebHistory } from "vue-router";
-
-// 2️⃣ Importation des composants
 import Login from "./components/Login.vue";
 import Dashboard from "./components/Dashboard.vue";
 import Gantt from "./components/views/Gantt.vue";
@@ -15,9 +12,8 @@ import InterventionsSAV from "./components/views/InterventionsSAV.vue";
 import InterventionsRACC from "./components/views/InterventionsRACC.vue";
 import Parametres from "./components/views/Parametres.vue";
 
-// 3️⃣ Définition des routes
 const routes = [
-  { path: "/", component: Login }, // Page de connexion
+  { path: "/", component: Login },
   {
     path: "/dashboard",
     component: Dashboard,
@@ -36,11 +32,9 @@ const routes = [
   },
 ];
 
-// 4️⃣ Création du routeur
 const router = createRouter({
   history: createWebHistory(),
   routes,
 });
 
-// 5️⃣ Exportation du routeur pour l'utiliser dans main.js
 export default router;

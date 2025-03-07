@@ -1,37 +1,39 @@
 <template>
-  <div class="login-container">
-    <!-- Logo -->
-    <div class="logo-container">
-      <img src="/logo4.png" alt="Logo" class="logo" />
+  <div class="login-page">
+    <div class="login-container">
+      <!-- Logo -->
+      <div class="logo-container">
+        <img src="/logo4.png" alt="Logo" class="logo" />
+      </div>
+
+      <!-- Titre -->
+      <h2 class="login-title">Connexion</h2>
+
+      <!-- Formulaire -->
+      <form @submit.prevent="login" class="login-form">
+        <input
+          v-model="username"
+          type="text"
+          placeholder="Nom d'utilisateur"
+          required
+          class="input-field"
+        />
+        <input
+          v-model="password"
+          type="password"
+          placeholder="Mot de passe"
+          required
+          class="input-field"
+        />
+        <button type="submit" class="login-button">Se connecter</button>
+      </form>
+
+      <!-- Message d'erreur -->
+      <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
+
+      <!-- Texte supplémentaire -->
+      <p class="additional-text">Bienvenue sur TECHNO SMART. Connectez-vous pour accéder à votre espace.</p>
     </div>
-
-    <!-- Titre -->
-    <h2 class="login-title">Connexion</h2>
-
-    <!-- Formulaire -->
-    <form @submit.prevent="login" class="login-form">
-      <input
-        v-model="username"
-        type="text"
-        placeholder="Nom d'utilisateur"
-        required
-        class="input-field"
-      />
-      <input
-        v-model="password"
-        type="password"
-        placeholder="Mot de passe"
-        required
-        class="input-field"
-      />
-      <button type="submit" class="login-button">Se connecter</button>
-    </form>
-
-    <!-- Message d'erreur -->
-    <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
-
-    <!-- Texte supplémentaire -->
-    <p class="additional-text">Bienvenue sur notre Solution CandleCall. Connectez-vous pour accéder à votre espace.</p>
   </div>
 </template>
 
@@ -67,16 +69,30 @@ export default {
 </script>
 
 <style scoped>
+.login-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100vw;
+  position: fixed; /* Fixe la page pour éviter l'impact des autres styles */
+  top: 0;
+  left: 0;
+  background-color: #f3f4f6; /* Fond gris clair */
+  z-index: 10000; /* Assure que la page est bien visible */
+}
+
 .login-container {
   max-width: 400px;
-  margin: 100px auto;
+  width: 100%;
   padding: 2rem;
-  background-color: #1e1e1e; /* Fond sombre */
+  background-color: #1e1e1e;
   border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); /* Ombre plus prononcée */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
   text-align: center;
-  color: #ffffff; /* Texte en blanc */
+  color: #ffffff;
 }
+
 
 .logo-container {
   margin-bottom: 1.5rem;

@@ -46,29 +46,7 @@ stucture du code
 │   ├── migrations/
 │   ├── templates/
 │   ├── static/
-
-/backend/
-
-
-
-oussamadev
-
-solutioncandle2025
-
-
-
-github 
-
-git init
-git add .
-git commit -m "06-03"
-git remote add origin https://github.com/Osatch/scc.git
-git branch -M main
-git push -u origin main
-
-
-
-src/
+forntend /src/
 ├── components/
 │   ├── views/
 │   │   ├── Gantt.vue
@@ -86,3 +64,24 @@ src/
     └── Dashboard.vue
 ├── App.vue
 └── main.js
+/backend/
+
+
+
+oussamadev
+
+solutioncandle2025
+
+
+
+github 
+
+git init
+git add .
+git commit -m "07-03 / 12h01"
+git remote add origin https://github.com/Osatch/scc.git
+git branch -M main
+git push -u origin main
+
+
+
