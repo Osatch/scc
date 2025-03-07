@@ -1,7 +1,9 @@
 from django.shortcuts import render
+import csv
+from django.http import JsonResponse
 from rest_framework.response import Response
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
+from rest_framework.decorators import api_view, permission_classes ,parser_classes
+from rest_framework.parsers import MultiPartParser
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from .models import Gantt
@@ -10,6 +12,10 @@ from .models import ARD2
 from .serializers import ARD2Serializer
 from .models import Parametres
 from .serializers import ParametresSerializer
+from rest_framework.permissions import AllowAny
+from .models import RelanceJJ
+from .serializers import RelanceJJSerializer
+
 
 @api_view(['GET'])
 def gantt_list(request):
@@ -60,4 +66,14 @@ def parametres_list(request):
     """Retourne la liste des paramètres"""
     parametres = Parametres.objects.all().order_by('id_tech')  # Trier par ID Technicien
     serializer = ParametresSerializer(parametres, many=True)
+    return Response(serializer.data)
+
+
+#api relance jj
+
+@api_view(['GET'])
+def relancejj_list(request):
+    """Retourne la liste des relances"""
+    relances = RelanceJJ.objects.all().order_by('-date_intervention')  # Trier par date
+    serializer = RelanceJJSerializer(relances, many=True)
     return Response(serializer.data)
