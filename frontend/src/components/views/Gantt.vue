@@ -139,13 +139,47 @@ const raccProgress = computed(() => {
       </select>
     </div>
 
+    <!-- Tableau des statistiques -->
+    <h2>Statistiques</h2>
+    <table border="1">
+      <thead>
+        <tr>
+          <th>Type d'intervention</th>
+          <th>Taux de transformation</th>
+          <th>Nbr d'inter clôturée OK</th>
+          <th>Nbr d'inter clôturée NOK</th>
+          <th>Nbr d'inter en cours</th>
+          <th>Nbr d'inter en péril</th>
+          <th>Nbr d'inter restant</th>
+          <th>PDC du jour</th>
+          <th>Total</th>
+          <th>Taux de remplissage</th>
+          <th>Taux d'avancement</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="stat in ganttStatistics" :key="stat.id">
+          <td>{{ stat.type_intervention }}</td>
+          <td>{{ stat.taux_transfo }}%</td>
+          <td>{{ stat.nbr_inter_cloturee_ok }}</td>
+          <td>{{ stat.nbr_inter_cloturee_nok }}</td>
+          <td>{{ stat.nbr_inter_en_cours }}</td>
+          <td>{{ stat.nbr_inter_en_peril }}</td>
+          <td>{{ stat.nbr_inter_restant }}</td>
+          <td>{{ stat.pdc_du_jour }}</td>
+          <td>{{ stat.total }}</td>
+          <td>{{ stat.taux_remplissage }}%</td>
+          <td>{{ stat.taux_avancement }}%</td>
+        </tr>
+      </tbody>
+    </table>
+
     <!-- Tableau des interventions -->
     <table border="1">
       <thead>
         <tr>
-          <th>DP</th>
+          <th>Secteur</th>
           <th>Intervenant</th>
-          <th>Type d'intervention</th>
           <th>08h</th>
           <th>09h</th>
           <th>10h</th>
@@ -161,21 +195,24 @@ const raccProgress = computed(() => {
         <tr v-for="detail in filteredDetails" :key="detail.id">
           <td>{{ detail.secteur }}</td>
           <td>{{ detail.nom_intervenant }}</td>
-          <td>{{ detail.type_intervention }}</td>
-          <td>{{ detail.heure_08 ? '✔' : '✖' }}</td>
-          <td>{{ detail.heure_09 ? '✔' : '✖' }}</td>
-          <td>{{ detail.heure_10 ? '✔' : '✖' }}</td>
-          <td>{{ detail.heure_11 ? '✔' : '✖' }}</td>
-          <td>{{ detail.heure_13 ? '✔' : '✖' }}</td>
-          <td>{{ detail.heure_14 ? '✔' : '✖' }}</td>
-          <td>{{ detail.heure_18 ? '✔' : '✖' }}</td>
-          <td>{{ detail.taux_transfo }}</td>
-          <td>{{ detail.taux_remplissage }}</td>
+          <td>{{ detail.heure_08 || '-' }}</td>
+          <td>{{ detail.heure_09 || '-' }}</td>
+          <td>{{ detail.heure_10 || '-' }}</td>
+          <td>{{ detail.heure_11 || '-' }}</td>
+          <td>{{ detail.heure_13 || '-' }}</td>
+          <td>{{ detail.heure_14 || '-' }}</td>
+          <td>{{ detail.heure_18 || '-' }}</td>
+          <td>{{ detail.taux_transfo }}%</td>
+          <td>{{ detail.taux_remplissage }}%</td>
         </tr>
       </tbody>
     </table>
+
+    
   </div>
 </template>
+
+
 
 <style scoped>
 .main-content {
