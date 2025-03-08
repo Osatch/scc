@@ -1,29 +1,43 @@
-from django.shortcuts import render
-import csv
+from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 from rest_framework.response import Response
-from rest_framework.decorators import api_view, permission_classes ,parser_classes
+from rest_framework.decorators import api_view, permission_classes, parser_classes
 from rest_framework.parsers import MultiPartParser
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
-from .models import Gantt
-from .serializers import GanttSerializer
-from .models import ARD2
-from .serializers import ARD2Serializer
-from .models import Parametres
-from .serializers import ParametresSerializer
 from rest_framework.permissions import AllowAny
-from .models import RelanceJJ
-from .serializers import RelanceJJSerializer
+from .models import Gantt, GanttStatistics, ARD2, Parametres, RelanceJJ
+from .serializers import GanttSerializer, GanttStatisticsSerializer, ARD2Serializer, ParametresSerializer, RelanceJJSerializer
 
-
+# Vue pour la liste des interventions Gantt
 @api_view(['GET'])
 def gantt_list(request):
     gantt_data = Gantt.objects.all()
     serializer = GanttSerializer(gantt_data, many=True)
     return Response(serializer.data)
 
+# Vue pour les détails d'une intervention Gantt
+@api_view(['GET'])
+def gantt_detail(request, pk):
+    gantt_entry = get_object_or_404(Gantt, pk=pk)
+    serializer = GanttSerializer(gantt_entry)
+    return Response(serializer.data)
 
+# Vue pour la liste des statistiques Gantt
+@api_view(['GET'])
+def gantt_statistics_list(request):
+    statistics_data = GanttStatistics.objects.all()
+    serializer = GanttStatisticsSerializer(statistics_data, many=True)
+    return Response(serializer.data)
+
+# Vue pour les détails des statistiques Gantt
+@api_view(['GET'])
+def gantt_statistics_detail(request, pk):
+    statistics_entry = get_object_or_404(GanttStatistics, pk=pk)
+    serializer = GanttStatisticsSerializer(statistics_entry)
+    return Response(serializer.data)
+
+# Vue pour la connexion
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def login_view(request):
@@ -39,7 +53,7 @@ def login_view(request):
         })
     return Response({'error': 'Invalid Credentials'}, status=400)
 
-
+# Vue pour la déconnexion
 @api_view(['POST'])
 def logout_view(request):
     try:
@@ -50,7 +64,7 @@ def logout_view(request):
     except Exception as e:
         return Response({"error": str(e)}, status=400)
 
-#api ard2
+# Vue pour la liste des interventions ARD2
 @api_view(['GET'])
 def ard2_list(request):
     """Retourne la liste des interventions ARD2 avec date d'importation"""
@@ -58,9 +72,7 @@ def ard2_list(request):
     serializer = ARD2Serializer(ard2_data, many=True)
     return Response(serializer.data)
 
-#apifor parametres 
-
-
+# Vue pour la liste des paramètres
 @api_view(['GET'])
 def parametres_list(request):
     """Retourne la liste des paramètres"""
@@ -68,9 +80,7 @@ def parametres_list(request):
     serializer = ParametresSerializer(parametres, many=True)
     return Response(serializer.data)
 
-
-#api relance jj
-
+# Vue pour la liste des relances JJ
 @api_view(['GET'])
 def relancejj_list(request):
     """Retourne la liste des relances"""
