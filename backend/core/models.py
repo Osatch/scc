@@ -5,40 +5,148 @@ from django.utils import timezone
 # Create your models here.
 
 
+
 class Gantt(models.Model):
+    INTERVENTION_CHOICES = [
+        ('OK SAV', 'OK SAV'),
+        ('OK RACC', 'OK RACC'),
+        ('NOK SAV', 'NOK SAV'),
+        ('NOK RACC', 'NOK RACC'),
+        ('En cours SAV', 'En cours SAV'),
+        ('En cours RACC', 'En cours RACC'),
+        ('Alerte SAV', 'Alerte SAV'),
+        ('Alerte RACC', 'Alerte RACC'),
+        ('Planifiée SAV', 'Planifiée SAV'),
+        ('Planifiée RACC', 'Planifiée RACC'),
+    ]
+
     secteur = models.IntegerField()
     nom_intervenant = models.CharField(max_length=255)
-    type_intervention = models.CharField(max_length=50, choices=[('OK SAV', 'OK SAV'), ('OK RACC', 'OK RACC'), ('NOK RACC', 'NOK RACC'), ('NOK SAV', 'NOK SAV')], null=True, blank=True)
-    heure_08 = models.BooleanField(default=False)
-    heure_09 = models.BooleanField(default=False)
-    heure_10 = models.BooleanField(default=False)
-    heure_11 = models.BooleanField(default=False)
-    heure_13 = models.BooleanField(default=False)
-    heure_14 = models.BooleanField(default=False)
-    heure_18 = models.BooleanField(default=False)
-    taux_transfo = models.CharField(max_length=10)
-    taux_remplissage = models.CharField(max_length=10)
+    type_intervention = models.CharField(
+        max_length=50,
+        choices=INTERVENTION_CHOICES,
+        null=True,
+        blank=True
+    )
+    heure_08 = models.CharField(
+        max_length=50,
+        choices=INTERVENTION_CHOICES,
+        null=True,
+        blank=True
+    )
+    heure_09 = models.CharField(
+        max_length=50,
+        choices=INTERVENTION_CHOICES,
+        null=True,
+        blank=True
+    )
+    heure_10 = models.CharField(
+        max_length=50,
+        choices=INTERVENTION_CHOICES,
+        null=True,
+        blank=True
+    )
+    heure_11 = models.CharField(
+        max_length=50,
+        choices=INTERVENTION_CHOICES,
+        null=True,
+        blank=True
+    )
+    heure_13 = models.CharField(
+        max_length=50,
+        choices=INTERVENTION_CHOICES,
+        null=True,
+        blank=True
+    )
+    heure_14 = models.CharField(
+        max_length=50,
+        choices=INTERVENTION_CHOICES,
+        null=True,
+        blank=True
+    )
+    heure_18 = models.CharField(
+        max_length=50,
+        choices=INTERVENTION_CHOICES,
+        null=True,
+        blank=True
+    )
+    taux_transfo = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        null=True,
+        blank=True
+    )
+    taux_remplissage = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        null=True,
+        blank=True
+    )
+    date_mise_a_jour = models.DateTimeField(
+        auto_now=True,
+        verbose_name="Date de mise à jour"
+    )
 
     def __str__(self):
         return f"{self.nom_intervenant} - {self.type_intervention}"
+#gantstat
 
 
-class StatistiquesGantt(models.Model):
-    type_intervention = models.CharField(max_length=50, choices=[('RACC', 'RACC'), ('SAV', 'SAV')])
-    taux_transfo = models.CharField(max_length=10)
-    nbr_inter_ok = models.IntegerField()
-    nbr_inter_nok = models.IntegerField()
-    nbr_inter_cours = models.IntegerField()
-    nbr_inter_peril = models.IntegerField()
-    nbr_inter_restant = models.IntegerField()
-    pdc_jour = models.IntegerField()
-    total = models.IntegerField()
-    taux_remplissage = models.CharField(max_length=10)
-    taux_avancement = models.CharField(max_length=10)
-    attention_controle = models.IntegerField(default=0)
+class GanttStatistics(models.Model):
+    TYPE_CHOICES = [
+        ('RACC', 'RACC'),
+        ('SAV', 'SAV'),
+    ]
+
+    # Champs du modèle
+    type_intervention = models.CharField(
+        max_length=10,
+        choices=TYPE_CHOICES,
+        verbose_name="Type d'intervention"
+    )
+    taux_transfo = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        verbose_name="Taux de transformation"
+    )
+    nbr_inter_cloturee_ok = models.IntegerField(
+        verbose_name="Nombre d'interventions clôturées OK"
+    )
+    nbr_inter_cloturee_nok = models.IntegerField(
+        verbose_name="Nombre d'interventions clôturées NOK"
+    )
+    nbr_inter_en_cours = models.IntegerField(
+        verbose_name="Nombre d'interventions en cours"
+    )
+    nbr_inter_en_peril = models.IntegerField(
+        verbose_name="Nombre d'interventions en péril"
+    )
+    nbr_inter_restant = models.IntegerField(
+        verbose_name="Nombre d'interventions restantes"
+    )
+    pdc_du_jour = models.IntegerField(
+        verbose_name="PDC du jour"
+    )
+    total = models.IntegerField(
+        verbose_name="Total"
+    )
+    taux_remplissage = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        verbose_name="Taux de remplissage"
+    )
+    taux_avancement = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        verbose_name="Taux d'avancement"
+    )
+    date_mise_a_jour = models.DateTimeField(
+        auto_now=True,
+        verbose_name="Date de mise à jour"
+    )
 
     def __str__(self):
-        return f"Stats {self.type_intervention} - {self.taux_transfo}"
+        return f"{self.type_intervention} - {self.date_mise_a_jour}"
 
 
 

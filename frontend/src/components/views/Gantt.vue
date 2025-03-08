@@ -4,6 +4,7 @@ import axios from 'axios';
 
 // Références pour les données et les filtres
 const ganttDetails = ref([]);
+const ganttStatistics = ref([]);
 const selectedIntervenant = ref('');
 const selectedSecteur = ref('');
 const selectedType = ref('');
@@ -11,8 +12,11 @@ const selectedType = ref('');
 // Fonction pour récupérer les données depuis l'API
 const fetchData = async () => {
   try {
-    const response = await axios.get("http://127.0.0.1:8000/api/gantt/");
-    ganttDetails.value = response.data;
+    const ganttResponse = await axios.get("http://127.0.0.1:8000/api/gantt/");
+    ganttDetails.value = ganttResponse.data;
+
+    const statsResponse = await axios.get("http://127.0.0.1:8000/api/gantt-statistics/");
+    ganttStatistics.value = statsResponse.data;
   } catch (error) {
     console.error("Erreur lors du chargement des données :", error);
   }
@@ -35,10 +39,16 @@ const filteredDetails = computed(() => {
 // Calcul des nombres d'interventions par type
 const interventionCounts = computed(() => {
   const counts = {
-    'SAV': 0,
+    'OK SAV': 0,
     'NOK SAV': 0,
-    'RACC': 0,
-    'NOK RACC': 0
+    'OK RACC': 0,
+    'NOK RACC': 0,
+    'En cours SAV': 0,
+    'En cours RACC': 0,
+    'Alerte SAV': 0,
+    'Alerte RACC': 0,
+    'Planifiée SAV': 0,
+    'Planifiée RACC': 0
   };
 
   ganttDetails.value.forEach(detail => {
@@ -52,17 +62,17 @@ const interventionCounts = computed(() => {
 
 // Calcul des pourcentages pour les barres de progression
 const savProgress = computed(() => {
-  const total = interventionCounts.value['SAV'] + interventionCounts.value['NOK SAV'];
+  const total = interventionCounts.value['OK SAV'] + interventionCounts.value['NOK SAV'];
   return total > 0 ? {
-    ok: (interventionCounts.value['SAV'] / total) * 100,
+    ok: (interventionCounts.value['OK SAV'] / total) * 100,
     nok: (interventionCounts.value['NOK SAV'] / total) * 100
   } : { ok: 0, nok: 0 };
 });
 
 const raccProgress = computed(() => {
-  const total = interventionCounts.value['RACC'] + interventionCounts.value['NOK RACC'];
+  const total = interventionCounts.value['OK RACC'] + interventionCounts.value['NOK RACC'];
   return total > 0 ? {
-    ok: (interventionCounts.value['RACC'] / total) * 100,
+    ok: (interventionCounts.value['OK RACC'] / total) * 100,
     nok: (interventionCounts.value['NOK RACC'] / total) * 100
   } : { ok: 0, nok: 0 };
 });
@@ -123,7 +133,7 @@ const raccProgress = computed(() => {
 
       <select v-model="selectedType">
         <option value="">Tous les types</option>
-        <option v-for="type in ['SAV', 'RACC', 'NOK SAV', 'NOK RACC']" :key="type" :value="type">
+        <option v-for="type in ['OK SAV', 'NOK SAV', 'OK RACC', 'NOK RACC', 'En cours SAV', 'En cours RACC', 'Alerte SAV', 'Alerte RACC', 'Planifiée SAV', 'Planifiée RACC']" :key="type" :value="type">
           {{ type }}
         </option>
       </select>
