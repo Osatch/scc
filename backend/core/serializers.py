@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import ARD2, Parametres, RelanceJJ, Gantt, GanttStatistics  # Ajoutez les nouveaux modèles
+from .models import ARD2, Parametres, RelanceJJ, Gantt, GanttStatistics, NOK  # Ajout de NOK
 
 # Sérialiseur pour ARD2
 class ARD2Serializer(serializers.ModelSerializer):
@@ -29,4 +29,10 @@ class GanttSerializer(serializers.ModelSerializer):
 class GanttStatisticsSerializer(serializers.ModelSerializer):
     class Meta:
         model = GanttStatistics
+        fields = '__all__'  # Inclut tous les champs du modèle
+
+# Sérialiseur pour NOK
+class NOKSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = NOK
         fields = '__all__'  # Inclut tous les champs du modèle

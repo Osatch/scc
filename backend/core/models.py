@@ -282,3 +282,35 @@ class Parametres(models.Model):
     class Meta:
         verbose_name = "Paramètre"
         verbose_name_plural = "Paramètres"
+
+
+
+#le nok from django.db import models
+
+class NOK(models.Model):
+    jeton = models.CharField(max_length=20)
+    date_rdv = models.DateField()
+    type_intervention = models.CharField(max_length=50, choices=[
+        ('Pose de PTO ZMD', 'Pose de PTO ZMD'),
+        ('Pose de PTO ZTD', 'Pose de PTO ZTD'),
+        ('SAV', 'SAV'),
+        ('PON', 'PON'),
+        ('Remise en conformité', 'Remise en conformité'),
+        ('null', 'Null'),
+    ])
+    question = models.CharField(max_length=50, choices=[
+        ('Appel CA ?', 'Appel CA ?'),
+        ('Null', 'Null'),
+    ])
+    reponse = models.CharField(max_length=50, choices=[
+        ('Non', 'Non'),
+        ('Pas d’appel CA effectué', 'Pas d’appel CA effectué'),
+        ('CA injoignable', 'CA injoignable'),
+        ('Null', 'Null'),
+    ])
+    reponse_libre = models.CharField(max_length=255, blank=True, null=True)
+    tech_nom_prenom = models.CharField(max_length=100)
+    commentaire = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.jeton} - {self.date_rdv}"

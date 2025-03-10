@@ -5,14 +5,14 @@
         <thead>
           <tr>
             <th>Nom Intervenant</th>
-            <th>Heure 08</th>
-            <th>Heure 09</th>
-            <th>Heure 10</th>
-            <th>Heure 11</th>
-            <th>Heure 13</th>
-            <th>Heure 14</th>
-            <th>Heure 18</th>
-            <th>Type Intervention</th>
+            <th>08:00</th>
+            <th>09:00</th>
+            <th>10:00</th>
+            <th>11:00</th>
+            <th>13:00</th>
+            <th>14:00</th>
+            <th>18:00</th>
+           
             <th>Taux Transformation</th>
             <th>Taux Remplissage</th>
           </tr>
@@ -27,7 +27,7 @@
             <td :class="getCellClass(entry.heure_13)">{{ entry.heure_13 }}</td>
             <td :class="getCellClass(entry.heure_14)">{{ entry.heure_14 }}</td>
             <td :class="getCellClass(entry.heure_18)">{{ entry.heure_18 }}</td>
-            <td>{{ entry.type_intervention }}</td>
+           
             <td>{{ entry.taux_transfo }}</td>
             <td>{{ entry.taux_remplissage }}</td>
           </tr>

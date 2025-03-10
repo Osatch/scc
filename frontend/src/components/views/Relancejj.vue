@@ -26,7 +26,7 @@
           <td>{{ relance.numero }}</td>
           <td>{{ relance.departement }}</td>
           <td>{{ relance.pec }}</td>
-          <td>{{ relance.statut }}</td>
+          <td :class="getStatusClass(relance.statut)">{{ relance.statut }}</td>
           <td>{{ relance.heure_prevue }}</td>
           <td>{{ relance.heure_debut || '-' }}</td>
           <td>{{ relance.heure_fin || '-' }}</td>
@@ -57,6 +57,14 @@ export default {
         console.error("Erreur lors de la récupération des relances :", error);
       }
     },
+    getStatusClass(statut) {
+      if (statut === "Clôturée") {
+        return "status-cloturee";
+      } else if (statut === "Taguée") {
+        return "status-taguee";
+      }
+      return ""; // Aucune classe par défaut
+    },
   },
 };
 </script>
@@ -72,14 +80,6 @@ export default {
   color: #333;
   border-radius: 8px;
   box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
-}
-.table-container {
-  width: 65%;
-  overflow-x: auto; /* Permet le scroll horizontal */
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  max-width: 100vw; /* Empêche le débordement */
-  white-space: nowrap; /* Assure que le contenu ne se casse pas */
 }
 
 table {
@@ -121,6 +121,17 @@ tbody tr:nth-child(even) {
 tbody tr:hover {
   background-color: #e3f2fd;
   transition: background-color 0.3s ease-in-out;
+}
+
+/* Classes pour les statuts */
+.status-cloturee {
+  background-color: #d4edda; /* Vert clair */
+  color: #155724; /* Texte foncé pour contraste */
+}
+
+.status-taguee {
+  background-color: #fff3cd; /* Orange clair */
+  color: #856404; /* Texte foncé pour contraste */
 }
 
 @media (max-width: 768px) {

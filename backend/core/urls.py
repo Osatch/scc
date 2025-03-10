@@ -7,7 +7,7 @@ from .views import (
     relancejj_list,
     gantt_statistics_list,  # Nouvelle vue pour GanttStatistics
     gantt_detail,  # Nouvelle vue pour les détails d'une intervention Gantt
-    gantt_statistics_detail,  # Nouvelle vue pour les détails des statistiques Gantt
+    gantt_statistics_detail,nok_list, nok_detail  # Ajout des vues NOK  # Nouvelle vue pour les détails des statistiques Gantt
 )
 
 urlpatterns = [
@@ -22,5 +22,11 @@ urlpatterns = [
     path('gantt/', gantt_list, name='gantt-list'),  # Liste des interventions Gantt
     path('gantt/<int:pk>/', gantt_detail, name='gantt-detail'),  # Détails d'une intervention Gantt
     path('gantt-statistics/', gantt_statistics_list, name='gantt-statistics-list'),  # Liste des statistiques Gantt
-    path('gantt-statistics/<int:pk>/', gantt_statistics_detail, name='gantt-statistics-detail'),  # Détails des statistiques Gantt
+    path('gantt-statistics/<int:pk>/', gantt_statistics_detail, name='gantt-statistics-detail'),
+    
+      # Détails des statistiques Gantt
+
+    # Nouvelles routes pour NOK
+    path('nok/', nok_list, name='nok-list'),  # Liste des enregistrements NOK
+    path('nok/<int:pk>/', nok_detail, name='nok-detail'),  # Détails d'un NOK
 ]

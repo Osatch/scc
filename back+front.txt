@@ -78,7 +78,7 @@ github
 
 git init
 git add .
-git commit -m "10-03 / 17h20 avec le smodif de gantt et sql fonctionne pas "
+git commit -m "10-03 / 10h00 avec le smodif de gantt et sql fonctionne pas "
 git remote add origin https://github.com/Osatch/scc.git
 git branch -M main
 git push -u origin main
@@ -119,3 +119,22 @@ core
  [X] 0006_parametres
 sessions
  [X] 0001_initial
+
+
+ control photo 
+
+ je veux que tu creer un model appelet controlphoto ayant 
+Jeton :
+ Date :
+ Heure :
+Tech : 
+ Groupe tech : 
+ Actif depuis : 
+ Zone /manager : 
+ Clôturé? :
+Secteur :
+Statut PTO :
+Synchro : 
+Agent :
+ Résultats vérification :
+ Commentaire :

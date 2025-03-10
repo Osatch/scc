@@ -24,7 +24,6 @@
 </template>
 
 <script>
-import axios from "axios";
 import { PowerIcon, RefreshCwIcon as RefreshIcon } from "lucide-vue-next";
 
 export default {
@@ -43,17 +42,11 @@ export default {
   methods: {
     async fetchAccountName() {
       try {
-        const token = localStorage.getItem("access"); // Récupère le token si nécessaire
-        const response = await axios.get("https://ton-api.com/api/user/profile", {
-          headers: {
-            Authorization: `Bearer ${token}`, // Ajoute le token si l'API l'exige
-          },
-        });
-
-        console.log("Réponse API :", response.data); // Debugging
-        this.activeAccountName = response.data.name || "Utilisateur inconnu";
+        const response = await fetch("/api/user/profile"); // Remplace par ton endpoint
+        const data = await response.json();
+        this.activeAccountName = data.name || "Utilisateur inconnu";
       } catch (error) {
-        console.error("Erreur API :", error.response ? error.response.data : error.message);
+        console.error("Erreur de récupération :", error);
         this.activeAccountName = "Erreur de chargement";
       }
     },
@@ -64,8 +57,9 @@ export default {
     },
     refresh() {
       console.log("Rafraîchissement en cours...");
-      this.fetchAccountName();
+      this.fetchAccountName(); // Recharge les infos
     },
   },
 };
 </script>
+
