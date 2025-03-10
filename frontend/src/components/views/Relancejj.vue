@@ -73,6 +73,14 @@ export default {
   border-radius: 8px;
   box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
 }
+.table-container {
+  width: 65%;
+  overflow-x: auto; /* Permet le scroll horizontal */
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  max-width: 100vw; /* Empêche le débordement */
+  white-space: nowrap; /* Assure que le contenu ne se casse pas */
+}
 
 table {
   width: 95%;

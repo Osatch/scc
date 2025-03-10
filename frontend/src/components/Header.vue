@@ -24,6 +24,7 @@
 </template>
 
 <script>
+import axios from "axios";
 import { PowerIcon, RefreshCwIcon as RefreshIcon } from "lucide-vue-next";
 
 export default {
@@ -33,18 +34,37 @@ export default {
   },
   data() {
     return {
-      activeAccountName: "Nom du Compte Actif", // Peut être remplacé dynamiquement
+      activeAccountName: "Chargement...",
     };
   },
+  mounted() {
+    this.fetchAccountName();
+  },
   methods: {
+    async fetchAccountName() {
+      try {
+        const token = localStorage.getItem("access"); // Récupère le token si nécessaire
+        const response = await axios.get("https://ton-api.com/api/user/profile", {
+          headers: {
+            Authorization: `Bearer ${token}`, // Ajoute le token si l'API l'exige
+          },
+        });
+
+        console.log("Réponse API :", response.data); // Debugging
+        this.activeAccountName = response.data.name || "Utilisateur inconnu";
+      } catch (error) {
+        console.error("Erreur API :", error.response ? error.response.data : error.message);
+        this.activeAccountName = "Erreur de chargement";
+      }
+    },
     logout() {
       localStorage.removeItem("access");
       localStorage.removeItem("refresh");
-      this.$router.push("/"); // 🔥 Redirige directement après la suppression du token
+      this.$router.push("/");
     },
     refresh() {
       console.log("Rafraîchissement en cours...");
-      // Ajoutez ici la logique de rafraîchissement
+      this.fetchAccountName();
     },
   },
 };

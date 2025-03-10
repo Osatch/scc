@@ -72,10 +72,12 @@ export default {
 
 /* Conteneur pour la barre de défilement horizontale */
 .table-container {
-  width: 100%; /* Prend toute la largeur disponible */
-  overflow-x: auto; /* Active la barre de défilement horizontale */
-  border-radius: 8px; /* Coins arrondis pour correspondre au design */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Ombre pour le conteneur */
+  width: 65%;
+  overflow-x: auto; /* Permet le scroll horizontal */
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  max-width: 100vw; /* Empêche le débordement */
+  white-space: nowrap; /* Assure que le contenu ne se casse pas */
 }
 
 table {
