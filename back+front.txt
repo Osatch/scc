@@ -9,7 +9,6 @@ python manage.py runserver
 
 
 
-front 
 cd .. 
 cd ..
 cd scc
@@ -29,6 +28,9 @@ python manage.py migrate
 stucture du code 
 /backend/
 │── manage.py
+│── Bot/
+│   ├── imortard2.py
+│   ├── importgrdv.py
 │── config/
 │   ├── __init__.py
 │   ├── settings.py
@@ -78,7 +80,7 @@ github
 
 git init
 git add .
-git commit -m "10-03 / 14h00 avec le smodif de gantt et sql fonctionne pas "
+git commit -m "11-03 / 16h00 avec le smodif de gantt et sql fonctionne pas "
 git remote add origin https://github.com/Osatch/scc.git
 git branch -M main
 git push -u origin main
