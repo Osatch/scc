@@ -1,8 +1,10 @@
 <template>
   <div class="main-content">
     <h2>Liste des Paramètres</h2>
-    <button>Modifier</button>
-    <div class="table-container"> <!-- Conteneur pour la barre de défilement -->
+    <button @click="toggleEditMode">Modifier</button>
+
+    <!-- Afficher le tableau si isEditing est false -->
+    <div v-if="!isEditing" class="table-container">
       <table>
         <thead>
           <tr>
@@ -36,27 +38,50 @@
         </tbody>
       </table>
     </div>
+
+    <!-- Afficher le formulaire si isEditing est true -->
+    <div v-else>
+      <formulaire-parametre @cancel="toggleEditMode" @submit="handleSubmit" />
+    </div>
   </div>
 </template>
 
 <script>
 import axios from "axios";
+import FormulaireParametre from "./FormulaireParametre.vue"; // Importez le composant du formulaire
 
 export default {
+  components: {
+    FormulaireParametre, // Enregistrez le composant du formulaire
+  },
   data() {
     return {
       parametres: [],
+      isEditing: false, // État pour basculer entre le tableau et le formulaire
     };
   },
   mounted() {
-    axios
-      .get("http://127.0.0.1:8000/api/parametres/")
-      .then((response) => {
-        this.parametres = response.data;
-      })
-      .catch((error) => {
-        console.error("Erreur lors de la récupération des paramètres :", error);
-      });
+    this.fetchParametres();
+  },
+  methods: {
+    fetchParametres() {
+      axios
+        .get("http://127.0.0.1:8000/api/parametres/")
+        .then((response) => {
+          this.parametres = response.data;
+        })
+        .catch((error) => {
+          console.error("Erreur lors de la récupération des paramètres :", error);
+        });
+    },
+    toggleEditMode() {
+      this.isEditing = !this.isEditing; // Bascule entre true et false
+    },
+    handleSubmit(newData) {
+      // Ajouter les nouvelles données au tableau
+      this.parametres.push(newData);
+      this.toggleEditMode(); // Revenir au tableau après soumission
+    },
   },
 };
 </script>
