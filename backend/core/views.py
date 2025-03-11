@@ -4,8 +4,14 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
-from .models import Gantt, GanttStatistics, ARD2, Parametres, RelanceJJ, NOK
-from .serializers import GanttSerializer, GanttStatisticsSerializer, ARD2Serializer, ParametresSerializer, RelanceJJSerializer, NOKSerializer
+from .models import (
+    Gantt, GanttStatistics, ARD2, Parametres, RelanceJJ, NOK, ControlPhoto, Controlafroid, DebriefRACC, DebriefSAV
+)
+from .serializers import (
+    GanttSerializer, GanttStatisticsSerializer, ARD2Serializer, ParametresSerializer,
+    RelanceJJSerializer, NOKSerializer, ControlPhotoSerializer, ControlafroidSerializer,
+    DebriefRACCSerializer, DebriefSAVSerializer
+)
 
 # Vue pour la liste des interventions Gantt
 @api_view(['GET'])
@@ -122,3 +128,151 @@ def nok_detail(request, pk):
     elif request.method == 'DELETE':
         nok.delete()
         return Response({"message": "NOK supprimé avec succès"}, status=204)
+
+# ======================= VUES POUR CONTROLPHOTO =======================
+
+# Vue pour récupérer la liste des enregistrements ControlPhoto
+@api_view(['GET', 'POST'])
+def controlphoto_list(request):
+    if request.method == 'GET':
+        controlphotos = ControlPhoto.objects.all().order_by('-date')  # Trier par date descendante
+        serializer = ControlPhotoSerializer(controlphotos, many=True)
+        return Response(serializer.data)
+
+    elif request.method == 'POST':
+        serializer = ControlPhotoSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=201)
+        return Response(serializer.errors, status=400)
+
+# Vue pour récupérer, mettre à jour ou supprimer un enregistrement ControlPhoto
+@api_view(['GET', 'PUT', 'DELETE'])
+def controlphoto_detail(request, pk):
+    controlphoto = get_object_or_404(ControlPhoto, pk=pk)
+
+    if request.method == 'GET':
+        serializer = ControlPhotoSerializer(controlphoto)
+        return Response(serializer.data)
+
+    elif request.method == 'PUT':
+        serializer = ControlPhotoSerializer(controlphoto, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=400)
+
+    elif request.method == 'DELETE':
+        controlphoto.delete()
+        return Response({"message": "ControlPhoto supprimé avec succès"}, status=204)
+
+# ======================= VUES POUR CONTROLAFROID =======================
+
+# Vue pour récupérer la liste des enregistrements Controlafroid
+@api_view(['GET', 'POST'])
+def controlafroid_list(request):
+    if request.method == 'GET':
+        controlafroids = Controlafroid.objects.all().order_by('-control_photo__date')  # Trier par date de ControlPhoto
+        serializer = ControlafroidSerializer(controlafroids, many=True)
+        return Response(serializer.data)
+
+    elif request.method == 'POST':
+        serializer = ControlafroidSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=201)
+        return Response(serializer.errors, status=400)
+
+# Vue pour récupérer, mettre à jour ou supprimer un enregistrement Controlafroid
+@api_view(['GET', 'PUT', 'DELETE'])
+def controlafroid_detail(request, pk):
+    controlafroid = get_object_or_404(Controlafroid, pk=pk)
+
+    if request.method == 'GET':
+        serializer = ControlafroidSerializer(controlafroid)
+        return Response(serializer.data)
+
+    elif request.method == 'PUT':
+        serializer = ControlafroidSerializer(controlafroid, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=400)
+
+    elif request.method == 'DELETE':
+        controlafroid.delete()
+        return Response({"message": "Controlafroid supprimé avec succès"}, status=204)
+
+# ======================= VUES POUR DEBRIEFRACC =======================
+
+# Vue pour récupérer la liste des enregistrements DebriefRACC
+@api_view(['GET', 'POST'])
+def debriefracc_list(request):
+    if request.method == 'GET':
+        debriefraccs = DebriefRACC.objects.all().order_by('-date')  # Trier par date descendante
+        serializer = DebriefRACCSerializer(debriefraccs, many=True)
+        return Response(serializer.data)
+
+    elif request.method == 'POST':
+        serializer = DebriefRACCSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=201)
+        return Response(serializer.errors, status=400)
+
+# Vue pour récupérer, mettre à jour ou supprimer un enregistrement DebriefRACC
+@api_view(['GET', 'PUT', 'DELETE'])
+def debriefracc_detail(request, pk):
+    debriefracc = get_object_or_404(DebriefRACC, pk=pk)
+
+    if request.method == 'GET':
+        serializer = DebriefRACCSerializer(debriefracc)
+        return Response(serializer.data)
+
+    elif request.method == 'PUT':
+        serializer = DebriefRACCSerializer(debriefracc, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=400)
+
+    elif request.method == 'DELETE':
+        debriefracc.delete()
+        return Response({"message": "DebriefRACC supprimé avec succès"}, status=204)
+
+# ======================= VUES POUR DEBRIEFSAV =======================
+
+# Vue pour récupérer la liste des enregistrements DebriefSAV
+@api_view(['GET', 'POST'])
+def debriefsav_list(request):
+    if request.method == 'GET':
+        debriefsavs = DebriefSAV.objects.all().order_by('-date')  # Trier par date descendante
+        serializer = DebriefSAVSerializer(debriefsavs, many=True)
+        return Response(serializer.data)
+
+    elif request.method == 'POST':
+        serializer = DebriefSAVSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=201)
+        return Response(serializer.errors, status=400)
+
+# Vue pour récupérer, mettre à jour ou supprimer un enregistrement DebriefSAV
+@api_view(['GET', 'PUT', 'DELETE'])
+def debriefsav_detail(request, pk):
+    debriefsav = get_object_or_404(DebriefSAV, pk=pk)
+
+    if request.method == 'GET':
+        serializer = DebriefSAVSerializer(debriefsav)
+        return Response(serializer.data)
+
+    elif request.method == 'PUT':
+        serializer = DebriefSAVSerializer(debriefsav, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=400)
+
+    elif request.method == 'DELETE':
+        debriefsav.delete()
+        return Response({"message": "DebriefSAV supprimé avec succès"}, status=204)

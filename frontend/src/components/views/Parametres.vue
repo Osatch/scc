@@ -1,6 +1,7 @@
 <template>
   <div class="main-content">
     <h2>Liste des Paramètres</h2>
+    <button>Modifier</button>
     <div class="table-container"> <!-- Conteneur pour la barre de défilement -->
       <table>
         <thead>

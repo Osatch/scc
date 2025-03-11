@@ -1,5 +1,7 @@
 from rest_framework import serializers
-from .models import ARD2, Parametres, RelanceJJ, Gantt, GanttStatistics, NOK  # Ajout de NOK
+from .models import (
+    ARD2, Parametres, RelanceJJ, Gantt, GanttStatistics, NOK, ControlPhoto, Controlafroid, DebriefRACC, DebriefSAV
+)
 
 # Sérialiseur pour ARD2
 class ARD2Serializer(serializers.ModelSerializer):
@@ -35,4 +37,28 @@ class GanttStatisticsSerializer(serializers.ModelSerializer):
 class NOKSerializer(serializers.ModelSerializer):
     class Meta:
         model = NOK
+        fields = '__all__'  # Inclut tous les champs du modèle
+
+# Sérialiseur pour ControlPhoto
+class ControlPhotoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ControlPhoto
+        fields = '__all__'  # Inclut tous les champs du modèle
+
+# Sérialiseur pour Controlafroid
+class ControlafroidSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Controlafroid
+        fields = '__all__'  # Inclut tous les champs du modèle
+
+# Sérialiseur pour DebriefRACC
+class DebriefRACCSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DebriefRACC
+        fields = '__all__'  # Inclut tous les champs du modèle
+
+# Sérialiseur pour DebriefSAV
+class DebriefSAVSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DebriefSAV
         fields = '__all__'  # Inclut tous les champs du modèle

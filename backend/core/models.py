@@ -52,6 +52,12 @@ class Gantt(models.Model):
         null=True,
         blank=True
     )
+    heure_12 = models.CharField(
+        max_length=50,
+        choices=INTERVENTION_CHOICES,
+        null=True,
+        blank=True
+    )
     heure_13 = models.CharField(
         max_length=50,
         choices=INTERVENTION_CHOICES,
@@ -59,6 +65,24 @@ class Gantt(models.Model):
         blank=True
     )
     heure_14 = models.CharField(
+        max_length=50,
+        choices=INTERVENTION_CHOICES,
+        null=True,
+        blank=True
+    )
+    heure_15 = models.CharField(
+        max_length=50,
+        choices=INTERVENTION_CHOICES,
+        null=True,
+        blank=True
+    )
+    heure_16 = models.CharField(
+        max_length=50,
+        choices=INTERVENTION_CHOICES,
+        null=True,
+        blank=True
+    )
+    heure_17 = models.CharField(
         max_length=50,
         choices=INTERVENTION_CHOICES,
         null=True,
@@ -314,3 +338,265 @@ class NOK(models.Model):
 
     def __str__(self):
         return f"{self.jeton} - {self.date_rdv}"
+
+
+
+#Control photo 
+
+from django.db import models
+from .models import RelanceJJ  # Assurez-vous d'importer le modèle RelanceJJ
+
+class ControlPhoto(models.Model):
+    GROUPE_TECH_CHOICES = [
+        ('G1', 'G1'),
+        ('G2', 'G2'),
+        # Ajoutez d'autres groupes si nécessaire
+    ]
+
+    ZONE_MANAGER_CHOICES = [
+        ('Zone1', 'Zone1'),
+        ('Zone2', 'Zone2'),
+        ('#N/A', '#N/A'),
+    ]
+
+    STATUT_CHOICES = [
+        ('Taguée', 'Taguée'),
+        ('Cloturée', 'Cloturée'),
+    ]
+
+    STATUT_PTO_CHOICES = [
+        ('//', '//'),
+        ('PTO et CAB absents', 'PTO et CAB absents'),
+        ('première pose nécessaire', 'première pose nécessaire'),
+    ]
+
+    SYNCHRO_CHOICES = [
+        ('OK', 'OK'),
+        ('NOK', 'NOK'),
+    ]
+
+    RESULTATS_VERIFICATION_CHOICES = [
+        ('Rectifié et validé', 'Rectifié et validé'),
+        ('Non validé', 'Non validé'),
+    ]
+
+    jeton = models.ForeignKey(RelanceJJ, on_delete=models.CASCADE, related_name='control_photos')  # Référence au jeton de la table RelanceJJ
+    date = models.DateField()  # Date d'intervention de RelanceJJ
+    heure = models.TimeField()  # Heure d'intervention de RelanceJJ
+    tech = models.CharField(max_length=255)  # Nom du technicien de RelanceJJ
+    groupe_tech = models.CharField(max_length=2, choices=GROUPE_TECH_CHOICES)  # Groupe tech (G1, G2, ...)
+    actif_depuis = models.DateField()  # Date du début d'activité de l'agent
+    zone_manager = models.CharField(max_length=10, choices=ZONE_MANAGER_CHOICES, null=True, blank=True)  # Zone/Manager (Zone1, Zone2, #N/A)
+    statut = models.CharField(max_length=20, choices=STATUT_CHOICES)  # Statut de RelanceJJ
+    secteur = models.CharField(max_length=255)  # Secteur de RelanceJJ
+    statut_pto = models.CharField(max_length=50, choices=STATUT_PTO_CHOICES, null=True, blank=True)  # Statut PTO
+    synchro = models.CharField(max_length=3, choices=SYNCHRO_CHOICES, null=True, blank=True)  # Synchro (OK, NOK)
+    agent = models.CharField(max_length=255)  # Nom de l'agent qui a suivi le technicien (PEC PAR de RelanceJJ)
+    resultats_verification = models.CharField(max_length=50, choices=RESULTATS_VERIFICATION_CHOICES, null=True, blank=True)  # Résultats vérification
+    commentaire = models.TextField(null=True, blank=True)  # Commentaire
+
+    def __str__(self):
+        return f"{self.jeton.jeton} - {self.date} - {self.tech}"
+
+    def save(self, *args, **kwargs):
+        # Vous pouvez ajouter ici des logiques supplémentaires si nécessaire
+        super().save(*args, **kwargs)
+
+
+
+#control a froid
+from django.db import models
+from .models import ControlPhoto  # Assurez-vous d'importer le modèle ControlPhoto
+
+class Controlafroid(models.Model):
+    # Relation avec le modèle ControlPhoto
+    control_photo = models.OneToOneField(ControlPhoto, on_delete=models.CASCADE, related_name='controlafroid')
+
+    # Champs supplémentaires
+    RESULTAT_AFROID_CHOICES = [
+        ('Validé', 'Validé'),
+        ('Non validé', 'Non validé'),
+        ('null', 'null'),
+    ]
+
+    COMMENTAIRE_CHOICES = [
+        ('PTO prise zoomer + decharge pto dans le placard / rectifié et validé', 
+         'PTO prise zoomer + decharge pto dans le placard / rectifié et validé'),
+        ('photo Mur avant travaux entamer / photo Mur après ne montre pas le PTO / REF PTO éronnée', 
+         'photo Mur avant travaux entamer / photo Mur après ne montre pas le PTO / REF PTO éronnée'),
+        ('null', 'null'),
+    ]
+
+    resultat_a_froid = models.CharField(
+        max_length=20,
+        choices=RESULTAT_AFROID_CHOICES,
+        default='null',
+        verbose_name='Résultat à froid'
+    )
+
+    commentaire = models.CharField(
+        max_length=150,  # Longueur suffisante pour stocker les commentaires
+        choices=COMMENTAIRE_CHOICES,
+        default='null',
+        verbose_name='Commentaire'
+    )
+
+    class Meta:
+        verbose_name = 'Control à froid'
+        verbose_name_plural = 'Controls à froid'
+
+    def __str__(self):
+        return f"Control à froid pour {self.control_photo.Jeton}"
+
+
+
+#debrief racc 
+
+from django.db import models
+from .models import RelanceJJ, Parametres, ARD2
+
+class DebriefRACC(models.Model):
+    # Choix pour les champs avec des options prédéfinies
+    APPEL_TECH_CHOICES = [
+        ("Pas d'appel", "Pas d'appel"),
+        ("Appel à chaud", "Appel à chaud"),
+        ('null', 'null'),
+    ]
+
+    SYNCHRO_CHOICES = [
+        ('Echec', 'Echec'),
+        ('Taguées', 'Taguées'),
+        ('null', 'null'),
+    ]
+
+    TYPE_ECHEC_CHOICES = [
+        ('Echec client', 'Echec client'),
+        ('Echec d\'acces', 'Echec d\'acces'),
+        ('null', 'null'),
+    ]
+
+    RESULTAT_CONTROLE_CHOICES = [
+        ('RAS', 'RAS'),
+        ('null', 'null'),
+    ]
+
+    # Champs du modèle
+    jeton = models.ForeignKey(RelanceJJ, on_delete=models.CASCADE, related_name='debrief_racc', limit_choices_to={'activite': 'RACC'})  # Référence au jeton de la table RelanceJJ (uniquement pour les activités RACC)
+    date = models.DateField()  # Date d'intervention de RelanceJJ
+    heure = models.TimeField()  # Heure d'intervention de RelanceJJ
+    tech = models.CharField(max_length=255)  # Nom du technicien de RelanceJJ
+    numero_technicien = models.CharField(max_length=50)  # Numéro de RelanceJJ
+    nouveaux_tech = models.DateField()  # Date qui vient de Parametres (actif_depuis)
+    zone_manager = models.CharField(max_length=255)  # Vient de manager de Parametres
+    code_cloture_technicien = models.TextField()  # Texte libre
+    reference_pm = models.CharField(max_length=50)  # Vient avec le numéro de jeton de ARD2
+    appel_tech = models.CharField(max_length=20, choices=APPEL_TECH_CHOICES, default='null')  # Appel tech
+    synchro = models.CharField(max_length=20, choices=SYNCHRO_CHOICES, default='null')  # Synchro
+    secteur = models.CharField(max_length=255)  # Secteur de RelanceJJ
+    type_echec = models.CharField(max_length=20, choices=TYPE_ECHEC_CHOICES, default='null')  # Type d'échec
+    pec_par = models.CharField(max_length=255)  # PEC PAR de RelanceJJ
+    resultat_controle = models.CharField(max_length=10, choices=RESULTAT_CONTROLE_CHOICES, default='null')  # Résultat du contrôle
+    diagnostic = models.TextField()  # Texte libre pour le diagnostic
+
+    def __str__(self):
+        return f"{self.jeton.jeton} - {self.date} - {self.tech}"
+
+    def save(self, *args, **kwargs):
+        # Remplir automatiquement les champs à partir de RelanceJJ, Parametres et ARD2
+        if not self.date:
+            self.date = self.jeton.date_intervention
+        if not self.heure:
+            self.heure = self.jeton.heure_prevue
+        if not self.tech:
+            self.tech = self.jeton.techniciens
+        if not self.numero_technicien:
+            self.numero_technicien = self.jeton.numero
+        if not self.pec_par:
+            self.pec_par = self.jeton.pec
+
+        # Récupérer les informations de Parametres
+        try:
+            param = Parametres.objects.get(id_tech=self.jeton.techniciens)
+            self.nouveaux_tech = param.actif_depuis
+            self.zone_manager = param.manager
+        except Parametres.DoesNotExist:
+            pass
+
+        # Récupérer les informations de ARD2
+        try:
+            ard2 = ARD2.objects.get(jeton_commande=self.jeton.jeton.jeton_commande)
+            self.reference_pm = ard2.pm
+        except ARD2.DoesNotExist:
+            pass
+
+        super().save(*args, **kwargs)
+
+#debrief SAV
+
+from django.db import models
+from .models import RelanceJJ, Parametres, ARD2
+
+class DebriefSAV(models.Model):
+    # Choix pour les champs avec des options prédéfinies
+    APPEL_TECH_CHOICES = [
+        ("Pas d'appel", "Pas d'appel"),
+        ("Appel à chaud", "Appel à chaud"),
+        (None, 'null'),
+    ]
+
+    SYNCHRO_CHOICES = [
+        ('Echec', 'Echec'),
+        ('Taguée', 'Taguée'),
+        (None, 'null'),
+    ]
+
+    TYPE_ECHEC_CHOICES = [
+        ('Echec client', 'Echec client'),
+        ('Echec d\'acces', 'Echec d\'acces'),
+        (None, 'null'),
+    ]
+
+    RESULTAT_CONTROLE_CHOICES = [
+        ('RAS', 'RAS'),
+        (None, 'null'),
+    ]
+
+    # Champs du modèle
+    jeton = models.ForeignKey(RelanceJJ, on_delete=models.CASCADE, related_name='debriefs_sav', limit_choices_to={'activite': 'SAV'})
+    date = models.DateField(verbose_name="Date d'intervention")  # Date d'intervention de RelanceJJ
+    heure = models.TimeField(verbose_name="Heure d'intervention")  # Heure d'intervention de RelanceJJ
+    tech = models.CharField(max_length=255, verbose_name="Nom du technicien")  # Nom du technicien de RelanceJJ
+    numero_tech = models.CharField(max_length=50, verbose_name="Numéro du technicien")  # Numéro de RelanceJJ
+    nouveaux_tech = models.DateField(verbose_name="Nouveaux tech", null=True, blank=True)  # Date qui vient de Parametres
+    zone_manager = models.CharField(max_length=255, verbose_name="Zone/Manager", null=True, blank=True)  # Vient de manager de Parametres
+    code_cloture_tech = models.TextField(verbose_name="Code clôture technicien", null=True, blank=True)  # Texte libre
+    reference_pm = models.CharField(max_length=50, verbose_name="Référence PM", null=True, blank=True)  # Vient avec le numéro de jeton de ARD2
+    appel_tech = models.CharField(max_length=20, choices=APPEL_TECH_CHOICES, verbose_name="Appel tech", null=True, blank=True)  # Choix prédéfinis
+    synchro = models.CharField(max_length=10, choices=SYNCHRO_CHOICES, verbose_name="Synchro", null=True, blank=True)  # Choix prédéfinis
+    secteur = models.CharField(max_length=255, verbose_name="Secteur", null=True, blank=True)  # Secteur de RelanceJJ
+    type_echec = models.CharField(max_length=20, choices=TYPE_ECHEC_CHOICES, verbose_name="Type d'échec", null=True, blank=True)  # Choix prédéfinis
+    pec_par = models.CharField(max_length=255, verbose_name="PEC par", null=True, blank=True)  # PEC PAR de RelanceJJ
+    resultat_controle = models.CharField(max_length=10, choices=RESULTAT_CONTROLE_CHOICES, verbose_name="Résultat du contrôle", null=True, blank=True)  # Choix prédéfinis
+    diagnostic = models.TextField(verbose_name="Diagnostic", null=True, blank=True)  # Texte libre
+
+    def __str__(self):
+        return f"{self.jeton.jeton} - {self.date} - {self.tech}"
+
+    def save(self, *args, **kwargs):
+        # Récupérer les données supplémentaires des modèles Parametres et ARD2
+        if not self.nouveaux_tech:
+            parametre = Parametres.objects.filter(id_tech=self.numero_tech).first()
+            if parametre:
+                self.nouveaux_tech = parametre.actif_depuis
+
+        if not self.zone_manager:
+            parametre = Parametres.objects.filter(id_tech=self.numero_tech).first()
+            if parametre:
+                self.zone_manager = parametre.zone
+
+        if not self.reference_pm:
+            ard2 = ARD2.objects.filter(jeton_commande=self.jeton.jeton).first()
+            if ard2:
+                self.reference_pm = ard2.pm
+
+        super().save(*args, **kwargs)
