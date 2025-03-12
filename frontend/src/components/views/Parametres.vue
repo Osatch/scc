@@ -1,6 +1,6 @@
 <template>
-  <div class="parametres-container">
-    <h2>Paramètres</h2>
+  <div class="main-content">
+    <h2>Liste des Paramètres</h2>
     <button @click="toggleEditMode">Modifier</button>
 
     <!-- Afficher le tableau si isEditing est false -->
@@ -52,12 +52,12 @@ import FormulaireParametre from "./FormulaireParametre.vue"; // Importez le comp
 
 export default {
   components: {
-    FormulaireParametre,
+    FormulaireParametre, // Enregistrez le composant du formulaire
   },
   data() {
     return {
       parametres: [],
-      isEditing: false,
+      isEditing: false, // État pour basculer entre le tableau et le formulaire
     };
   },
   mounted() {
@@ -75,11 +75,12 @@ export default {
         });
     },
     toggleEditMode() {
-      this.isEditing = !this.isEditing;
+      this.isEditing = !this.isEditing; // Bascule entre true et false
     },
     handleSubmit(newData) {
+      // Ajouter les nouvelles données au tableau
       this.parametres.push(newData);
-      this.toggleEditMode();
+      this.toggleEditMode(); // Revenir au tableau après soumission
     },
   },
 };
@@ -87,32 +88,54 @@ export default {
 
 <style scoped>
 .main-content {
-  margin-left: 250px;
-  margin-top: 80px;
+  width: 100%;
   padding: 20px;
-  width: calc(100% - 250px);
-  min-height: calc(100vh - 80px);
   background-color: #f8f9fa;
   color: #333;
   border-radius: 8px;
   box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-table {
-  width: 95%;
-  border-collapse: collapse;
-  margin: 20px auto 0 20px;
+.header-container {
+  width: 65%;
+  overflow-x: auto; /* Barre de défilement horizontale */
+  border-radius: 8px 8px 0 0;
+  max-width: 100vw;
+  white-space: nowrap;
   background-color: #ffffff;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.header-table {
+  width: 100%;
+  border-collapse: collapse;
   font-size: 13px;
+  min-width: 1200px;
+  table-layout: fixed; /* Force les colonnes à avoir la même largeur */
+}
+
+.table-container {
+  width: 65%;
+  overflow-x: auto; /* Barre de défilement horizontale */
+  border-radius: 0 0 8px 8px;
+  max-width: 100vw;
+  white-space: nowrap;
+  background-color: #ffffff;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  min-width: 1200px;
+  table-layout: fixed; /* Force les colonnes à avoir la même largeur */
 }
 
 th, td {
   border: 1px solid #ddd;
   padding: 10px;
   text-align: left;
+  white-space: nowrap;
+  width: 120px; /* Largeur fixe pour chaque colonne */
 }
 
 th {
@@ -126,6 +149,7 @@ td {
   color: #333;
 }
 
+/* Alternance de couleur pour les lignes */
 tbody tr:nth-child(odd) {
   background-color: #f9f9f9;
 }
@@ -134,31 +158,35 @@ tbody tr:nth-child(even) {
   background-color: #ffffff;
 }
 
+/* Effet hover sur les lignes */
 tbody tr:hover {
   background-color: #e3f2fd;
   transition: background-color 0.3s ease-in-out;
 }
 
-/* Classes pour les statuts */
-.status-cloturee {
-  background-color: #d4edda; /* Vert clair */
-  color: #155724; /* Texte foncé pour contraste */
+/* Styles pour les cellules OK et NOK */
+.ok-cell {
+  background-color: #c8e6c9; /* Vert clair */
 }
 
-.status-taguee {
-  background-color: #fff3cd; /* Orange clair */
-  color: #856404; /* Texte foncé pour contraste */
+.nok-cell {
+  background-color: #ffcc80; /* Orange clair */
 }
 
 @media (max-width: 768px) {
-  table {
-    font-size: 12px;
+  .header-container,
+  .table-container {
     width: 90%;
     margin-left: 10px;
   }
-  
+
+  table {
+    font-size: 12px;
+  }
+
   th, td {
     padding: 8px;
+    width: 100px; /* Ajustez la largeur pour les petits écrans */
   }
 }
 </style>
