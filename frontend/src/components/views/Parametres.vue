@@ -1,6 +1,6 @@
 <template>
-  <div class="main-content">
-    <h2>Liste des Paramètres</h2>
+  <div class="parametres-container">
+    <h2>Paramètres</h2>
     <button @click="toggleEditMode">Modifier</button>
 
     <!-- Afficher le tableau si isEditing est false -->
@@ -52,12 +52,12 @@ import FormulaireParametre from "./FormulaireParametre.vue"; // Importez le comp
 
 export default {
   components: {
-    FormulaireParametre, // Enregistrez le composant du formulaire
+    FormulaireParametre,
   },
   data() {
     return {
       parametres: [],
-      isEditing: false, // État pour basculer entre le tableau et le formulaire
+      isEditing: false,
     };
   },
   mounted() {
@@ -75,12 +75,11 @@ export default {
         });
     },
     toggleEditMode() {
-      this.isEditing = !this.isEditing; // Bascule entre true et false
+      this.isEditing = !this.isEditing;
     },
     handleSubmit(newData) {
-      // Ajouter les nouvelles données au tableau
       this.parametres.push(newData);
-      this.toggleEditMode(); // Revenir au tableau après soumission
+      this.toggleEditMode();
     },
   },
 };
@@ -88,41 +87,36 @@ export default {
 
 <style scoped>
 .main-content {
-  width: 100%; /* Prend toute la largeur disponible */
-  padding: 20px; /* Ajoute du padding pour l’esthétique */
-  background-color: #f8f9fa; /* Fond clair pour différencier */
-  color: #333; /* Texte sombre pour lisibilité */
-  border-radius: 8px; /* Coins arrondis pour un meilleur design */
-  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1); /* Ajoute une légère ombre */
-}
-
-/* Conteneur pour la barre de défilement horizontale */
-.table-container {
-  width: 65%;
-  overflow-x: auto; /* Permet le scroll horizontal */
+  margin-left: 250px;
+  margin-top: 80px;
+  padding: 20px;
+  width: calc(100% - 250px);
+  min-height: calc(100vh - 80px);
+  background-color: #f8f9fa;
+  color: #333;
   border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  max-width: 100vw; /* Empêche le débordement */
-  white-space: nowrap; /* Assure que le contenu ne se casse pas */
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 table {
-  width: 100%; /* Le tableau prend toute la largeur du conteneur */
+  width: 95%;
   border-collapse: collapse;
+  margin: 20px auto 0 20px;
   background-color: #ffffff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   font-size: 13px;
-  min-width: 1200px; /* Largeur minimale pour forcer le défilement si nécessaire */
 }
 
 th, td {
   border: 1px solid #ddd;
   padding: 10px;
   text-align: left;
-  white-space: nowrap; /* Empêche le texte de passer à la ligne */
 }
 
 th {
-  background-color: #000000; /* Noir pour l'en-tête */
+  background-color: #000000;
   color: white;
   text-transform: uppercase;
   font-weight: bold;
@@ -132,7 +126,6 @@ td {
   color: #333;
 }
 
-/* Alternance de couleur pour les lignes */
 tbody tr:nth-child(odd) {
   background-color: #f9f9f9;
 }
@@ -141,23 +134,29 @@ tbody tr:nth-child(even) {
   background-color: #ffffff;
 }
 
-/* Effet hover sur les lignes */
 tbody tr:hover {
   background-color: #e3f2fd;
   transition: background-color 0.3s ease-in-out;
 }
 
-/* Ajustement pour les petits écrans */
-@media (max-width: 768px) {
-  .table-container {
-    width: 90%; /* Réduit la largeur du conteneur sur les petits écrans */
-    margin-left: 10px;
-  }
+/* Classes pour les statuts */
+.status-cloturee {
+  background-color: #d4edda; /* Vert clair */
+  color: #155724; /* Texte foncé pour contraste */
+}
 
+.status-taguee {
+  background-color: #fff3cd; /* Orange clair */
+  color: #856404; /* Texte foncé pour contraste */
+}
+
+@media (max-width: 768px) {
   table {
     font-size: 12px;
+    width: 90%;
+    margin-left: 10px;
   }
-
+  
   th, td {
     padding: 8px;
   }

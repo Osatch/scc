@@ -48,4 +48,5 @@ urlpatterns = [
     # Nouvelles routes pour DebriefSAV
     path('debriefsav/', debriefsav_list, name='debriefsav-list'),  # Liste des enregistrements DebriefSAV
     path('debriefsav/<int:pk>/', debriefsav_detail, name='debriefsav-detail'),  # Détails d'un DebriefSAV
+
 ]

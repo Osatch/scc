@@ -1,4 +1,4 @@
-from django.shortcuts import get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
@@ -12,6 +12,7 @@ from .serializers import (
     RelanceJJSerializer, NOKSerializer, ControlPhotoSerializer, ControlafroidSerializer,
     DebriefRACCSerializer, DebriefSAVSerializer
 )
+from .forms import ParametresForm  # Importez le formulaire
 
 # Vue pour la liste des interventions Gantt
 @api_view(['GET'])
@@ -83,6 +84,17 @@ def parametres_list(request):
     parametres = Parametres.objects.all().order_by('id_tech')
     serializer = ParametresSerializer(parametres, many=True)
     return Response(serializer.data)
+
+# Vue pour ajouter un paramètre (nouvelle vue)
+def ajouter_parametre(request):
+    if request.method == 'POST':
+        form = ParametresForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('liste_parametres')  # Redirige vers la liste des paramètres
+    else:
+        form = ParametresForm()
+    return render(request, 'ajouter_parametre.html', {'form': form})
 
 # Vue pour la liste des relances JJ
 @api_view(['GET'])

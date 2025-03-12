@@ -263,6 +263,8 @@ class RelanceJJ(models.Model):
 
 #model param 
     
+from django.db import models
+
 class Parametres(models.Model):
     # Choix pour les champs avec des options prédéfinies
     COMPETENCE_CHOICES = [
@@ -306,7 +308,6 @@ class Parametres(models.Model):
     class Meta:
         verbose_name = "Paramètre"
         verbose_name_plural = "Paramètres"
-
 
 
 #le nok from django.db import models

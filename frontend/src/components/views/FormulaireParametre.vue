@@ -14,12 +14,12 @@
           <input type="text" id="nom_tech" v-model="formData.nom_tech" required />
         </div>
   
-         <!-- Département -->
+        <!-- Département -->
         <div class="form-group">
-         <label for="departement">Département</label>
-         <select id="departement" v-model="formData.departement" required>
-           <option v-for="dept in departements" :key="dept" :value="dept">{{ dept }}</option>
-         </select>
+          <label for="departement">Département</label>
+          <select id="departement" v-model="formData.departement" required>
+            <option v-for="dept in departements" :key="dept" :value="dept">{{ dept }}</option>
+          </select>
         </div>
   
         <!-- Log Free -->
@@ -31,7 +31,10 @@
         <!-- Compétence -->
         <div class="form-group">
           <label for="competence">Compétence</label>
-          <input type="text" id="competence" v-model="formData.competence" required />
+          <select id="competence" v-model="formData.competence" required>
+            <option value="SAV">SAV</option>
+            <option value="">Vide</option>
+          </select>
         </div>
   
         <!-- Actif Depuis -->
@@ -46,16 +49,13 @@
           <select id="controle_photo" v-model="formData.controle_photo" required>
             <option value="G1">G1</option>
             <option value="G2">G2</option>
-            <option value="G3">G3</option>
           </select>
         </div>
   
         <!-- Manager -->
         <div class="form-group">
           <label for="manager">Manager</label>
-          <select id="manager" v-model="formData.manager" required>
-            <option v-for="manager in managers" :key="manager" :value="manager">{{ manager }}</option>
-          </select>
+          <input type="text" id="manager" v-model="formData.manager" required />
         </div>
   
         <!-- Zone -->
@@ -64,7 +64,6 @@
           <select id="zone" v-model="formData.zone" required>
             <option value="Zone 1">Zone 1</option>
             <option value="Zone 2">Zone 2</option>
-            <option value="Zone 3">Zone 3</option>
           </select>
         </div>
   
@@ -100,22 +99,16 @@
           zone: "",
           grille_actif: "",
         },
-        departements: [
-          "01",
-          "02",
-          "03",
-          // Ajoutez tous les départements de France ici
-        ],
-        managers: ["Manager 1", "Manager 2", "Manager 3"], // Exemple de managers
+        departements: Array.from({ length: 95 }, (_, i) => (i + 1).toString()), // Numéros de département de 1 à 95
       };
     },
     methods: {
       submitForm() {
-        this.$emit("submit", this.formData); // Émettre les données du formulaire
+        this.$emit("submit", this.formData);
         this.resetForm();
       },
       cancelForm() {
-        this.$emit("cancel"); // Émettre un événement pour annuler
+        this.$emit("cancel");
       },
       resetForm() {
         this.formData = {
@@ -164,7 +157,7 @@
   
   button {
     padding: 10px 20px;
-    background-color: #000000;
+    background-color: #000;
     color: white;
     border: none;
     border-radius: 4px;
@@ -173,6 +166,6 @@
   }
   
   button[type="button"] {
-    background-color: #cccccc;
+    background-color: #ccc;
   }
   </style>
