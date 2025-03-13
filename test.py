@@ -37,11 +37,11 @@ try:
 
     # Remplir le champ login avec XPath
     login_field = driver.find_element(By.XPATH, '//*[@id="Lelogin"]')  # XPath du champ login
-    login_field.send_keys("TECHNO_SMART")  # Remplacez par votre nom d'utilisateur
+    login_field.send_keys("")  # Remplacez par votre nom d'utilisateur
 
     # Remplir le champ mot de passe avec XPath
     password_field = driver.find_element(By.XPATH, '//*[@id="mdp"]')  # XPath du champ mot de passe
-    password_field.send_keys("BEJAtechno2025/")  # Remplacez par votre mot de passe
+    password_field.send_keys("")  # Remplacez par votre mot de passe
 
     # Cliquer sur le bouton de validation avec XPath
     login_button = driver.find_element(By.XPATH, '//*[@id="valid_login"]')  # XPath du bouton de validation
