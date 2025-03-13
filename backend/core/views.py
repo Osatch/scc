@@ -5,14 +5,53 @@ from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from .models import (
-    Gantt, GanttStatistics, ARD2, Parametres, RelanceJJ, NOK, ControlPhoto, Controlafroid, DebriefRACC, DebriefSAV
+    Gantt, GanttStatistics, ARD2, Parametres, RelanceJJ, NOK, ControlPhoto, Controlafroid, DebriefRACC, DebriefSAV, InterventionsSAV, InterventionsRACC  # Ajout du modèle InterventionsRACC
 )
 from .serializers import (
     GanttSerializer, GanttStatisticsSerializer, ARD2Serializer, ParametresSerializer,
     RelanceJJSerializer, NOKSerializer, ControlPhotoSerializer, ControlafroidSerializer,
-    DebriefRACCSerializer, DebriefSAVSerializer
+    DebriefRACCSerializer, DebriefSAVSerializer, InterventionsSAVSerializer, InterventionsRACCSerializer  # Ajout du serializer InterventionsRACC
 )
 from .forms import ParametresForm  # Importez le formulaire
+
+# ======================= VUES POUR INTERVENTIONS RACC =======================
+
+# Vue pour récupérer la liste des interventions RACC
+@api_view(['GET', 'POST'])
+def interventionsracc_list(request):
+    if request.method == 'GET':
+        interventions = InterventionsRACC.objects.all().order_by('-date_intervention')  # Trier par date d'intervention descendante
+        serializer = InterventionsRACCSerializer(interventions, many=True)
+        return Response(serializer.data)
+
+    elif request.method == 'POST':
+        serializer = InterventionsRACCSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=201)
+        return Response(serializer.errors, status=400)
+
+# Vue pour récupérer, mettre à jour ou supprimer une intervention RACC
+@api_view(['GET', 'PUT', 'DELETE'])
+def interventionsracc_detail(request, pk):
+    intervention = get_object_or_404(InterventionsRACC, pk=pk)
+
+    if request.method == 'GET':
+        serializer = InterventionsRACCSerializer(intervention)
+        return Response(serializer.data)
+
+    elif request.method == 'PUT':
+        serializer = InterventionsRACCSerializer(intervention, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=400)
+
+    elif request.method == 'DELETE':
+        intervention.delete()
+        return Response({"message": "Intervention RACC supprimée avec succès"}, status=204)
+
+# ======================= AUTRES VUES EXISTANTES =======================
 
 # Vue pour la liste des interventions Gantt
 @api_view(['GET'])
@@ -288,3 +327,40 @@ def debriefsav_detail(request, pk):
     elif request.method == 'DELETE':
         debriefsav.delete()
         return Response({"message": "DebriefSAV supprimé avec succès"}, status=204)
+
+# ======================= VUES POUR INTERVENTIONSSAV =======================
+
+# Vue pour récupérer la liste des interventions SAV
+@api_view(['GET', 'POST'])
+def interventionssav_list(request):
+    if request.method == 'GET':
+        interventions = InterventionsSAV.objects.all().order_by('-date_intervention')  # Trier par date d'intervention descendante
+        serializer = InterventionsSAVSerializer(interventions, many=True)
+        return Response(serializer.data)
+
+    elif request.method == 'POST':
+        serializer = InterventionsSAVSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=201)
+        return Response(serializer.errors, status=400)
+
+# Vue pour récupérer, mettre à jour ou supprimer une intervention SAV
+@api_view(['GET', 'PUT', 'DELETE'])
+def interventionssav_detail(request, pk):
+    intervention = get_object_or_404(InterventionsSAV, pk=pk)
+
+    if request.method == 'GET':
+        serializer = InterventionsSAVSerializer(intervention)
+        return Response(serializer.data)
+
+    elif request.method == 'PUT':
+        serializer = InterventionsSAVSerializer(intervention, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=400)
+
+    elif request.method == 'DELETE':
+        intervention.delete()
+        return Response({"message": "Intervention SAV supprimée avec succès"}, status=204)

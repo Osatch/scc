@@ -1,52 +1,64 @@
 from django.urls import path
 from .views import (
-    gantt_list,  # Assurez-vous que cette vue existe
-    login_view, logout_view,
-    ard2_list,
-    parametres_list,
-    relancejj_list,
-    gantt_statistics_list,  # Nouvelle vue pour GanttStatistics
-    gantt_detail,  # Nouvelle vue pour les détails d'une intervention Gantt
-    gantt_statistics_detail,  # Nouvelle vue pour les détails des statistiques Gantt
-    nok_list, nok_detail,  # Ajout des vues NOK
-    controlphoto_list, controlphoto_detail,  # Ajout des vues pour ControlPhoto
-    controlafroid_list, controlafroid_detail,  # Ajout des vues pour Controlafroid
-    debriefracc_list, debriefracc_detail,  # Ajout des vues pour DebriefRACC
-    debriefsav_list, debriefsav_detail  # Ajout des vues pour DebriefSAV
+    gantt_list,  # Vue pour la liste des interventions Gantt
+    login_view, logout_view,  # Vues pour la gestion de l'authentification
+    ard2_list,  # Vue pour la liste des ARD2
+    parametres_list,  # Vue pour la liste des paramètres
+    relancejj_list,  # Vue pour la liste des relances JJ
+    gantt_statistics_list,  # Vue pour la liste des statistiques Gantt
+    gantt_detail,  # Vue pour les détails d'une intervention Gantt
+    gantt_statistics_detail,  # Vue pour les détails des statistiques Gantt
+    nok_list, nok_detail,  # Vues pour la gestion des NOK
+    controlphoto_list, controlphoto_detail,  # Vues pour la gestion des ControlPhoto
+    controlafroid_list, controlafroid_detail,  # Vues pour la gestion des Controlafroid
+    debriefracc_list, debriefracc_detail,  # Vues pour la gestion des DebriefRACC
+    debriefsav_list, debriefsav_detail,  # Vues pour la gestion des DebriefSAV
+    interventionssav_list, interventionssav_detail,  # Vues pour la gestion des InterventionsSAV
 )
 
 urlpatterns = [
-    # Routes existantes
+    # Authentification
     path('login/', login_view, name='login'),
     path('logout/', logout_view, name='logout'),
-    path('ARD2/', ard2_list, name='ard2-list'),  # Pour ARD2
-    path('parametres/', parametres_list, name='parametres_list'),  # Pour les paramètres
-    path('relances/', relancejj_list, name='relancejj-list'),  # Pour les relances
 
-    # Nouvelles routes pour Gantt et GanttStatistics
-    path('gantt/', gantt_list, name='gantt-list'),  # Liste des interventions Gantt
-    path('gantt/<int:pk>/', gantt_detail, name='gantt-detail'),  # Détails d'une intervention Gantt
-    path('gantt-statistics/', gantt_statistics_list, name='gantt-statistics-list'),  # Liste des statistiques Gantt
-    path('gantt-statistics/<int:pk>/', gantt_statistics_detail, name='gantt-statistics-detail'),  # Détails des statistiques Gantt
+    # ARD2
+    path('ard2/', ard2_list, name='ard2-list'),
 
-    # Nouvelles routes pour NOK
-    path('nok/', nok_list, name='nok-list'),  # Liste des enregistrements NOK
-    path('nok/<int:pk>/', nok_detail, name='nok-detail'),  # Détails d'un NOK
+    # Paramètres
+    path('parametres/', parametres_list, name='parametres-list'),
 
-    # Nouvelles routes pour ControlPhoto
-    path('controlphoto/', controlphoto_list, name='controlphoto-list'),  # Liste des enregistrements ControlPhoto
-    path('controlphoto/<int:pk>/', controlphoto_detail, name='controlphoto-detail'),  # Détails d'un ControlPhoto
+    # Relances JJ
+    path('relances/', relancejj_list, name='relancejj-list'),
 
-    # Nouvelles routes pour Controlafroid
-    path('controlafroid/', controlafroid_list, name='controlafroid-list'),  # Liste des enregistrements Controlafroid
-    path('controlafroid/<int:pk>/', controlafroid_detail, name='controlafroid-detail'),  # Détails d'un Controlafroid
+    # Gantt
+    path('gantt/', gantt_list, name='gantt-list'),
+    path('gantt/<int:pk>/', gantt_detail, name='gantt-detail'),
 
-    # Nouvelles routes pour DebriefRACC
-    path('debriefracc/', debriefracc_list, name='debriefracc-list'),  # Liste des enregistrements DebriefRACC
-    path('debriefracc/<int:pk>/', debriefracc_detail, name='debriefracc-detail'),  # Détails d'un DebriefRACC
+    # Statistiques Gantt
+    path('gantt-statistics/', gantt_statistics_list, name='gantt-statistics-list'),
+    path('gantt-statistics/<int:pk>/', gantt_statistics_detail, name='gantt-statistics-detail'),
 
-    # Nouvelles routes pour DebriefSAV
-    path('debriefsav/', debriefsav_list, name='debriefsav-list'),  # Liste des enregistrements DebriefSAV
-    path('debriefsav/<int:pk>/', debriefsav_detail, name='debriefsav-detail'),  # Détails d'un DebriefSAV
+    # NOK
+    path('nok/', nok_list, name='nok-list'),
+    path('nok/<int:pk>/', nok_detail, name='nok-detail'),
 
+    # ControlPhoto
+    path('controlphoto/', controlphoto_list, name='controlphoto-list'),
+    path('controlphoto/<int:pk>/', controlphoto_detail, name='controlphoto-detail'),
+
+    # Controlafroid
+    path('controlafroid/', controlafroid_list, name='controlafroid-list'),
+    path('controlafroid/<int:pk>/', controlafroid_detail, name='controlafroid-detail'),
+
+    # DebriefRACC
+    path('debriefracc/', debriefracc_list, name='debriefracc-list'),
+    path('debriefracc/<int:pk>/', debriefracc_detail, name='debriefracc-detail'),
+
+    # DebriefSAV
+    path('debriefsav/', debriefsav_list, name='debriefsav-list'),
+    path('debriefsav/<int:pk>/', debriefsav_detail, name='debriefsav-detail'),
+
+    # InterventionsSAV
+    path('interventionssav/', interventionssav_list, name='interventionssav-list'),
+    path('interventionssav/<int:pk>/', interventionssav_detail, name='interventionssav-detail'),
 ]

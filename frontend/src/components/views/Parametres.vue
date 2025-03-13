@@ -1,7 +1,7 @@
 <template>
   <div class="main-content">
     <h2>Liste des Paramètres</h2>
-    <button @click="toggleEditMode">Modifier</button>
+    <button @click="toggleEditMode">ADD</button>
 
     <!-- Afficher le tableau si isEditing est false -->
     <div v-if="!isEditing" class="table-container">

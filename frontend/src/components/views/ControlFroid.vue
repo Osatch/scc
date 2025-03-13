@@ -100,7 +100,7 @@ export default {
 }
 
 .header-container {
-  width: 65%;
+  width: 60%;
   overflow-x: auto; /* Barre de défilement horizontale */
   border-radius: 8px 8px 0 0;
   max-width: 100vw;

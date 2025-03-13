@@ -601,3 +601,158 @@ class DebriefSAV(models.Model):
                 self.reference_pm = ard2.pm
 
         super().save(*args, **kwargs)
+
+
+#inter sav
+
+class InterventionsSAV(models.Model):
+    # Liste des choix pour le statut de l'intervention
+    STATUS_CHOICES = [
+        ('2906', '2906 - Freebox Etape 2/3'),
+        ('3705', '3705 - Pas d\'accès au local PM'),
+        ('OK', 'OK'),
+        ('3510', '3510 - Tube / Fibre HS'),
+        ('3204', '3204 - Véhicule sur chambre'),
+        ('303', '303 - Abonné absent'),
+        ('3902', '3902 - PM vandalisé'),
+        ('3202', '3202 - Pas d\'intervention nécessaire'),
+    ]
+
+    # Liste des choix pour le champ synchro
+    SYNCHRO_CHOICES = [
+        ('OK', 'OK'),
+        ('NOK', 'NOK'),
+        ('Null', 'Null'),
+    ]
+
+    # Champs du modèle
+    numero_jeton = models.CharField(max_length=100, unique=True, verbose_name="Numéro de jeton")
+    date_intervention = models.DateField(verbose_name="Date d'intervention")
+    heure_debut = models.TimeField(verbose_name="Heure de début")
+    techniciens_initial = models.CharField(max_length=100, verbose_name="Technicien initial")
+    techniciens_intervenant = models.CharField(max_length=100, blank=True, null=True, verbose_name="Technicien intervenant")
+    nbr_nok = models.IntegerField(default=0, verbose_name="Nombre de NOK")
+    nbr_ok = models.IntegerField(default=0, verbose_name="Nombre de OK")
+    total_interventions = models.IntegerField(default=0, verbose_name="Total des interventions")
+    ref_pm = models.CharField(max_length=100, verbose_name="Référence PM")
+    status_intervention = models.CharField(max_length=50, choices=STATUS_CHOICES, verbose_name="Statut de l'intervention")
+    secteur = models.CharField(max_length=10, verbose_name="Secteur")
+    secu = models.TextField(blank=True, null=True, verbose_name="Sécurité")
+    heure_demarrage = models.TimeField(blank=True, null=True, verbose_name="Heure de démarrage")
+    heure_cloture = models.TimeField(blank=True, null=True, verbose_name="Heure de clôture")
+    synchro = models.CharField(max_length=10, choices=SYNCHRO_CHOICES, blank=True, null=True, verbose_name="Synchro")
+    resultat_jj = models.TextField(blank=True, null=True, verbose_name="Résultat JJ")
+
+    def __str__(self):
+        return f"Intervention {self.numero_jeton} - {self.date_intervention}"
+
+    class Meta:
+        verbose_name = "Intervention SAV"
+        verbose_name_plural = "Interventions SAV"
+
+
+#inter Racc
+
+from django.db import models
+
+class InterventionsRACC(models.Model):
+    # Choix pour le champ "Dernier Echec"
+    DERNIER_ECHEC_CHOICES = [
+        ('Client absent', 'Client absent'),
+        ('Freebox non reçue', 'Freebox non reçue'),
+        ('Client réalise les travaux', 'Client réalise les travaux'),
+        ('Autorisation propriétaire', 'Autorisation propriétaire'),
+        ('Accès refusé (Syndic/Copro)', 'Accès refusé (Syndic/Copro)'),
+        ('Pas d accès PBO', 'Pas d accès PBO'),
+        ('Manque de consommable', 'Manque de consommable'),
+        ('Pas d Accès PM', 'Pas d Accès PM'),
+        ('Autorisation du propriétaire', 'Autorisation du propriétaire'),
+        ('RDV non honoré', 'RDV non honoré'),
+        ('Fourreau à déboucher (intérieur)', 'Fourreau à déboucher (intérieur)'),
+        ('Kit laissé mais non scanné', 'Kit laissé mais non scanné'),
+        ('Refus d accès abonné', 'Refus d accès abonné'),
+        # Ajoutez d'autres choix si nécessaire
+    ]
+
+    # Choix pour le champ "synchro"
+    SYNCHRO_CHOICES = [
+        ('OK', 'OK'),
+        ('NOK', 'NOK'),
+        ('Null', 'Null'),
+    ]
+
+    # Champs du modèle
+    numero_jeton = models.CharField(max_length=100, unique=True)
+    date_intervention = models.DateField()
+    heure_debut = models.TimeField()
+    techniciens_initial = models.CharField(max_length=100)
+    techniciens_intervenant = models.CharField(max_length=100, blank=True, null=True)
+    nbr_nok = models.IntegerField(default=0)
+    nbr_ok = models.IntegerField(default=0)
+    total_interventions = models.IntegerField(default=0)
+    ref_pm = models.CharField(max_length=100)
+    dernier_echec = models.CharField(max_length=100, choices=DERNIER_ECHEC_CHOICES, blank=True, null=True)
+    secteur = models.CharField(max_length=10)
+    contre_appel_client = models.TextField(blank=True, null=True)
+    secu = models.TextField(blank=True, null=True)
+    heure_demarrage = models.DateTimeField(blank=True, null=True)
+    heure_cloture = models.DateTimeField(blank=True, null=True)
+    synchro = models.CharField(max_length=10, choices=SYNCHRO_CHOICES, blank=True, null=True)
+    resultat_jj = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return f"Intervention RACC - {self.numero_jeton}"
+
+    class Meta:
+        verbose_name = "Intervention RACC"
+        verbose_name_plural = "Interventions RACC"
+        
+
+#le GRDV *****************************************
+
+
+class GRDV(models.Model):
+    date_rdv = models.DateTimeField(verbose_name="Date et heure du rendez-vous")
+    debut = models.DateTimeField(verbose_name="Date et heure du début d'intervention")
+    fin = models.DateTimeField(verbose_name="Date et heure de fin d'intervention")
+    statut_rendez_vous = models.CharField(max_length=255, verbose_name="Statut du rendez-vous")
+    statut_grdv = models.CharField(max_length=255, verbose_name="Statut GRDV")
+    activite = models.CharField(max_length=255, verbose_name="Activité")
+    plp = models.CharField(max_length=255, verbose_name="PLP")
+    technicien = models.CharField(max_length=255, verbose_name="Technicien")
+    presta = models.CharField(max_length=255, verbose_name="Presta")
+    tel_contact = models.CharField(max_length=20, verbose_name="Téléphone de contact")
+    commentaire = models.TextField(verbose_name="Commentaire")
+    adresse_postale = models.CharField(max_length=255, verbose_name="Adresse postale")
+    ref_commande = models.CharField(max_length=255, verbose_name="Référence de commande")
+    nro = models.CharField(max_length=255, verbose_name="NRO")
+    pm = models.CharField(max_length=255, verbose_name="PM")
+    code = models.CharField(max_length=255, verbose_name="Code")
+    residence = models.CharField(max_length=255, verbose_name="Résidence")
+    bat = models.CharField(max_length=255, verbose_name="Bâtiment")
+    esc = models.CharField(max_length=255, verbose_name="Escalier")
+    eta = models.CharField(max_length=255, verbose_name="Étage")
+    por = models.CharField(max_length=255, verbose_name="Porte")
+    pto = models.CharField(max_length=255, verbose_name="PTO")
+    id_client = models.CharField(max_length=255, verbose_name="ID Client")
+    technologement = models.CharField(max_length=255, verbose_name="Technologement")
+    operateurlogement = models.CharField(max_length=255, verbose_name="Opérateur logement")
+    typezone = models.CharField(max_length=255, verbose_name="Type de zone")
+    typetechno = models.CharField(max_length=255, verbose_name="Type de technologie")
+    secteur_infra = models.CharField(max_length=255, verbose_name="Secteur infrastructure")
+    typebatiment = models.CharField(max_length=255, verbose_name="Type de bâtiment")
+    typepoteau_edf = models.CharField(max_length=255, verbose_name="Type de poteau EDF")
+    typeclient = models.CharField(max_length=255, verbose_name="Type de client")
+    typebox = models.CharField(max_length=255, verbose_name="Type de box")
+    id_debrief_rdv = models.CharField(max_length=255, verbose_name="ID Débrief RDV")
+    debrief_rdv = models.TextField(verbose_name="Débrief RDV")
+    Adresse_PM = models.CharField(max_length=255, verbose_name="Adresse PM")
+    Connecteur_Free_PM = models.CharField(max_length=255, verbose_name="Connecteur Free PM")
+    date_import = models.DateTimeField(auto_now_add=True, verbose_name="Date et heure d'import du fichier")
+
+    def __str__(self):
+        return f"GRDV {self.id} - {self.date_rdv}"
+
+    class Meta:
+        verbose_name = "GRDV"
+        verbose_name_plural = "GRDVs"
