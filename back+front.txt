@@ -85,12 +85,6 @@ git remote add origin https://github.com/Osatch/scc.git
 git push -u origin main
 
 
-git init
-git add .
-git commit -m "14-03 / 16h35 j'ai commencé les bots"
-git remote add origin https://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@github.com/Osatch/scc.git
-git branch -M main
-git push -u origin main
 
 
 pour voir les migrations 
