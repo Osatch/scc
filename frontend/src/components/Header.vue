@@ -5,6 +5,18 @@
       <span class="text-lg font-semibold">{{ activeAccountName }}</span>
     </div>
 
+    <!-- Liste déroulante pour lancer l'import -->
+    <div class="relative">
+      <select
+        @change="handleImport($event)"
+        class="bg-gray-200 text-gray-700 p-2 rounded focus:outline-none"
+      >
+        <option value="">Importer données...</option>
+        <option value="ard2">Importer ARD2</option>
+        <option value="grdv">Importer GRDV</option>
+      </select>
+    </div>
+
     <!-- Boutons de rafraîchissement et déconnexion -->
     <div class="flex items-center gap-4">
       <button
@@ -42,7 +54,8 @@ export default {
   methods: {
     async fetchAccountName() {
       try {
-        const response = await fetch("/api/user/profile"); // Remplace par ton endpoint
+        // On appelle l'endpoint du profil utilisateur (assurez-vous qu'il renvoie du JSON)
+        const response = await fetch("/api/user/profile/");
         const data = await response.json();
         this.activeAccountName = data.name || "Utilisateur inconnu";
       } catch (error) {
@@ -50,16 +63,47 @@ export default {
         this.activeAccountName = "Erreur de chargement";
       }
     },
+    async handleImport(event) {
+      const importType = event.target.value;
+      if (!importType) return;
+
+      let endpoint = "";
+      if (importType === "ard2") {
+        endpoint = "/api/import_ard2/"; // URL pour lancer l'import ARD2 (requête POST)
+      } else if (importType === "grdv") {
+        endpoint = "/api/import_grdv/"; // URL pour lancer l'import GRDV (requête POST)
+      }
+
+      try {
+        const response = await fetch(endpoint, {
+          method: "POST",
+        });
+
+        if (!response.ok) {
+          console.error(`Erreur HTTP ${response.status}:`, await response.text());
+          throw new Error(`Erreur HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+        alert(`Import ${importType.toUpperCase()} terminé.`);
+      } catch (error) {
+        console.error(`Erreur lors de l'import ${importType.toUpperCase()} :`, error);
+        alert(`Erreur lors de l'import ${importType.toUpperCase()}.`);
+      } finally {
+        // Réinitialiser la sélection dans la liste déroulante
+        event.target.value = "";
+      }
+    },
     logout() {
+      // Suppression des tokens et redirection vers la page de login
       localStorage.removeItem("access");
       localStorage.removeItem("refresh");
       this.$router.push("/");
     },
     refresh() {
       console.log("Rafraîchissement en cours...");
-      this.fetchAccountName(); // Recharge les infos
+      this.fetchAccountName();
     },
   },
 };
 </script>
-

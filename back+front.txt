@@ -140,3 +140,18 @@ Synchro :
 Agent :
  Résultats vérification :
  Commentaire :
+
+
+
+
+
+
+
+
+
+
+
+
+
+python manage.py import_ard2
+python manage.py import_grdv

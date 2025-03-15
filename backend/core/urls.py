@@ -1,12 +1,14 @@
+# core/urls.py
 from django.urls import path
 from .views import (
-    gantt_list,  # Vue pour la liste des interventions Gantt
+    gantt_list,            # Vue pour la liste des interventions Gantt
     login_view, logout_view,  # Vues pour la gestion de l'authentification
-    ard2_list,  # Vue pour la liste des ARD2
-    parametres_list,  # Vue pour la liste des paramètres
-    relancejj_list,  # Vue pour la liste des relances JJ
-    gantt_statistics_list,  # Vue pour la liste des statistiques Gantt
-    gantt_detail,  # Vue pour les détails d'une intervention Gantt
+    ard2_list,             # Vue pour la liste des ARD2
+     user_profile,
+    parametres_list,       # Vue pour la liste des paramètres
+    relancejj_list,        # Vue pour la liste des relances JJ
+    gantt_statistics_list, # Vue pour la liste des statistiques Gantt
+    gantt_detail,          # Vue pour les détails d'une intervention Gantt
     gantt_statistics_detail,  # Vue pour les détails des statistiques Gantt
     nok_list, nok_detail,  # Vues pour la gestion des NOK
     controlphoto_list, controlphoto_detail,  # Vues pour la gestion des ControlPhoto
@@ -14,6 +16,7 @@ from .views import (
     debriefracc_list, debriefracc_detail,  # Vues pour la gestion des DebriefRACC
     debriefsav_list, debriefsav_detail,  # Vues pour la gestion des DebriefSAV
     interventionssav_list, interventionssav_detail,  # Vues pour la gestion des InterventionsSAV
+    import_ard2, import_grdv,  # Vues pour lancer les imports
 )
 
 urlpatterns = [
@@ -61,4 +64,9 @@ urlpatterns = [
     # InterventionsSAV
     path('interventionssav/', interventionssav_list, name='interventionssav-list'),
     path('interventionssav/<int:pk>/', interventionssav_detail, name='interventionssav-detail'),
+
+    # Endpoints d'import
+    path('user/profile/', user_profile, name='user_profile'),
+    path('import_ard2/', import_ard2, name='import_ard2'),
+    path('import_grdv/', import_grdv, name='import_grdv'),
 ]

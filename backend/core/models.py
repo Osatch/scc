@@ -210,7 +210,6 @@ class ARD2(models.Model):
   #Relance jj
 
 
-
 class RelanceJJ(models.Model):
     ACTIVITE_CHOICES = [
         ('SAV', 'SAV'),
@@ -220,45 +219,135 @@ class RelanceJJ(models.Model):
     STATUT_CHOICES = [
         ('Cloturée', 'Cloturée'),
         ('Taguée', 'Taguée'),
-        ('Relance démarrage', 'Relance démarrage'),
-        ('Relance Cloture', 'Relance Cloture'),
     ]
 
-    date_intervention = models.DateField()  # Date de l'intervention
-    jeton = models.ForeignKey('ARD2', on_delete=models.CASCADE, related_name='relances')  # Référence au jeton de la table ARD2
-    activite = models.CharField(max_length=4, choices=ACTIVITE_CHOICES)  # Activité (SAV ou RACC)
-    heure_prevue = models.TimeField()  # Heure prévue pour l'intervention
-    heure_debut = models.TimeField(null=True, blank=True)  # Heure de début de l'intervention (synchronisé avec ARD2)
-    heure_fin = models.TimeField(null=True, blank=True)  # Heure de fin de l'intervention (synchronisé avec ARD2)
-    techniciens = models.CharField(max_length=255)  # Nom des techniciens
-    numero = models.CharField(max_length=50)  # Numéro
-    departement = models.CharField(max_length=255)  # Département de ARD2
-    pec = models.CharField(max_length=255)  # Agents qui ont suivi l'intervention
-    statut = models.CharField(max_length=20, choices=STATUT_CHOICES)  # Statut de l'intervention
-    commentaire_demarrage = models.TextField(null=True, blank=True)  # Commentaire démarrage
-    commentaire_cloture = models.TextField(null=True, blank=True)  # Commentaire clôture
+    # Relation vers GRDV pour récupérer les informations de rendez-vous
+    grdv = models.ForeignKey(
+        'GRDV',
+        on_delete=models.CASCADE,
+        related_name='relances',
+        null=True,
+        blank=True,
+        verbose_name="GRDV associé"
+    )
+    # Champs dérivés de GRDV
+    date_intervention = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name="Date intervention (provenant de GRDV.date_rdv)"
+    )
+    activite = models.CharField(
+        max_length=4,
+        choices=ACTIVITE_CHOICES,
+        blank=True,
+        verbose_name="Activité (calculée à partir de GRDV.activite)"
+    )
+    heure_prevue = models.TimeField(
+        null=True,
+        blank=True,
+        verbose_name="Heure prévue (provenant de GRDV.debut)"
+    )
+
+    # Relation vers ARD2
+    jeton = models.ForeignKey(
+        'ARD2',
+        on_delete=models.CASCADE,
+        related_name='relances',
+        verbose_name="Jeton (ARD2)"
+    )
+    # Pour stocker le jeton_id sous forme de chaîne (issu de ARD2.jeton_commande)
+    jeton_id_field = models.CharField(
+        max_length=ARD2.JETON_MAX_LENGTH,
+        blank=True,
+        verbose_name="Jeton ID (copie de ARD2.jeton_commande)"
+    )
+
+    # Autres champs
+    techniciens = models.CharField(
+        max_length=255,
+        blank=True,
+        verbose_name="Techniciens (provenant de ARD2.technicien)"
+    )
+    numero = models.CharField(
+        max_length=50,
+        verbose_name="Numéro (récupéré via les paramètres)"
+    )
+    departement = models.CharField(
+        max_length=255,
+        blank=True,
+        verbose_name="Département (provenant de ARD2.departement)"
+    )
+    pec = models.CharField(
+        max_length=255,
+        verbose_name="PEC (saisi manuellement)"
+    )
+    statut = models.CharField(
+        max_length=20,
+        choices=STATUT_CHOICES,
+        blank=True,
+        verbose_name="Statut (calculé automatiquement)"
+    )
+    commentaire_demarrage = models.TextField(
+        null=True,
+        blank=True,
+        verbose_name="Commentaire démarrage"
+    )
+    commentaire_cloture = models.TextField(
+        null=True,
+        blank=True,
+        verbose_name="Commentaire clôture"
+    )
+
+    # Champs horaires calculés à partir d'ARD2
+    heure_debut = models.TimeField(
+        null=True,
+        blank=True,
+        verbose_name="Heure début (ARD2.debut_intervention)"
+    )
+    heure_fin = models.TimeField(
+        null=True,
+        blank=True,
+        verbose_name="Heure fin (ARD2.fin_intervention)"
+    )
 
     def save(self, *args, **kwargs):
-        # Synchroniser heure_debut et heure_fin avec ARD2
-        if self.jeton.debut_intervention:
-            self.heure_debut = self.jeton.debut_intervention.time()  # Extrait l'heure de début
-        if self.jeton.fin_intervention:
-            self.heure_fin = self.jeton.fin_intervention.time()  # Extrait l'heure de fin
+        # Récupération et synchronisation depuis GRDV
+        if self.grdv:
+            # La date d'intervention est la date de GRDV.date_rdv (date uniquement)
+            self.date_intervention = self.grdv.date_rdv.date()
+            # Pour l'activité : si GRDV.activite vaut "RDV-Sav", alors on met "SAV", sinon "RACC"
+            self.activite = "SAV" if self.grdv.activite == "RDV-Sav" else "RACC"
+            # L'heure prévue correspond à l'heure de début de GRDV
+            self.heure_prevue = self.grdv.debut.time()
+            # Vérification que la référence de commande de GRDV correspond bien au jeton d'ARD2
+            if self.jeton and self.grdv.ref_commande != self.jeton.jeton_commande:
+                raise ValueError("Incohérence : GRDV.ref_commande doit correspondre à ARD2.jeton_commande.")
 
-        # Logique pour déterminer le statut
+        # Récupération et synchronisation depuis ARD2
+        if self.jeton:
+            self.techniciens = self.jeton.technicien
+            self.departement = self.jeton.departement
+            self.jeton_id_field = self.jeton.jeton_commande
+            if self.jeton.debut_intervention:
+                self.heure_debut = self.jeton.debut_intervention.time()
+            if self.jeton.fin_intervention:
+                self.heure_fin = self.jeton.fin_intervention.time()
+
+        # Détermination du statut selon la présence des horaires
         if self.heure_debut and self.heure_fin:
             self.statut = 'Cloturée'
         elif self.heure_debut and not self.heure_fin:
             self.statut = 'Taguée'
-        elif not self.heure_debut and timezone.now().time() > self.heure_prevue:
-            self.statut = 'Relance démarrage'
-        elif self.heure_fin and self.heure_fin == timezone.datetime.min.time():
-            self.statut = 'Relance Cloture'
+        else:
+            self.statut = ""  # On laisse vide si aucune heure de début n'est renseignée
 
         super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.jeton.jeton_commande} - {self.date_intervention} - {self.activite}"
+
+
+
 
 
 #model param 

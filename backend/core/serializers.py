@@ -1,75 +1,75 @@
 from rest_framework import serializers
 from django import forms
 from .models import (
-    Gantt, GanttStatistics, ARD2, Parametres, RelanceJJ, NOK, ControlPhoto, Controlafroid, DebriefRACC, DebriefSAV, InterventionsSAV, InterventionsRACC  # Ajout du modèle InterventionsRACC
+    Gantt, GRDV, GanttStatistics, ARD2, Parametres, RelanceJJ, NOK,
+    ControlPhoto, Controlafroid, DebriefRACC, DebriefSAV, InterventionsSAV, InterventionsRACC
 )
 
-# Serializers pour les modèles
+# Serializer pour le modèle Gantt
 class GanttSerializer(serializers.ModelSerializer):
     class Meta:
         model = Gantt
         fields = '__all__'
 
-
+# Serializer pour le modèle GanttStatistics
 class GanttStatisticsSerializer(serializers.ModelSerializer):
     class Meta:
         model = GanttStatistics
         fields = '__all__'
 
-
+# Serializer pour le modèle ARD2
 class ARD2Serializer(serializers.ModelSerializer):
     class Meta:
         model = ARD2
         fields = '__all__'
 
-
+# Serializer pour le modèle Parametres
 class ParametresSerializer(serializers.ModelSerializer):
     class Meta:
         model = Parametres
         fields = '__all__'
 
-
+# Serializer pour le modèle RelanceJJ
 class RelanceJJSerializer(serializers.ModelSerializer):
     class Meta:
         model = RelanceJJ
         fields = '__all__'
 
-
+# Serializer pour le modèle NOK
 class NOKSerializer(serializers.ModelSerializer):
     class Meta:
         model = NOK
         fields = '__all__'
 
-
+# Serializer pour le modèle ControlPhoto
 class ControlPhotoSerializer(serializers.ModelSerializer):
     class Meta:
         model = ControlPhoto
         fields = '__all__'
 
-
+# Serializer pour le modèle Controlafroid
 class ControlafroidSerializer(serializers.ModelSerializer):
     class Meta:
         model = Controlafroid
         fields = '__all__'
 
-
+# Serializer pour le modèle DebriefRACC
 class DebriefRACCSerializer(serializers.ModelSerializer):
     class Meta:
         model = DebriefRACC
         fields = '__all__'
 
-
+# Serializer pour le modèle DebriefSAV
 class DebriefSAVSerializer(serializers.ModelSerializer):
     class Meta:
         model = DebriefSAV
         fields = '__all__'
 
-
+# Serializer pour le modèle InterventionsSAV
 class InterventionsSAVSerializer(serializers.ModelSerializer):
     class Meta:
         model = InterventionsSAV
         fields = '__all__'
-
 
 # Serializer pour le modèle InterventionsRACC
 class InterventionsRACCSerializer(serializers.ModelSerializer):
@@ -77,12 +77,11 @@ class InterventionsRACCSerializer(serializers.ModelSerializer):
         model = InterventionsRACC
         fields = '__all__'
 
-
 # Formulaire pour le modèle Parametres
 class ParametresForm(forms.ModelForm):
     class Meta:
         model = Parametres
         fields = '__all__'
         widgets = {
-            'actif_depuis': forms.DateInput(attrs={'type': 'date'}),  # Widget pour le champ de date
+            'actif_depuis': forms.DateInput(attrs={'type': 'date'}),
         }
