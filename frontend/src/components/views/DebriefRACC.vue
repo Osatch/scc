@@ -101,17 +101,17 @@ export default {
   width: 65%;
   overflow-x: auto;
   border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   max-width: 100vw;
   white-space: nowrap;
+  background-color: #ffffff;
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
-  background-color: #ffffff;
   font-size: 13px;
   min-width: 1200px;
+  table-layout: fixed;
 }
 
 th, td {
@@ -119,6 +119,7 @@ th, td {
   padding: 10px;
   text-align: left;
   white-space: nowrap;
+  width: 120px;
 }
 
 th {
@@ -165,6 +166,7 @@ tbody tr:hover {
   
   th, td {
     padding: 8px;
+    width: 100px;
   }
 }
 </style>

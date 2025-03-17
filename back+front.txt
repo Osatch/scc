@@ -80,7 +80,7 @@ github
 
 git init
 git add .
-git commit -m "14-03 / 16h38 grdv bot et import fonctionne "
+git commit -m "15-03 / 18h15 grdv bot et import fonctionne "
 git remote add origin https://github.com/Osatch/scc.git
 git push -u origin main
 

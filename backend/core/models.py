@@ -5,7 +5,55 @@ from django.utils import timezone
 # Create your models here.
 
 
+#le GRDV *****************************************
 
+
+class GRDV(models.Model):
+    date_rdv = models.DateTimeField(verbose_name="Date et heure du rendez-vous")
+    debut = models.DateTimeField(verbose_name="Date et heure du début d'intervention")
+    fin = models.DateTimeField(verbose_name="Date et heure de fin d'intervention")
+    statut_rendez_vous = models.CharField(max_length=255, verbose_name="Statut du rendez-vous")
+    statut_grdv = models.CharField(max_length=255, verbose_name="Statut GRDV")
+    activite = models.CharField(max_length=255, verbose_name="Activité")
+    plp = models.CharField(max_length=255, verbose_name="PLP")
+    technicien = models.CharField(max_length=255, verbose_name="Technicien")
+    presta = models.CharField(max_length=255, verbose_name="Presta")
+    tel_contact = models.CharField(max_length=20, verbose_name="Téléphone de contact")
+    commentaire = models.TextField(verbose_name="Commentaire")
+    adresse_postale = models.CharField(max_length=255, verbose_name="Adresse postale")
+    ref_commande = models.CharField(max_length=255, verbose_name="Référence de commande")
+    nro = models.CharField(max_length=255, verbose_name="NRO")
+    pm = models.CharField(max_length=255, verbose_name="PM")
+    code = models.CharField(max_length=255, verbose_name="Code")
+    residence = models.CharField(max_length=255, verbose_name="Résidence")
+    bat = models.CharField(max_length=255, verbose_name="Bâtiment")
+    esc = models.CharField(max_length=255, verbose_name="Escalier")
+    eta = models.CharField(max_length=255, verbose_name="Étage")
+    por = models.CharField(max_length=255, verbose_name="Porte")
+    pto = models.CharField(max_length=255, verbose_name="PTO")
+    id_client = models.CharField(max_length=255, verbose_name="ID Client")
+    technologement = models.CharField(max_length=255, verbose_name="Technologement")
+    operateurlogement = models.CharField(max_length=255, verbose_name="Opérateur logement")
+    typezone = models.CharField(max_length=255, verbose_name="Type de zone")
+    typetechno = models.CharField(max_length=255, verbose_name="Type de technologie")
+    secteur_infra = models.CharField(max_length=255, verbose_name="Secteur infrastructure")
+    typebatiment = models.CharField(max_length=255, verbose_name="Type de bâtiment")
+    typepoteau_edf = models.CharField(max_length=255, verbose_name="Type de poteau EDF")
+    typeclient = models.CharField(max_length=255, verbose_name="Type de client")
+    typebox = models.CharField(max_length=255, verbose_name="Type de box")
+    id_debrief_rdv = models.CharField(max_length=255, verbose_name="ID Débrief RDV")
+    debrief_rdv = models.TextField(verbose_name="Débrief RDV")
+    Adresse_PM = models.CharField(max_length=255, verbose_name="Adresse PM")
+    Connecteur_Free_PM = models.CharField(max_length=255, verbose_name="Connecteur Free PM")
+    date_import = models.DateTimeField(auto_now_add=True, verbose_name="Date et heure d'import du fichier")
+
+    def __str__(self):
+        return f"GRDV {self.id} - {self.date_rdv}"
+
+    class Meta:
+        verbose_name = "GRDV"
+        verbose_name_plural = "GRDVs"
+#gantt
 class Gantt(models.Model):
     INTERVENTION_CHOICES = [
         ('OK SAV', 'OK SAV'),
@@ -210,6 +258,9 @@ class ARD2(models.Model):
   #Relance jj
 
 
+from django.db import models
+from django.utils import timezone
+
 class RelanceJJ(models.Model):
     ACTIVITE_CHOICES = [
         ('SAV', 'SAV'),
@@ -230,11 +281,12 @@ class RelanceJJ(models.Model):
         blank=True,
         verbose_name="GRDV associé"
     )
+
     # Champs dérivés de GRDV
-    date_intervention = models.DateField(
+    date_rdv = models.DateField(
         null=True,
         blank=True,
-        verbose_name="Date intervention (provenant de GRDV.date_rdv)"
+        verbose_name="Date RDV (provenant de GRDV.date_rdv)"
     )
     activite = models.CharField(
         max_length=4,
@@ -254,12 +306,6 @@ class RelanceJJ(models.Model):
         on_delete=models.CASCADE,
         related_name='relances',
         verbose_name="Jeton (ARD2)"
-    )
-    # Pour stocker le jeton_id sous forme de chaîne (issu de ARD2.jeton_commande)
-    jeton_id_field = models.CharField(
-        max_length=ARD2.JETON_MAX_LENGTH,
-        blank=True,
-        verbose_name="Jeton ID (copie de ARD2.jeton_commande)"
     )
 
     # Autres champs
@@ -285,6 +331,7 @@ class RelanceJJ(models.Model):
         max_length=20,
         choices=STATUT_CHOICES,
         blank=True,
+        null=True,
         verbose_name="Statut (calculé automatiquement)"
     )
     commentaire_demarrage = models.TextField(
@@ -311,23 +358,26 @@ class RelanceJJ(models.Model):
     )
 
     def save(self, *args, **kwargs):
+        """
+        Sauvegarde l'objet RelanceJJ en synchronisant les données depuis GRDV et ARD2.
+        Détermine automatiquement le statut en fonction des horaires de début et de fin.
+        """
         # Récupération et synchronisation depuis GRDV
         if self.grdv:
-            # La date d'intervention est la date de GRDV.date_rdv (date uniquement)
-            self.date_intervention = self.grdv.date_rdv.date()
+            # La date du RDV est la date de GRDV.date_rdv (date uniquement)
+            self.date_rdv = self.grdv.date_rdv.date()
             # Pour l'activité : si GRDV.activite vaut "RDV-Sav", alors on met "SAV", sinon "RACC"
             self.activite = "SAV" if self.grdv.activite == "RDV-Sav" else "RACC"
             # L'heure prévue correspond à l'heure de début de GRDV
             self.heure_prevue = self.grdv.debut.time()
             # Vérification que la référence de commande de GRDV correspond bien au jeton d'ARD2
             if self.jeton and self.grdv.ref_commande != self.jeton.jeton_commande:
-                raise ValueError("Incohérence : GRDV.ref_commande doit correspondre à ARD2.jeton_commande.")
+                raise ValueError("Incohérence : GRDV.ref_commande doit correspondre à ARD2.jeton_commande.")
 
         # Récupération et synchronisation depuis ARD2
         if self.jeton:
             self.techniciens = self.jeton.technicien
             self.departement = self.jeton.departement
-            self.jeton_id_field = self.jeton.jeton_commande
             if self.jeton.debut_intervention:
                 self.heure_debut = self.jeton.debut_intervention.time()
             if self.jeton.fin_intervention:
@@ -339,14 +389,12 @@ class RelanceJJ(models.Model):
         elif self.heure_debut and not self.heure_fin:
             self.statut = 'Taguée'
         else:
-            self.statut = ""  # On laisse vide si aucune heure de début n'est renseignée
+            self.statut = None  # On laisse null si aucune heure de début n'est renseignée
 
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.jeton.jeton_commande} - {self.date_intervention} - {self.activite}"
-
-
+        return f"{self.jeton.jeton_commande} - {self.date_rdv} - {self.activite}"
 
 
 
@@ -542,84 +590,201 @@ class Controlafroid(models.Model):
 
 #debrief racc 
 
+
 from django.db import models
-from .models import RelanceJJ, Parametres, ARD2
 
 class DebriefRACC(models.Model):
-    # Choix pour les champs avec des options prédéfinies
+    # Choix pour certains champs
     APPEL_TECH_CHOICES = [
         ("Pas d'appel", "Pas d'appel"),
         ("Appel à chaud", "Appel à chaud"),
         ('null', 'null'),
     ]
-
     SYNCHRO_CHOICES = [
         ('Echec', 'Echec'),
         ('Taguées', 'Taguées'),
         ('null', 'null'),
     ]
-
     TYPE_ECHEC_CHOICES = [
         ('Echec client', 'Echec client'),
-        ('Echec d\'acces', 'Echec d\'acces'),
+        ("Echec d'acces", "Echec d'acces"),
         ('null', 'null'),
     ]
-
     RESULTAT_CONTROLE_CHOICES = [
         ('RAS', 'RAS'),
         ('null', 'null'),
     ]
 
-    # Champs du modèle
-    jeton = models.ForeignKey(RelanceJJ, on_delete=models.CASCADE, related_name='debrief_racc', limit_choices_to={'activite': 'RACC'})  # Référence au jeton de la table RelanceJJ (uniquement pour les activités RACC)
-    date = models.DateField()  # Date d'intervention de RelanceJJ
-    heure = models.TimeField()  # Heure d'intervention de RelanceJJ
-    tech = models.CharField(max_length=255)  # Nom du technicien de RelanceJJ
-    numero_technicien = models.CharField(max_length=50)  # Numéro de RelanceJJ
-    nouveaux_tech = models.DateField()  # Date qui vient de Parametres (actif_depuis)
-    zone_manager = models.CharField(max_length=255)  # Vient de manager de Parametres
-    code_cloture_technicien = models.TextField()  # Texte libre
-    reference_pm = models.CharField(max_length=50)  # Vient avec le numéro de jeton de ARD2
-    appel_tech = models.CharField(max_length=20, choices=APPEL_TECH_CHOICES, default='null')  # Appel tech
-    synchro = models.CharField(max_length=20, choices=SYNCHRO_CHOICES, default='null')  # Synchro
-    secteur = models.CharField(max_length=255)  # Secteur de RelanceJJ
-    type_echec = models.CharField(max_length=20, choices=TYPE_ECHEC_CHOICES, default='null')  # Type d'échec
-    pec_par = models.CharField(max_length=255)  # PEC PAR de RelanceJJ
-    resultat_controle = models.CharField(max_length=10, choices=RESULTAT_CONTROLE_CHOICES, default='null')  # Résultat du contrôle
-    diagnostic = models.TextField()  # Texte libre pour le diagnostic
+    # Clés étrangères
+    # On référence RelanceJJ qui contient déjà les liens vers ARD2 et GRDV.
+    # Les données seront utilisées selon les conditions suivantes :
+    # - Pour date et heure : si RelanceJJ.activite == "RACC" et si l'intervention est terminée (terminee True)
+    # - Pour tech, reference_pm, secteur : si ARD2.etat_intervention == "NOK"
+    relance = models.ForeignKey(
+        "RelanceJJ",
+        on_delete=models.CASCADE,
+        related_name="debriefs",
+        null=True,
+        blank=True,
+        help_text="RelanceJJ associée (doit avoir activite='RACC' et éventuellement être terminée)"
+    )
+    # Référence aux paramètres du technicien
+    parametre = models.ForeignKey(
+        "Parametres",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        help_text="Paramètres du technicien (pour numéro et zone, optionnel)"
+    )
+
+    # Champs saisis manuellement ou optionnels
+    nouveaux_tech = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        help_text="Champ saisi manuellement (nouveaux tech)"
+    )
+    code_cloture_technicien = models.TextField(
+        null=True,
+        blank=True,
+        help_text="Code de clôture du technicien (optionnel)"
+    )
+    appel_tech = models.CharField(
+        max_length=20,
+        choices=APPEL_TECH_CHOICES,
+        null=True,
+        blank=True,
+        default='null',
+        help_text="Appel tech (optionnel)"
+    )
+    synchro = models.CharField(
+        max_length=20,
+        choices=SYNCHRO_CHOICES,
+        null=True,
+        blank=True,
+        default='null',
+        help_text="Synchro (optionnel)"
+    )
+    type_echec = models.CharField(
+        max_length=20,
+        choices=TYPE_ECHEC_CHOICES,
+        null=True,
+        blank=True,
+        default='null',
+        help_text="Type d'échec (optionnel)"
+    )
+    pec_par = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        help_text="PEC PAR (optionnel)"
+    )
+    resultat_controle = models.CharField(
+        max_length=10,
+        choices=RESULTAT_CONTROLE_CHOICES,
+        null=True,
+        blank=True,
+        default='null',
+        help_text="Résultat du contrôle (optionnel)"
+    )
+    diagnostic = models.TextField(
+        null=True,
+        blank=True,
+        help_text="Diagnostic (optionnel)"
+    )
+
+    # Propriétés pour accéder aux données des modèles référencés
+
+    @property
+    def jeton(self):
+        """
+        Renvoie la référence au jeton (instance ARD2) via RelanceJJ.
+        """
+        if self.relance:
+            return self.relance.jeton  # RelanceJJ doit avoir une FK 'jeton' vers ARD2
+        return None
+
+    @property
+    def date(self):
+        """
+        Renvoie la date de début d'intervention provenant de GRDV (via RelanceJJ)
+        si RelanceJJ.activite == "RACC" et si l'intervention est terminée (terminee True).
+        """
+        if self.relance and self.relance.grdv:
+            if self.relance.activite == "RACC" and getattr(self.relance, 'terminee', False):
+                return self.relance.grdv.debut.date()
+        return None
+
+    @property
+    def heure(self):
+        """
+        Renvoie l'heure de début d'intervention provenant de GRDV (via RelanceJJ)
+        si RelanceJJ.activite == "RACC" et si l'intervention est terminée.
+        """
+        if self.relance and self.relance.grdv:
+            if self.relance.activite == "RACC" and getattr(self.relance, 'terminee', False):
+                return self.relance.grdv.debut.time()
+        return None
+
+    @property
+    def tech(self):
+        """
+        Renvoie le technicien depuis ARD2 (via RelanceJJ)
+        si ARD2.etat_intervention == "NOK".
+        """
+        if self.relance and self.relance.jeton:
+            ard2 = self.relance.jeton
+            if ard2.etat_intervention == "NOK":
+                return ard2.technicien
+        return None
+
+    @property
+    def reference_pm(self):
+        """
+        Renvoie le PM depuis ARD2 (via RelanceJJ)
+        si ARD2.etat_intervention == "NOK".
+        """
+        if self.relance and self.relance.jeton:
+            ard2 = self.relance.jeton
+            if ard2.etat_intervention == "NOK":
+                return ard2.pm
+        return None
+
+    @property
+    def secteur(self):
+        """
+        Renvoie le département depuis ARD2 (via RelanceJJ)
+        si ARD2.etat_intervention == "NOK".
+        """
+        if self.relance and self.relance.jeton:
+            ard2 = self.relance.jeton
+            if ard2.etat_intervention == "NOK":
+                return ard2.departement
+        return None
+
+    @property
+    def numero_technicien(self):
+        """
+        Renvoie l'identifiant du technicien depuis Parametres.
+        """
+        if self.parametre:
+            return self.parametre.id_tech
+        return None
+
+    @property
+    def zone_manager(self):
+        """
+        Renvoie la zone (ou manager) depuis Parametres.
+        """
+        if self.parametre:
+            return self.parametre.zone  # ou parametre.manager selon votre mapping
+        return None
 
     def __str__(self):
-        return f"{self.jeton.jeton} - {self.date} - {self.tech}"
+        jeton_str = self.jeton.jeton_commande if self.jeton and hasattr(self.jeton, 'jeton_commande') else "Aucun Jeton"
+        return f"{jeton_str} - {self.date} - {self.tech}"
 
-    def save(self, *args, **kwargs):
-        # Remplir automatiquement les champs à partir de RelanceJJ, Parametres et ARD2
-        if not self.date:
-            self.date = self.jeton.date_intervention
-        if not self.heure:
-            self.heure = self.jeton.heure_prevue
-        if not self.tech:
-            self.tech = self.jeton.techniciens
-        if not self.numero_technicien:
-            self.numero_technicien = self.jeton.numero
-        if not self.pec_par:
-            self.pec_par = self.jeton.pec
 
-        # Récupérer les informations de Parametres
-        try:
-            param = Parametres.objects.get(id_tech=self.jeton.techniciens)
-            self.nouveaux_tech = param.actif_depuis
-            self.zone_manager = param.manager
-        except Parametres.DoesNotExist:
-            pass
-
-        # Récupérer les informations de ARD2
-        try:
-            ard2 = ARD2.objects.get(jeton_commande=self.jeton.jeton.jeton_commande)
-            self.reference_pm = ard2.pm
-        except ARD2.DoesNotExist:
-            pass
-
-        super().save(*args, **kwargs)
 
 #debrief SAV
 
@@ -796,52 +961,3 @@ class InterventionsRACC(models.Model):
         verbose_name = "Intervention RACC"
         verbose_name_plural = "Interventions RACC"
         
-
-#le GRDV *****************************************
-
-
-class GRDV(models.Model):
-    date_rdv = models.DateTimeField(verbose_name="Date et heure du rendez-vous")
-    debut = models.DateTimeField(verbose_name="Date et heure du début d'intervention")
-    fin = models.DateTimeField(verbose_name="Date et heure de fin d'intervention")
-    statut_rendez_vous = models.CharField(max_length=255, verbose_name="Statut du rendez-vous")
-    statut_grdv = models.CharField(max_length=255, verbose_name="Statut GRDV")
-    activite = models.CharField(max_length=255, verbose_name="Activité")
-    plp = models.CharField(max_length=255, verbose_name="PLP")
-    technicien = models.CharField(max_length=255, verbose_name="Technicien")
-    presta = models.CharField(max_length=255, verbose_name="Presta")
-    tel_contact = models.CharField(max_length=20, verbose_name="Téléphone de contact")
-    commentaire = models.TextField(verbose_name="Commentaire")
-    adresse_postale = models.CharField(max_length=255, verbose_name="Adresse postale")
-    ref_commande = models.CharField(max_length=255, verbose_name="Référence de commande")
-    nro = models.CharField(max_length=255, verbose_name="NRO")
-    pm = models.CharField(max_length=255, verbose_name="PM")
-    code = models.CharField(max_length=255, verbose_name="Code")
-    residence = models.CharField(max_length=255, verbose_name="Résidence")
-    bat = models.CharField(max_length=255, verbose_name="Bâtiment")
-    esc = models.CharField(max_length=255, verbose_name="Escalier")
-    eta = models.CharField(max_length=255, verbose_name="Étage")
-    por = models.CharField(max_length=255, verbose_name="Porte")
-    pto = models.CharField(max_length=255, verbose_name="PTO")
-    id_client = models.CharField(max_length=255, verbose_name="ID Client")
-    technologement = models.CharField(max_length=255, verbose_name="Technologement")
-    operateurlogement = models.CharField(max_length=255, verbose_name="Opérateur logement")
-    typezone = models.CharField(max_length=255, verbose_name="Type de zone")
-    typetechno = models.CharField(max_length=255, verbose_name="Type de technologie")
-    secteur_infra = models.CharField(max_length=255, verbose_name="Secteur infrastructure")
-    typebatiment = models.CharField(max_length=255, verbose_name="Type de bâtiment")
-    typepoteau_edf = models.CharField(max_length=255, verbose_name="Type de poteau EDF")
-    typeclient = models.CharField(max_length=255, verbose_name="Type de client")
-    typebox = models.CharField(max_length=255, verbose_name="Type de box")
-    id_debrief_rdv = models.CharField(max_length=255, verbose_name="ID Débrief RDV")
-    debrief_rdv = models.TextField(verbose_name="Débrief RDV")
-    Adresse_PM = models.CharField(max_length=255, verbose_name="Adresse PM")
-    Connecteur_Free_PM = models.CharField(max_length=255, verbose_name="Connecteur Free PM")
-    date_import = models.DateTimeField(auto_now_add=True, verbose_name="Date et heure d'import du fichier")
-
-    def __str__(self):
-        return f"GRDV {self.id} - {self.date_rdv}"
-
-    class Meta:
-        verbose_name = "GRDV"
-        verbose_name_plural = "GRDVs"
