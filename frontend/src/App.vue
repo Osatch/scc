@@ -1,16 +1,9 @@
 <template>
   <div>
-    <router-view></router-view> <!-- 🔥 Gère l'affichage de Login ou Dashboard -->
-    
+    <router-view></router-view> <!-- Affiche Login ou Dashboard -->
   </div>
-  
 </template>
 
 <script setup>
-
-
-
-
-
-
+// Aucun script spécifique requis ici pour le moment.
 </script>

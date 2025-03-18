@@ -1,5 +1,7 @@
 # core/urls.py
 from django.urls import path
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+
 from .views import (
     gantt_list,            # Vue pour la liste des interventions Gantt
     login_view, logout_view,  # Vues pour la gestion de l'authentification
@@ -16,10 +18,19 @@ from .views import (
     debriefracc_list, debriefracc_detail,  # Vues pour la gestion des DebriefRACC
     debriefsav_list, debriefsav_detail,  # Vues pour la gestion des DebriefSAV
     interventionssav_list, interventionssav_detail,  # Vues pour la gestion des InterventionsSAV
-    import_ard2, import_grdv,  # Vues pour lancer les imports
+    import_ard2, import_grdv, protected_view # Vues pour lancer les imports
+
 )
 
 urlpatterns = [
+
+    #tokent  
+    path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+
+    path("protected-endpoint/", protected_view, name="protected-endpoint"),
+
+
     # Authentification
     path('login/', login_view, name='login'),
     path('logout/', logout_view, name='logout'),

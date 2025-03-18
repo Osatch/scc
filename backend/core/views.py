@@ -7,7 +7,7 @@ import io
 
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import (
@@ -105,11 +105,18 @@ def logout_view(request):
 
 # Nouvelle vue pour retourner le profil de l'utilisateur
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def user_profile(request):
-    if request.user.is_authenticated:
-        return Response({'name': request.user.username})
-    else:
-        return Response({'name': 'Utilisateur non connecté'}, status=401)
+    # L'utilisateur doit être authentifié pour atteindre cette vue
+    return Response({'name': request.user.username})
+#-----------protectview ---------
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def protected_view(request):
+    print(request.headers)  # Affiche les headers reçus
+    return Response({'message': 'Bienvenue dans la vue protégée !', 'user': request.user.username})
 
 @api_view(['GET'])
 def ard2_list(request):

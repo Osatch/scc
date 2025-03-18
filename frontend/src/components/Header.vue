@@ -1,6 +1,6 @@
 <template>
   <header class="bg-white shadow-md p-4 flex justify-between items-center ml-4">
-    <!-- Nom du compte actif -->
+    <!-- Affichage du nom du compte actif -->
     <div class="flex items-center">
       <span class="text-lg font-semibold">{{ activeAccountName }}</span>
     </div>
@@ -39,6 +39,7 @@
 import { PowerIcon, RefreshCwIcon as RefreshIcon } from "lucide-vue-next";
 
 export default {
+  name: "Header",
   components: {
     PowerIcon,
     RefreshIcon,
@@ -54,8 +55,24 @@ export default {
   methods: {
     async fetchAccountName() {
       try {
-        // On appelle l'endpoint du profil utilisateur (assurez-vous qu'il renvoie du JSON)
-        const response = await fetch("/api/user/profile/");
+        const accessToken = localStorage.getItem("access");
+        if (!accessToken) {
+          throw new Error("Token d'accès introuvable dans localStorage");
+        }
+        // Appel GET pour récupérer le profil utilisateur
+        const response = await fetch("http://127.0.0.1:8000/api/user/profile/", {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+          },
+        });
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error(`Erreur HTTP ${response.status}:`, errorText);
+          throw new Error(`Erreur HTTP: ${response.status}`);
+        }
         const data = await response.json();
         this.activeAccountName = data.name || "Utilisateur inconnu";
       } catch (error) {
@@ -69,41 +86,54 @@ export default {
 
       let endpoint = "";
       if (importType === "ard2") {
-        endpoint = "/api/import_ard2/"; // URL pour lancer l'import ARD2 (requête POST)
+        endpoint = "/api/import_ard2/";
       } else if (importType === "grdv") {
-        endpoint = "/api/import_grdv/"; // URL pour lancer l'import GRDV (requête POST)
+        endpoint = "/api/import_grdv/";
       }
 
       try {
+        const accessToken = localStorage.getItem("access");
+        if (!accessToken) {
+          throw new Error("Token d'accès introuvable pour l'import.");
+        }
+        // Pour les endpoints d'import, on utilise la méthode POST comme défini côté serveur.
         const response = await fetch(endpoint, {
           method: "POST",
+          headers: {
+            "Authorization": `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+            "Accept": "application/json"  // Ajout du header Accept pour recevoir du JSON
+          },
         });
-
         if (!response.ok) {
-          console.error(`Erreur HTTP ${response.status}:`, await response.text());
-          throw new Error(`Erreur HTTP ${response.status}`);
+          const errorText = await response.text();
+          console.error(`Erreur HTTP ${response.status}:`, errorText);
+          throw new Error(`Erreur HTTP: ${response.status}`);
         }
-
         const data = await response.json();
         alert(`Import ${importType.toUpperCase()} terminé.`);
       } catch (error) {
         console.error(`Erreur lors de l'import ${importType.toUpperCase()} :`, error);
         alert(`Erreur lors de l'import ${importType.toUpperCase()}.`);
       } finally {
-        // Réinitialiser la sélection dans la liste déroulante
         event.target.value = "";
       }
-    },
-    logout() {
-      // Suppression des tokens et redirection vers la page de login
-      localStorage.removeItem("access");
-      localStorage.removeItem("refresh");
-      this.$router.push("/");
     },
     refresh() {
       console.log("Rafraîchissement en cours...");
       this.fetchAccountName();
     },
+    logout() {
+      // Suppression des tokens et redirection (ou toute autre action souhaitée)
+      localStorage.removeItem("access");
+      localStorage.removeItem("refresh");
+      // Redirection vers la page de login, par exemple :
+      this.$router.push("/");
+    },
   },
 };
 </script>
+
+<style scoped>
+/* Ajoute ici tes styles personnalisés */
+</style>
