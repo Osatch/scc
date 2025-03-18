@@ -86,9 +86,9 @@ export default {
 
       let endpoint = "";
       if (importType === "ard2") {
-        endpoint = "/api/import_ard2/";
+        endpoint = "http://127.0.0.1:8000/api/import_ard2/";
       } else if (importType === "grdv") {
-        endpoint = "/api/import_grdv/";
+        endpoint = "http://127.0.0.1:8000/api/import_grdv/";
       }
 
       try {
