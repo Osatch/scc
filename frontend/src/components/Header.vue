@@ -1,7 +1,8 @@
 <template>
   <header class="bg-white shadow-md p-4 flex justify-between items-center ml-4">
-    <!-- Affichage du nom du compte actif -->
-    <div class="flex items-center">
+    <!-- Affichage du nom du compte actif avec icône utilisateur -->
+    <div class="flex items-center gap-2">
+      <UserIcon class="w-6 h-6 text-gray-700" />
       <span class="text-lg font-semibold">{{ activeAccountName }}</span>
     </div>
 
@@ -36,13 +37,14 @@
 </template>
 
 <script>
-import { PowerIcon, RefreshCwIcon as RefreshIcon } from "lucide-vue-next";
+import { PowerIcon, RefreshCwIcon as RefreshIcon, UserIcon } from "lucide-vue-next";
 
 export default {
   name: "Header",
   components: {
     PowerIcon,
     RefreshIcon,
+    UserIcon,
   },
   data() {
     return {
@@ -102,7 +104,7 @@ export default {
           headers: {
             "Authorization": `Bearer ${accessToken}`,
             "Content-Type": "application/json",
-            "Accept": "application/json"  // Ajout du header Accept pour recevoir du JSON
+            "Accept": "application/json"
           },
         });
         if (!response.ok) {

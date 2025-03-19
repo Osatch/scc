@@ -40,6 +40,7 @@ export default {
     const openSubMenus = ref([]);
 
     const menuItems = [
+      { label: "ARD2", path: "/ARD2" },
       { label: "Gantt", path: "/gantt" },
       { label: "Relance JJ", path: "/relancejj" },
       {

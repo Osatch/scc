@@ -85,3 +85,5 @@ class ParametresForm(forms.ModelForm):
         widgets = {
             'actif_depuis': forms.DateInput(attrs={'type': 'date'}),
         }
+class ProtectedSerializer(serializers.Serializer):
+    message = serializers.CharField()

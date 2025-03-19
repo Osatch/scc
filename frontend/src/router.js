@@ -11,6 +11,7 @@ import Nok from "./components/views/Nok.vue";
 import InterventionsSAV from "./components/views/InterventionsSAV.vue";
 import InterventionsRACC from "./components/views/InterventionsRACC.vue";
 import Parametres from "./components/views/Parametres.vue";
+import ARD2 from "./components/views/Ard2Table.vue";
 
 const routes = [
   { path: "/", component: Login },
@@ -28,6 +29,8 @@ const routes = [
       { path: "interventions/sav", component: InterventionsSAV },
       { path: "interventions/racc", component: InterventionsRACC },
       { path: "parametres", component: Parametres },
+      { path: "ARD2", component: ARD2 },
+
     ],
   },
 ];

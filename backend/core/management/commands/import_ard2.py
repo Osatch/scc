@@ -2,69 +2,99 @@ import csv
 import os
 import glob
 from datetime import datetime
+from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.utils.timezone import make_aware
-from core.models import ARD2  # Vérifiez que le chemin correspond bien à votre modèle ARD2
+from core.models import ARD2
 
 class Command(BaseCommand):
     help = "Importe le dernier fichier CSV ARD2 téléchargé dans la base de données."
 
     def handle(self, *args, **options):
-        # 1. Chemin vers le dossier contenant les CSV (relatif à la racine du projet)
-        csv_dir = os.path.join("Bot", "ard2")
+        # Chemin absolu vers le dossier CSV, par exemple: C:\scc\backend\Bot\ard2
+        csv_dir = os.path.join(settings.BASE_DIR, "Bot", "ard2")
         csv_pattern = os.path.join(csv_dir, "*.csv")
-
-        # 2. Récupérer tous les fichiers CSV dans le dossier
+        
         csv_files = glob.glob(csv_pattern)
         if not csv_files:
             self.stdout.write(self.style.ERROR(f"Aucun fichier CSV trouvé dans {csv_dir}."))
             return
-
-        # 3. Sélectionner le fichier CSV le plus récent (basé sur la date de création)
-        latest_file = max(csv_files, key=os.path.getctime)
+        
+        # Sélectionner le fichier le plus récent (basé sur la date de modification)
+        latest_file = max(csv_files, key=os.path.getmtime)
         self.stdout.write(self.style.WARNING(f"Fichier CSV détecté : {latest_file}"))
 
         try:
-            # 4. Ouvrir le fichier CSV
-            # Assurez-vous que l'encodage et le délimiteur correspondent à votre fichier ard2.csv.
-            # Ici, nous utilisons UTF-8 et la tabulation ('\t') comme séparateur.
-            with open(latest_file, mode='r', newline='', encoding='utf-8') as csvfile:
-                reader = csv.DictReader(csvfile, delimiter='\t')
-                date_format = "%d/%m/%Y %H:%M"  # Par exemple "25/02/2025 09:34"
+            # Utiliser 'utf-8-sig' pour gérer le BOM et ';' comme séparateur
+            with open(latest_file, mode='r', newline='', encoding='utf-8-sig') as csvfile:
+                reader = csv.DictReader(csvfile, delimiter=';')
+                # Format de date mis à jour (avec secondes)
+                date_format = "%d/%m/%Y %H:%M:%S"
+
+                imported_count = 0
+                skipped_count = 0
 
                 for row in reader:
-                    # Nettoyer les clés et valeurs pour retirer les espaces superflus
-                    row = {k.strip(): v.strip() for k, v in row.items() if k is not None}
+                    # Normaliser les clés en minuscules et retirer les espaces superflus
+                    row = {k.strip().lower(): v.strip() for k, v in row.items() if k is not None}
 
-                    # Vérifier que les champs obligatoires sont présents
-                    if not row.get('Jeton de commande') or not row.get("Début d'intervention"):
-                        self.stdout.write(self.style.WARNING(f"Ligne ignorée (champ requis vide) : {row}"))
+                    # Mapping des colonnes attendues
+                    jeton = row.get('référence')
+                    debut_str = row.get("début d'intervention")
+                    fin_str = row.get("fin d'intervention")
+                    terminee_val = row.get("terminée")
+                    etat = row.get("état de l'intervention")
+                    techniciens = row.get("techniciens")
+                    departement = row.get("département")
+                    pm = row.get("pm")
+
+                    # Vérifier que le champ 'référence' est présent (champ obligatoire)
+                    if not jeton:
+                        self.stdout.write(self.style.WARNING(f"Ligne ignorée (champ 'référence' vide) : {row}"))
+                        skipped_count += 1
                         continue
 
-                    # Conversion des dates
-                    debut_intervention = self.parse_date(row.get("Début d'intervention"), date_format)
-                    fin_intervention = self.parse_date(row.get("Fin d'intervention"), date_format)
+                    # Conversion des dates : si le champ est vide, on met None
+                    debut_intervention = self.parse_date(debut_str, date_format) if debut_str else None
+                    fin_intervention = self.parse_date(fin_str, date_format) if fin_str else None
+
+                    # Optionnel : si le champ de date est présent mais mal converti, on ignore la ligne
+                    if debut_str and debut_intervention is None:
+                        self.stdout.write(self.style.ERROR(
+                            f"Erreur de conversion de la date 'Début d'intervention' pour la ligne : {row}"
+                        ))
+                        skipped_count += 1
+                        continue
+
+                    terminee = False
+                    if terminee_val:
+                        terminee = terminee_val.upper() == 'OUI'
 
                     try:
-                        ARD2.objects.update_or_create(
-                            jeton_commande=row['Jeton de commande'],
+                        obj, created = ARD2.objects.update_or_create(
+                            jeton_commande=jeton,
                             defaults={
                                 'debut_intervention': debut_intervention,
                                 'fin_intervention': fin_intervention,
-                                'terminee': row['Terminée'].upper() == 'OUI',
-                                'etat_intervention': row["État de l'intervention"],
-                                'technicien': row['Techniciens'],
-                                'departement': row['Département'],
-                                'pm': row['PM'],
+                                'terminee': terminee,
+                                'etat_intervention': etat if etat else "",
+                                'technicien': techniciens if techniciens else "",
+                                'departement': departement if departement else "",
+                                'pm': pm if pm else "",
                                 'date_importation': make_aware(datetime.now()),
                             }
                         )
+                        imported_count += 1
+                        action = "créé" if created else "mis à jour"
+                        self.stdout.write(self.style.SUCCESS(f"ARD2 {action} pour le jeton {jeton}"))
                     except Exception as e:
                         self.stdout.write(self.style.ERROR(f"Erreur lors de l'importation de la ligne : {row}"))
                         self.stdout.write(self.style.ERROR(str(e)))
+                        skipped_count += 1
 
-            self.stdout.write(self.style.SUCCESS("Importation terminée avec succès."))
-
+                self.stdout.write(self.style.SUCCESS(
+                    f"Importation terminée. Lignes importées: {imported_count}, Lignes ignorées: {skipped_count}"
+                ))
         except Exception as e:
             self.stdout.write(self.style.ERROR("Une erreur est survenue lors de l'importation du CSV."))
             self.stdout.write(self.style.ERROR(str(e)))
@@ -73,6 +103,7 @@ class Command(BaseCommand):
         if not date_str or date_str.strip() == '':
             return None
         try:
-            return make_aware(datetime.strptime(date_str, date_format))
-        except ValueError:
+            parsed_date = datetime.strptime(date_str, date_format)
+            return make_aware(parsed_date)
+        except Exception:
             return None

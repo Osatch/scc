@@ -53,7 +53,7 @@ class GRDV(models.Model):
     class Meta:
         verbose_name = "GRDV"
         verbose_name_plural = "GRDVs"
-#gantt
+#gantt================================================================================================================
 class Gantt(models.Model):
     INTERVENTION_CHOICES = [
         ('OK SAV', 'OK SAV'),
@@ -161,7 +161,8 @@ class Gantt(models.Model):
 
     def __str__(self):
         return f"{self.nom_intervenant} - {self.type_intervention}"
-#gantstat
+
+#gantstat===================================================================================================
 
 
 class GanttStatistics(models.Model):
@@ -223,8 +224,7 @@ class GanttStatistics(models.Model):
 
 
 
-#Le Model ard2 
-
+#Le Model ard2 ===================================================================================
 
 
 class ARD2(models.Model):
@@ -237,26 +237,27 @@ class ARD2(models.Model):
     ]
 
     jeton_commande = models.CharField(max_length=JETON_MAX_LENGTH, unique=True)
-    debut_intervention = models.DateTimeField()
+    debut_intervention = models.DateTimeField(null=True, blank=True)  # Autorise None
     fin_intervention = models.DateTimeField(null=True, blank=True)
     terminee = models.BooleanField(default=False)
     etat_intervention = models.CharField(max_length=3, choices=ETAT_CHOICES)
     technicien = models.CharField(max_length=255)
     departement = models.CharField(max_length=255)
     pm = models.CharField(max_length=PM_MAX_LENGTH)
-    date_importation = models.DateTimeField(null=True, blank=True)  # Ajout sans auto_now_add
+    date_importation = models.DateTimeField(null=True, blank=True)
 
     def save(self, *args, **kwargs):
         self.terminee = bool(self.fin_intervention)
         if not self.date_importation:
-            self.date_importation = timezone.now()  # Ajoute une date si vide
+            self.date_importation = timezone.now()
         super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.jeton_commande} - {self.technicien}"
-  
-  #Relance jj
 
+
+  
+  #Relance jj =====================================================================================
 
 from django.db import models
 from django.utils import timezone
@@ -364,13 +365,9 @@ class RelanceJJ(models.Model):
         """
         # Récupération et synchronisation depuis GRDV
         if self.grdv:
-            # La date du RDV est la date de GRDV.date_rdv (date uniquement)
             self.date_rdv = self.grdv.date_rdv.date()
-            # Pour l'activité : si GRDV.activite vaut "RDV-Sav", alors on met "SAV", sinon "RACC"
             self.activite = "SAV" if self.grdv.activite == "RDV-Sav" else "RACC"
-            # L'heure prévue correspond à l'heure de début de GRDV
             self.heure_prevue = self.grdv.debut.time()
-            # Vérification que la référence de commande de GRDV correspond bien au jeton d'ARD2
             if self.jeton and self.grdv.ref_commande != self.jeton.jeton_commande:
                 raise ValueError("Incohérence : GRDV.ref_commande doit correspondre à ARD2.jeton_commande.")
 
@@ -389,16 +386,52 @@ class RelanceJJ(models.Model):
         elif self.heure_debut and not self.heure_fin:
             self.statut = 'Taguée'
         else:
-            self.statut = None  # On laisse null si aucune heure de début n'est renseignée
+            self.statut = None
 
         super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.jeton.jeton_commande} - {self.date_rdv} - {self.activite}"
 
+    @classmethod
+    def get_suivi_operations(cls):
+        """
+        Retourne les opérations en temps réel en joignant les données des modèles GRDV et ARD2,
+        sans nécessiter la création d'instances persistantes de RelanceJJ.
+        """
+        # Importez les modèles GRDV et ARD2.
+        # Assurez-vous que le chemin est correct selon votre structure d'application.
+        from .models import GRDV, ARD2
+
+        operations = []
+        grdv_list = GRDV.objects.all()
+        ard2_list = ARD2.objects.all()
+
+        # Construction d'un mapping pour retrouver rapidement l'objet ARD2 correspondant à GRDV.ref_commande.
+        ard2_dict = {ard2.jeton_commande: ard2 for ard2 in ard2_list}
+
+        for grdv in grdv_list:
+            ard2 = ard2_dict.get(grdv.ref_commande)
+            if ard2:
+                op = {
+                    'date_intervention': grdv.date_rdv.date(),
+                    'activite': "SAV" if grdv.activite == "RDV-Sav" else "RACC",
+                    'heure_prevue': grdv.debut.time(),
+                    'technicien': ard2.technicien,
+                    'departement': ard2.departement,
+                    'heure_debut': ard2.debut_intervention.time() if ard2.debut_intervention else None,
+                    'heure_fin': ard2.fin_intervention.time() if ard2.fin_intervention else None,
+                    'statut': 'Cloturée' if (ard2.debut_intervention and ard2.fin_intervention)
+                                else ('Taguée' if ard2.debut_intervention else None),
+                    'numero': '',  # À compléter selon vos besoins
+                    'pec': '',     # À compléter selon vos besoins
+                }
+                operations.append(op)
+        return operations
 
 
-#model param 
+
+#model param =======================================================================================
     
 from django.db import models
 
