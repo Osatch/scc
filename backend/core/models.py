@@ -259,6 +259,7 @@ class ARD2(models.Model):
   
   #Relance jj =====================================================================================
 
+# Dans models.py
 from django.db import models
 from django.utils import timezone
 
@@ -267,13 +268,11 @@ class RelanceJJ(models.Model):
         ('SAV', 'SAV'),
         ('RACC', 'RACC'),
     ]
-
     STATUT_CHOICES = [
         ('Cloturée', 'Cloturée'),
         ('Taguée', 'Taguée'),
     ]
 
-    # Relation vers GRDV pour récupérer les informations de rendez-vous
     grdv = models.ForeignKey(
         'GRDV',
         on_delete=models.CASCADE,
@@ -282,8 +281,6 @@ class RelanceJJ(models.Model):
         blank=True,
         verbose_name="GRDV associé"
     )
-
-    # Champs dérivés de GRDV
     date_rdv = models.DateField(
         null=True,
         blank=True,
@@ -300,16 +297,13 @@ class RelanceJJ(models.Model):
         blank=True,
         verbose_name="Heure prévue (provenant de GRDV.debut)"
     )
-
-    # Relation vers ARD2
     jeton = models.ForeignKey(
         'ARD2',
         on_delete=models.CASCADE,
         related_name='relances',
-        verbose_name="Jeton (ARD2)"
+        verbose_name="Jeton (ARD2)",
+        null=False,  # Obligatoire si on attend une correspondance
     )
-
-    # Autres champs
     techniciens = models.CharField(
         max_length=255,
         blank=True,
@@ -317,7 +311,8 @@ class RelanceJJ(models.Model):
     )
     numero = models.CharField(
         max_length=50,
-        verbose_name="Numéro (récupéré via les paramètres)"
+        verbose_name="Numéro (récupéré via les paramètres)",
+        blank=True  # Laisser vide pour le moment
     )
     departement = models.CharField(
         max_length=255,
@@ -326,13 +321,13 @@ class RelanceJJ(models.Model):
     )
     pec = models.CharField(
         max_length=255,
-        verbose_name="PEC (saisi manuellement)"
+        verbose_name="PEC (saisi manuellement)",
+        blank=True  # Laisser vide pour le moment
     )
     statut = models.CharField(
         max_length=20,
         choices=STATUT_CHOICES,
         blank=True,
-        null=True,
         verbose_name="Statut (calculé automatiquement)"
     )
     commentaire_demarrage = models.TextField(
@@ -345,8 +340,6 @@ class RelanceJJ(models.Model):
         blank=True,
         verbose_name="Commentaire clôture"
     )
-
-    # Champs horaires calculés à partir d'ARD2
     heure_debut = models.TimeField(
         null=True,
         blank=True,
@@ -359,75 +352,39 @@ class RelanceJJ(models.Model):
     )
 
     def save(self, *args, **kwargs):
-        """
-        Sauvegarde l'objet RelanceJJ en synchronisant les données depuis GRDV et ARD2.
-        Détermine automatiquement le statut en fonction des horaires de début et de fin.
-        """
-        # Récupération et synchronisation depuis GRDV
+        # Synchronisation depuis GRDV
         if self.grdv:
-            self.date_rdv = self.grdv.date_rdv.date()
-            self.activite = "SAV" if self.grdv.activite == "RDV-Sav" else "RACC"
-            self.heure_prevue = self.grdv.debut.time()
-            if self.jeton and self.grdv.ref_commande != self.jeton.jeton_commande:
-                raise ValueError("Incohérence : GRDV.ref_commande doit correspondre à ARD2.jeton_commande.")
+            self.date_rdv = self.grdv.date_rdv.date() if self.grdv.date_rdv else None
+            # Mapping de l'activité
+            if self.grdv.activite == "RDV-Sav":
+                self.activite = "SAV"
+            elif self.grdv.activite == "":
+                self.activite = ""
+            else:
+                self.activite = "RACC"
+            self.heure_prevue = self.grdv.debut.time() if self.grdv.debut else None
 
-        # Récupération et synchronisation depuis ARD2
+            # On peut éventuellement affecter grdv_id automatiquement (mais c'est déjà géré par la relation)
+
+        # Synchronisation depuis ARD2 (jeton)
         if self.jeton:
             self.techniciens = self.jeton.technicien
             self.departement = self.jeton.departement
-            if self.jeton.debut_intervention:
-                self.heure_debut = self.jeton.debut_intervention.time()
-            if self.jeton.fin_intervention:
-                self.heure_fin = self.jeton.fin_intervention.time()
+            self.heure_debut = self.jeton.debut_intervention.time() if self.jeton.debut_intervention else None
+            self.heure_fin = self.jeton.fin_intervention.time() if self.jeton.fin_intervention else None
 
-        # Détermination du statut selon la présence des horaires
-        if self.heure_debut and self.heure_fin:
-            self.statut = 'Cloturée'
-        elif self.heure_debut and not self.heure_fin:
-            self.statut = 'Taguée'
-        else:
-            self.statut = None
+            # Détermination du statut
+            if self.jeton.debut_intervention and self.jeton.fin_intervention:
+                self.statut = 'Cloturée'
+            elif self.jeton.debut_intervention and not self.jeton.fin_intervention:
+                self.statut = 'Taguée'
+            else:
+                self.statut = ""
 
         super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.jeton.jeton_commande} - {self.date_rdv} - {self.activite}"
-
-    @classmethod
-    def get_suivi_operations(cls):
-        """
-        Retourne les opérations en temps réel en joignant les données des modèles GRDV et ARD2,
-        sans nécessiter la création d'instances persistantes de RelanceJJ.
-        """
-        # Importez les modèles GRDV et ARD2.
-        # Assurez-vous que le chemin est correct selon votre structure d'application.
-        from .models import GRDV, ARD2
-
-        operations = []
-        grdv_list = GRDV.objects.all()
-        ard2_list = ARD2.objects.all()
-
-        # Construction d'un mapping pour retrouver rapidement l'objet ARD2 correspondant à GRDV.ref_commande.
-        ard2_dict = {ard2.jeton_commande: ard2 for ard2 in ard2_list}
-
-        for grdv in grdv_list:
-            ard2 = ard2_dict.get(grdv.ref_commande)
-            if ard2:
-                op = {
-                    'date_intervention': grdv.date_rdv.date(),
-                    'activite': "SAV" if grdv.activite == "RDV-Sav" else "RACC",
-                    'heure_prevue': grdv.debut.time(),
-                    'technicien': ard2.technicien,
-                    'departement': ard2.departement,
-                    'heure_debut': ard2.debut_intervention.time() if ard2.debut_intervention else None,
-                    'heure_fin': ard2.fin_intervention.time() if ard2.fin_intervention else None,
-                    'statut': 'Cloturée' if (ard2.debut_intervention and ard2.fin_intervention)
-                                else ('Taguée' if ard2.debut_intervention else None),
-                    'numero': '',  # À compléter selon vos besoins
-                    'pec': '',     # À compléter selon vos besoins
-                }
-                operations.append(op)
-        return operations
 
 
 

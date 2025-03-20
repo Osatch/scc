@@ -6,4 +6,9 @@ class CoreConfig(AppConfig):
 
     def ready(self):
         # Ton code ici
+        import core.signals  # Importer les signaux pour qu'ils soient enregistrés
         pass
+
+
+
+

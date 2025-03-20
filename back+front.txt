@@ -80,7 +80,7 @@ github
 
 git init
 git add .
-git commit -m "18-03 / 17h25 user name corrige , les import corrigées les deux , login corrigées  "
+git commit -m "20-03 / 18h50"
 git remote add origin https://github.com/Osatch/scc.git
 git push -u origin main
 
