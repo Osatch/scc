@@ -38,8 +38,11 @@ class Command(BaseCommand):
                     # Normaliser les clés en minuscules et retirer les espaces superflus
                     row = {k.strip().lower(): v.strip() for k, v in row.items() if k is not None}
 
-                    # Mapping des colonnes attendues
-                    jeton = row.get('référence')
+                    # >>> CHANGEMENT PRINCIPAL <<<
+                    # Au lieu de récupérer row.get('référence'), on récupère la colonne "jeton de commande"
+                    # qui, une fois en minuscules, s'appelle "jeton de commande".
+                    jeton = row.get('jeton de commande')
+
                     debut_str = row.get("début d'intervention")
                     fin_str = row.get("fin d'intervention")
                     terminee_val = row.get("terminée")
@@ -48,9 +51,11 @@ class Command(BaseCommand):
                     departement = row.get("département")
                     pm = row.get("pm")
 
-                    # Vérifier que le champ 'référence' est présent (champ obligatoire)
+                    # Vérifier que le champ 'jeton de commande' est présent (champ obligatoire)
                     if not jeton:
-                        self.stdout.write(self.style.WARNING(f"Ligne ignorée (champ 'référence' vide) : {row}"))
+                        self.stdout.write(
+                            self.style.WARNING(f"Ligne ignorée (champ 'jeton de commande' vide) : {row}")
+                        )
                         skipped_count += 1
                         continue
 

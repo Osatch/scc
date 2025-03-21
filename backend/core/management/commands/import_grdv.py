@@ -3,54 +3,51 @@ import os
 import glob
 from datetime import datetime
 from django.core.management.base import BaseCommand
-from core.models import GRDV
+from django.db.models.signals import post_save
+from core.models import GRDV, ARD2
+from core.signals import create_or_update_relancejj_from_grdv, create_or_update_relancejj_from_ard2
 
 class Command(BaseCommand):
-    help = "Importe le dernier fichier CSV GRDV téléchargé dans la base de données."
+    help = "Importe le dernier fichier CSV GRDV téléchargé dans la base de données sans déclencher la synchronisation RelanceJJ."
 
     def handle(self, *args, **options):
-        # Définir le dossier contenant les fichiers CSV
+        # Déconnexion temporaire des signaux de synchronisation
+        post_save.disconnect(create_or_update_relancejj_from_grdv, sender=GRDV)
+        post_save.disconnect(create_or_update_relancejj_from_ard2, sender=ARD2)
+
+        # Dossier contenant les fichiers CSV
         download_dir = os.path.join("Bot", "grdv")
-        
-        # Rechercher tous les fichiers CSV dans le dossier
         csv_pattern = os.path.join(download_dir, "*.csv")
         csv_files = glob.glob(csv_pattern)
         if not csv_files:
             self.stdout.write(self.style.ERROR(f"Aucun fichier CSV trouvé dans le dossier {download_dir}."))
             return
 
-        # Sélectionner le fichier CSV le plus récent basé sur la date de création
+        # Sélection du fichier CSV le plus récent (basé sur la date de création)
         latest_file = max(csv_files, key=os.path.getctime)
         self.stdout.write(self.style.WARNING(f"Fichier CSV le plus récent détecté : {latest_file}"))
 
         try:
-            # Ouvrir le fichier CSV avec l'encodage cp1252 et le délimiteur ';'
             with open(latest_file, mode='r', newline='', encoding='cp1252') as csvfile:
                 reader = csv.DictReader(csvfile, delimiter=';')
-                # Format des dates attendues dans le CSV, par exemple "2025-03-14 11:00:00"
-                date_format = "%Y-%m-%d %H:%M:%S"
-                
+                date_format = "%Y-%m-%d %H:%M:%S"  # Format attendu dans le CSV
+
                 for row in reader:
-                    # Nettoyer les clés et valeurs pour retirer les espaces superflus
                     row = {k.strip(): v.strip() for k, v in row.items() if k is not None}
-                    
-                    # Vérifier que le champ date_rdv est présent
+
                     if not row.get('date_rdv'):
                         self.stdout.write(self.style.ERROR(f"Ligne ignorée (date_rdv vide) : {row}"))
                         continue
 
                     try:
-                        # Conversion des dates
                         date_rdv = datetime.strptime(row['date_rdv'], date_format) if row.get('date_rdv') else None
                         debut = datetime.strptime(row['debut'], date_format) if row.get('debut') else None
                         fin = datetime.strptime(row['fin'], date_format) if row.get('fin') else None
 
-                        # Combiner les colonnes 'secteur' et 'infra' pour alimenter le champ secteur_infra
                         secteur = row.get('secteur', '')
                         infra = row.get('infra', '')
                         secteur_infra = f"{secteur} {infra}".strip()
 
-                        # Créer l'instance GRDV en mappant les colonnes du CSV aux champs du modèle
                         grdv = GRDV(
                             date_rdv=date_rdv,
                             debut=debut,
@@ -89,8 +86,6 @@ class Command(BaseCommand):
                             Adresse_PM=row.get('Adresse_PM', ''),
                             Connecteur_Free_PM=row.get('Connecteur_Free_PM', '')
                         )
-                        
-                        # Sauvegarder l'instance dans la base de données
                         grdv.save()
 
                     except Exception as row_error:
@@ -102,3 +97,7 @@ class Command(BaseCommand):
         except Exception as e:
             self.stdout.write(self.style.ERROR("Une erreur est survenue lors de l'importation du CSV."))
             self.stdout.write(self.style.ERROR(str(e)))
+        finally:
+            # Reconnexion des signaux après l'import
+            post_save.connect(create_or_update_relancejj_from_grdv, sender=GRDV)
+            post_save.connect(create_or_update_relancejj_from_ard2, sender=ARD2)

@@ -80,7 +80,7 @@ github
 
 git init
 git add .
-git commit -m "20-03 / 18h50"
+git commit -m "21-03 / 18h20"
 git remote add origin https://github.com/Osatch/scc.git
 git push -u origin main
 
@@ -155,3 +155,8 @@ Agent :
 
 python manage.py import_ard2
 python manage.py import_grdv
+python manage.py sync_relancejj.py
+
+
+
+TRUNCATE TABLE `core_ard2`;

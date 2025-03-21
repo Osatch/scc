@@ -142,7 +142,7 @@ def ajouter_parametre(request):
 
 @api_view(['GET'])
 def relancejj_list(request):
-    relances = RelanceJJ.objects.all().order_by('-date_intervention')
+    relances = RelanceJJ.objects.all().order_by('-date_rdv')
     serializer = RelanceJJSerializer(relances, many=True)
     return Response(serializer.data)
 

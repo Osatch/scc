@@ -7,8 +7,12 @@ from django.utils import timezone
 
 #le GRDV *****************************************
 
+from django.db import models
 
 class GRDV(models.Model):
+    # Ajout du champ jeton
+    jeton = models.CharField(max_length=255, verbose_name="Jeton", blank=True, default="")
+
     date_rdv = models.DateTimeField(verbose_name="Date et heure du rendez-vous")
     debut = models.DateTimeField(verbose_name="Date et heure du début d'intervention")
     fin = models.DateTimeField(verbose_name="Date et heure de fin d'intervention")
@@ -53,6 +57,7 @@ class GRDV(models.Model):
     class Meta:
         verbose_name = "GRDV"
         verbose_name_plural = "GRDVs"
+
 #gantt================================================================================================================
 class Gantt(models.Model):
     INTERVENTION_CHOICES = [
@@ -258,10 +263,8 @@ class ARD2(models.Model):
 
   
   #Relance jj =====================================================================================
-
-# Dans models.py
 from django.db import models
-from django.utils import timezone
+from core.models import GRDV, ARD2
 
 class RelanceJJ(models.Model):
     ACTIVITE_CHOICES = [
@@ -274,7 +277,7 @@ class RelanceJJ(models.Model):
     ]
 
     grdv = models.ForeignKey(
-        'GRDV',
+        GRDV,
         on_delete=models.CASCADE,
         related_name='relances',
         null=True,
@@ -298,11 +301,11 @@ class RelanceJJ(models.Model):
         verbose_name="Heure prévue (provenant de GRDV.debut)"
     )
     jeton = models.ForeignKey(
-        'ARD2',
+        ARD2,
         on_delete=models.CASCADE,
         related_name='relances',
         verbose_name="Jeton (ARD2)",
-        null=False,  # Obligatoire si on attend une correspondance
+        null=False  # Ce champ est obligatoire
     )
     techniciens = models.CharField(
         max_length=255,
@@ -312,7 +315,7 @@ class RelanceJJ(models.Model):
     numero = models.CharField(
         max_length=50,
         verbose_name="Numéro (récupéré via les paramètres)",
-        blank=True  # Laisser vide pour le moment
+        blank=True
     )
     departement = models.CharField(
         max_length=255,
@@ -322,7 +325,7 @@ class RelanceJJ(models.Model):
     pec = models.CharField(
         max_length=255,
         verbose_name="PEC (saisi manuellement)",
-        blank=True  # Laisser vide pour le moment
+        blank=True
     )
     statut = models.CharField(
         max_length=20,
@@ -343,30 +346,30 @@ class RelanceJJ(models.Model):
     heure_debut = models.TimeField(
         null=True,
         blank=True,
-        verbose_name="Heure début (ARD2.debut_intervention)"
+        verbose_name="Heure début (provenant de ARD2.debut_intervention)"
     )
     heure_fin = models.TimeField(
         null=True,
         blank=True,
-        verbose_name="Heure fin (ARD2.fin_intervention)"
+        verbose_name="Heure fin (provenant de ARD2.fin_intervention)"
     )
 
     def save(self, *args, **kwargs):
         # Synchronisation depuis GRDV
         if self.grdv:
             self.date_rdv = self.grdv.date_rdv.date() if self.grdv.date_rdv else None
-            # Mapping de l'activité
+            # Mapping de l'activité selon GRDV.activite
             if self.grdv.activite == "RDV-Sav":
                 self.activite = "SAV"
             elif self.grdv.activite == "":
                 self.activite = ""
+            elif self.grdv.activite == "REC-Route mise à jour via Emutation":
+                self.activite = "REC"
             else:
                 self.activite = "RACC"
             self.heure_prevue = self.grdv.debut.time() if self.grdv.debut else None
 
-            # On peut éventuellement affecter grdv_id automatiquement (mais c'est déjà géré par la relation)
-
-        # Synchronisation depuis ARD2 (jeton)
+        # Synchronisation depuis ARD2 via le champ jeton
         if self.jeton:
             self.techniciens = self.jeton.technicien
             self.departement = self.jeton.departement
@@ -384,7 +387,9 @@ class RelanceJJ(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
+        # Affiche la commande du jeton, la date et l'activité
         return f"{self.jeton.jeton_commande} - {self.date_rdv} - {self.activite}"
+
 
 
 
