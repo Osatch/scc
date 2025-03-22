@@ -76,6 +76,24 @@
             <option value="NON">NON</option>
           </select>
         </div>
+
+        <!-- Log Technicien -->
+        <div class="form-group">
+          <label for="log_technicien">Log Technicien</label>
+          <input type="text" id="log_technicien" v-model="formData.log_technicien" required />
+        </div>
+
+        <!-- Numéro du Technicien (optionnel) -->
+        <div class="form-group">
+          <label for="numero_technicien">Numéro du Technicien</label>
+          <input type="text" id="numero_technicien" v-model="formData.numero_technicien" />
+        </div>
+
+        <!-- Société (optionnel) -->
+        <div class="form-group">
+          <label for="societe">Société</label>
+          <input type="text" id="societe" v-model="formData.societe" />
+        </div>
       </div>
 
       <!-- Boutons -->
@@ -86,7 +104,10 @@
     </form>
   </div>
 </template>
+
 <script>
+import axios from "axios";
+
 export default {
   data() {
     return {
@@ -101,14 +122,28 @@ export default {
         manager: "",
         zone: "",
         grille_actif: "",
+        log_technicien: "",
+        numero_technicien: "",
+        societe: ""
       },
-      departements: Array.from({ length: 95 }, (_, i) => (i + 1).toString()), // Numéros de département de 1 à 95
+      // Génère une liste de numéros de département de 1 à 95
+      departements: Array.from({ length: 95 }, (_, i) => (i + 1).toString()),
     };
   },
   methods: {
     submitForm() {
-      this.$emit("submit", this.formData);
-      this.resetForm();
+      // Remplacez l'URL par celle de votre API
+      axios
+        .post("http://127.0.0.1:8000/api/parametres/", this.formData)
+        .then((response) => {
+          // Émettre l'événement "submit" avec les données de la réponse si nécessaire
+          this.$emit("submit", response.data);
+          // Réinitialiser le formulaire après une soumission réussie
+          this.resetForm();
+        })
+        .catch((error) => {
+          console.error("Erreur lors de la soumission du formulaire :", error);
+        });
     },
     cancelForm() {
       this.$emit("cancel");
@@ -125,14 +160,18 @@ export default {
         manager: "",
         zone: "",
         grille_actif: "",
+        log_technicien: "",
+        numero_technicien: "",
+        societe: ""
       };
     },
   },
 };
 </script>
+
 <style scoped>
 .form-container {
-  max-width: 800px; /* Augmenter la largeur pour accommoder deux colonnes */
+  max-width: 800px;
   margin: 0 auto;
   padding: 30px;
   background-color: #ffffff;
@@ -142,13 +181,13 @@ export default {
 
 .form-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr); /* Deux colonnes de largeur égale */
-  gap: 20px; /* Espacement entre les champs */
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
 }
 
 .form-group {
   margin: 10px;
-  margin-bottom: 0; /* Supprimer la marge inférieure pour éviter un espacement inutile */
+  margin-bottom: 0;
 }
 
 label {
@@ -166,7 +205,7 @@ input, select {
   font-size: 14px;
   background-color: #f9f9f9;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
-  color: #000; /* Forcer la couleur du texte à noir */
+  color: #000;
 }
 
 input:focus, select:focus {

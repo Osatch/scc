@@ -15,6 +15,7 @@
         <option value="">Importer données...</option>
         <option value="ard2">Importer ARD2</option>
         <option value="grdv">Importer GRDV</option>
+        <option value="srjj">Syncor Relacejj</option>
       </select>
     </div>
 
@@ -91,8 +92,9 @@ export default {
         endpoint = "http://127.0.0.1:8000/api/import_ard2/";
       } else if (importType === "grdv") {
         endpoint = "http://127.0.0.1:8000/api/import_grdv/";
+      }else if (importType === "srjj") {
+        endpoint = "http://127.0.0.1:8000/api/sync_relancejj/";
       }
-
       try {
         const accessToken = localStorage.getItem("access");
         if (!accessToken) {

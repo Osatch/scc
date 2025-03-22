@@ -124,21 +124,31 @@ def ard2_list(request):
     serializer = ARD2Serializer(ard2_data, many=True)
     return Response(serializer.data)
 
-@api_view(['GET'])
-def parametres_list(request):
-    parametres = Parametres.objects.all().order_by('id_tech')
-    serializer = ParametresSerializer(parametres, many=True)
-    return Response(serializer.data)
 
-def ajouter_parametre(request):
-    if request.method == 'POST':
-        form = ParametresForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('liste_parametres')
-    else:
-        form = ParametresForm()
-    return render(request, 'ajouter_parametre.html', {'form': form})
+@api_view(['GET', 'POST', 'DELETE'])
+def parametres_list(request):
+    if request.method == 'GET':
+        # Récupère et renvoie tous les paramètres
+        parametres = Parametres.objects.all().order_by('id_tech')
+        serializer = ParametresSerializer(parametres, many=True)
+        return Response(serializer.data)
+    
+    elif request.method == 'POST':
+        # Crée un nouveau paramètre à partir des données fournies
+        serializer = ParametresSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=201)
+        return Response(serializer.errors, status=400)
+    
+    elif request.method == 'DELETE':
+        # Pour supprimer, on attend que la clé primaire soit passée dans le corps de la requête
+        pk = request.data.get('pk')
+        if not pk:
+            return Response({"error": "Identifiant (pk) requis pour la suppression."}, status=400)
+        parametre = get_object_or_404(Parametres, pk=pk)
+        parametre.delete()
+        return Response({"message": "Paramètre supprimé avec succès."}, status=204)
 
 @api_view(['GET'])
 def relancejj_list(request):
@@ -352,6 +362,15 @@ def import_grdv(request):
     try:
         output = io.StringIO()
         call_command('import_grdv', stdout=output)
+        return JsonResponse({'status': 'success', 'message': output.getvalue()})
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+@csrf_exempt
+@require_POST
+def sync_relancejj(request):
+    try:
+        output = io.StringIO()
+        call_command('sync_relancejj', stdout=output)
         return JsonResponse({'status': 'success', 'message': output.getvalue()})
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)

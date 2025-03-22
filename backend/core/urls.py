@@ -80,4 +80,6 @@ urlpatterns = [
     path('user/profile/', user_profile, name='user_profile'),
     path('import_ard2/', import_ard2, name='import_ard2'),
     path('import_grdv/', import_grdv, name='import_grdv'),
+    path('sync_relancejj/', import_grdv, name='sync_relancejj'),
+
 ]

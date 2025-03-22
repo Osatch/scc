@@ -263,8 +263,10 @@ class ARD2(models.Model):
 
   
   #Relance jj =====================================================================================
+
+         
+import unicodedata
 from django.db import models
-from core.models import GRDV, ARD2
 
 class RelanceJJ(models.Model):
     ACTIVITE_CHOICES = [
@@ -300,12 +302,10 @@ class RelanceJJ(models.Model):
         blank=True,
         verbose_name="Heure prévue (provenant de GRDV.debut)"
     )
-    jeton = models.ForeignKey(
-        ARD2,
-        on_delete=models.CASCADE,
-        related_name='relances',
-        verbose_name="Jeton (ARD2)",
-        null=False  # Ce champ est obligatoire
+    jeton_commande = models.CharField(
+        max_length=10,
+        verbose_name="Jeton commande",
+        blank=True
     )
     techniciens = models.CharField(
         max_length=255,
@@ -358,6 +358,7 @@ class RelanceJJ(models.Model):
         # Synchronisation depuis GRDV
         if self.grdv:
             self.date_rdv = self.grdv.date_rdv.date() if self.grdv.date_rdv else None
+
             # Mapping de l'activité selon GRDV.activite
             if self.grdv.activite == "RDV-Sav":
                 self.activite = "SAV"
@@ -369,32 +370,29 @@ class RelanceJJ(models.Model):
                 self.activite = "RACC"
             self.heure_prevue = self.grdv.debut.time() if self.grdv.debut else None
 
-        # Synchronisation depuis ARD2 via le champ jeton
-        if self.jeton:
-            self.techniciens = self.jeton.technicien
-            self.departement = self.jeton.departement
-            self.heure_debut = self.jeton.debut_intervention.time() if self.jeton.debut_intervention else None
-            self.heure_fin = self.jeton.fin_intervention.time() if self.jeton.fin_intervention else None
-
-            # Détermination du statut
-            if self.jeton.debut_intervention and self.jeton.fin_intervention:
-                self.statut = 'Cloturée'
-            elif self.jeton.debut_intervention and not self.jeton.fin_intervention:
-                self.statut = 'Taguée'
+            # Normalisation de GRDV.ref_commande pour obtenir le jeton_commande (10 premiers caractères)
+            if self.grdv.ref_commande:
+                self.jeton_commande = unicodedata.normalize("NFKC", self.grdv.ref_commande.strip())[:10]
             else:
-                self.statut = ""
+                self.jeton_commande = ""
+
+        # **Ajout : Mise à jour automatique du statut**
+        if self.heure_debut and self.heure_fin:
+            self.statut = "Cloturée"
+        elif self.heure_debut and not self.heure_fin:
+            self.statut = "Taguée"
+        else:
+            self.statut = ""
 
         super().save(*args, **kwargs)
 
     def __str__(self):
-        # Affiche la commande du jeton, la date et l'activité
-        return f"{self.jeton.jeton_commande} - {self.date_rdv} - {self.activite}"
-
-
-
+        return f"{self.jeton_commande} - {self.date_rdv} - {self.activite}"
 
 #model param =======================================================================================
     
+
+
 from django.db import models
 
 class Parametres(models.Model):
@@ -421,18 +419,24 @@ class Parametres(models.Model):
     ]
 
     # Champs du modèle
-    id_tech = models.CharField(max_length=50, unique=True, verbose_name="ID Technicien")  # Identifiant unique du technicien
-    nom_tech = models.CharField(max_length=255, verbose_name="Nom du Technicien")  # Nom complet du technicien
-    departement = models.CharField(max_length=255, verbose_name="Département")  # Département du technicien
-    log_free = models.CharField(max_length=255, verbose_name="Log Free")  # Format : tsm_prenom_nom
-    competence = models.CharField(max_length=3, choices=COMPETENCE_CHOICES, blank=True, verbose_name="Compétence")  # Compétence SAV ou vide
-    actif_depuis = models.DateField(verbose_name="Actif depuis")  # Date depuis laquelle le technicien est actif
-    controle_photo = models.CharField(max_length=2, choices=CONTROLE_PHOTO_CHOICES, verbose_name="Contrôle Photo")  # G1 ou G2
-    manager = models.CharField(max_length=255, verbose_name="Manager")  # Nom du manager (ex: Rayane Balere)
-    zone = models.CharField(max_length=50, choices=ZONE_CHOICES, verbose_name="Zone")  # Zone 1, Zone 2, etc.
-    grille_actif = models.CharField(max_length=3, choices=GRILLE_ACTIF_CHOICES, verbose_name="Grille Actif")  # OUI ou NON
-    log_technicien = models.CharField(max_length=255, verbose_name="Log Technicien")  # Log du technicien
-    mdp = models.CharField(max_length=255, verbose_name="Mot de passe")  # Mot de passe
+    id_tech = models.CharField(max_length=50, unique=True, verbose_name="ID Technicien")
+    nom_tech = models.CharField(max_length=255, verbose_name="Nom du Technicien")
+    departement = models.CharField(max_length=255, verbose_name="Département")
+    log_free = models.CharField(max_length=255, verbose_name="Log Free")
+    competence = models.CharField(max_length=3, choices=COMPETENCE_CHOICES, blank=True, verbose_name="Compétence")
+    actif_depuis = models.DateField(verbose_name="Actif depuis")
+    controle_photo = models.CharField(max_length=2, choices=CONTROLE_PHOTO_CHOICES, verbose_name="Contrôle Photo")
+    manager = models.CharField(max_length=255, verbose_name="Manager")
+    zone = models.CharField(max_length=50, choices=ZONE_CHOICES, verbose_name="Zone")
+    grille_actif = models.CharField(max_length=3, choices=GRILLE_ACTIF_CHOICES, verbose_name="Grille Actif")
+    
+    # Champs optionnels existants
+    log_technicien = models.CharField(max_length=255, verbose_name="Log Technicien", blank=True, null=True)
+    mdp = models.CharField(max_length=255, verbose_name="Mot de passe", blank=True, null=True)
+    
+    # Nouveaux champs optionnels
+    numero_technicien = models.CharField(max_length=50, verbose_name="Numéro du Technicien", blank=True, null=True)
+    societe = models.CharField(max_length=255, verbose_name="Société", blank=True, null=True)
 
     def __str__(self):
         return f"{self.id_tech} - {self.nom_tech}"
@@ -442,8 +446,9 @@ class Parametres(models.Model):
         verbose_name_plural = "Paramètres"
 
 
-#le nok from django.db import models
 
+
+#le nok from django.db import models=================================================================
 class NOK(models.Model):
     jeton = models.CharField(max_length=20)
     date_rdv = models.DateField()
@@ -474,7 +479,7 @@ class NOK(models.Model):
 
 
 
-#Control photo 
+#Control photo =================================================================================
 
 from django.db import models
 from .models import RelanceJJ  # Assurez-vous d'importer le modèle RelanceJJ

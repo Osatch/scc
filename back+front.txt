@@ -155,8 +155,10 @@ Agent :
 
 python manage.py import_ard2
 python manage.py import_grdv
-python manage.py sync_relancejj.py
+python manage.py sync_relancejj
 
 
 
 TRUNCATE TABLE `core_ard2`;
+TRUNCATE TABLE`core_grdv`;
+TRUNCATE TABLE`core_relancejj`;

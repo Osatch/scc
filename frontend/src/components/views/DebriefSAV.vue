@@ -82,7 +82,7 @@ export default {
 
 <style scoped>
 .main-content {
-  width: 100%;
+  width: 95%;
   padding: 20px;
   background-color: #f8f9fa;
   color: #333;

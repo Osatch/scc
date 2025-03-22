@@ -28,8 +28,6 @@ class Command(BaseCommand):
             # Utiliser 'utf-8-sig' pour gérer le BOM et ';' comme séparateur
             with open(latest_file, mode='r', newline='', encoding='utf-8-sig') as csvfile:
                 reader = csv.DictReader(csvfile, delimiter=';')
-                # Format de date mis à jour (avec secondes)
-                date_format = "%d/%m/%Y %H:%M:%S"
 
                 imported_count = 0
                 skipped_count = 0
@@ -39,8 +37,7 @@ class Command(BaseCommand):
                     row = {k.strip().lower(): v.strip() for k, v in row.items() if k is not None}
 
                     # >>> CHANGEMENT PRINCIPAL <<<
-                    # Au lieu de récupérer row.get('référence'), on récupère la colonne "jeton de commande"
-                    # qui, une fois en minuscules, s'appelle "jeton de commande".
+                    # Utilisation de la colonne "jeton de commande"
                     jeton = row.get('jeton de commande')
 
                     debut_str = row.get("début d'intervention")
@@ -60,8 +57,8 @@ class Command(BaseCommand):
                         continue
 
                     # Conversion des dates : si le champ est vide, on met None
-                    debut_intervention = self.parse_date(debut_str, date_format) if debut_str else None
-                    fin_intervention = self.parse_date(fin_str, date_format) if fin_str else None
+                    debut_intervention = self.parse_date(debut_str) if debut_str else None
+                    fin_intervention = self.parse_date(fin_str) if fin_str else None
 
                     # Optionnel : si le champ de date est présent mais mal converti, on ignore la ligne
                     if debut_str and debut_intervention is None:
@@ -76,24 +73,45 @@ class Command(BaseCommand):
                         terminee = terminee_val.upper() == 'OUI'
 
                     try:
-                        obj, created = ARD2.objects.update_or_create(
-                            jeton_commande=jeton,
-                            defaults={
-                                'debut_intervention': debut_intervention,
-                                'fin_intervention': fin_intervention,
-                                'terminee': terminee,
-                                'etat_intervention': etat if etat else "",
-                                'technicien': techniciens if techniciens else "",
-                                'departement': departement if departement else "",
-                                'pm': pm if pm else "",
-                                'date_importation': make_aware(datetime.now()),
-                            }
-                        )
+                        # Vérification des doublons pour 'jeton de commande'
+                        qs = ARD2.objects.filter(jeton_commande=jeton)
+                        if qs.count() > 1:
+                            qs.update(
+                                debut_intervention=debut_intervention,
+                                fin_intervention=fin_intervention,
+                                terminee=terminee,
+                                etat_intervention=etat if etat else "",
+                                technicien=techniciens if techniciens else "",
+                                departement=departement if departement else "",
+                                pm=pm if pm else "",
+                                date_importation=make_aware(datetime.now()),
+                            )
+                            self.stdout.write(self.style.WARNING(
+                                f"Plusieurs entrées trouvées pour le jeton {jeton}, mises à jour."
+                            ))
+                        else:
+                            obj, created = ARD2.objects.update_or_create(
+                                jeton_commande=jeton,
+                                defaults={
+                                    'debut_intervention': debut_intervention,
+                                    'fin_intervention': fin_intervention,
+                                    'terminee': terminee,
+                                    'etat_intervention': etat if etat else "",
+                                    'technicien': techniciens if techniciens else "",
+                                    'departement': departement if departement else "",
+                                    'pm': pm if pm else "",
+                                    'date_importation': make_aware(datetime.now()),
+                                }
+                            )
+                            action = "créé" if created else "mis à jour"
+                            self.stdout.write(self.style.SUCCESS(
+                                f"ARD2 {action} pour le jeton {jeton}"
+                            ))
                         imported_count += 1
-                        action = "créé" if created else "mis à jour"
-                        self.stdout.write(self.style.SUCCESS(f"ARD2 {action} pour le jeton {jeton}"))
                     except Exception as e:
-                        self.stdout.write(self.style.ERROR(f"Erreur lors de l'importation de la ligne : {row}"))
+                        self.stdout.write(self.style.ERROR(
+                            f"Erreur lors de l'importation de la ligne : {row}"
+                        ))
                         self.stdout.write(self.style.ERROR(str(e)))
                         skipped_count += 1
 
@@ -104,11 +122,17 @@ class Command(BaseCommand):
             self.stdout.write(self.style.ERROR("Une erreur est survenue lors de l'importation du CSV."))
             self.stdout.write(self.style.ERROR(str(e)))
 
-    def parse_date(self, date_str, date_format):
-        if not date_str or date_str.strip() == '':
-            return None
-        try:
-            parsed_date = datetime.strptime(date_str, date_format)
-            return make_aware(parsed_date)
-        except Exception:
-            return None
+    def parse_date(self, date_str):
+        """
+        Tente de parser une date avec deux formats possibles :
+         - "%d/%m/%Y %H:%M:%S"
+         - "%d/%m/%Y %H:%M"
+        Retourne un datetime aware ou None en cas d'échec.
+        """
+        for fmt in ["%d/%m/%Y %H:%M:%S", "%d/%m/%Y %H:%M"]:
+            try:
+                parsed_date = datetime.strptime(date_str, fmt)
+                return make_aware(parsed_date)
+            except Exception:
+                continue
+        return None
