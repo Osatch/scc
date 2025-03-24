@@ -1,11 +1,48 @@
 <template>
   <div class="main-content">
+    <!-- Filtres -->
+    <div class="filters">
+      <div class="filter-group">
+        <label for="filter-departement">Département</label>
+        <input
+          type="text"
+          id="filter-departement"
+          v-model="selectedDepartement"
+          placeholder="Filtrer par département"
+        />
+      </div>
+      <div class="filter-group">
+        <label for="filter-technicien">Technicien</label>
+        <input
+          type="text"
+          id="filter-technicien"
+          v-model="selectedTechnicien"
+          placeholder="Filtrer par technicien"
+        />
+      </div>
+      <div class="filter-group">
+        <label for="filter-date">Date</label>
+        <input
+          type="date"
+          id="filter-date"
+          v-model="selectedDate"
+          placeholder="Filtrer par date"
+        />
+      </div>
+      <div class="filter-actions">
+        <button @click="clearFilters">Effacer</button>
+      </div>
+    </div>
+
     <!-- Conteneur pour l'en-tête avec barre de défilement -->
     <div class="header-container" ref="headerContainer">
       <table class="header-table">
         <thead>
           <tr>
+            <th>Date Intervention</th>
             <th>Nom Intervenant</th>
+            <th>Département</th>
+            <th>Société</th>
             <th>08:00</th>
             <th>09:00</th>
             <th>10:00</th>
@@ -28,8 +65,11 @@
     <div class="table-container" ref="tableContainer">
       <table>
         <tbody>
-          <tr v-for="entry in parametres" :key="entry.id">
+          <tr v-for="entry in filteredParametres" :key="entry.id">
+            <td>{{ entry.date_intervention }}</td>
             <td>{{ entry.nom_intervenant }}</td>
+            <td>{{ entry.departement }}</td>
+            <td>{{ entry.societe }}</td>
             <td :class="getCellClass(entry.heure_08)">{{ entry.heure_08 }}</td>
             <td :class="getCellClass(entry.heure_09)">{{ entry.heure_09 }}</td>
             <td :class="getCellClass(entry.heure_10)">{{ entry.heure_10 }}</td>
@@ -54,10 +94,40 @@
 import axios from "axios";
 
 export default {
+  name: "GanttTable",
   data() {
     return {
       parametres: [],
+      // Filtres
+      selectedDepartement: "",
+      selectedTechnicien: "",
+      selectedDate: "",
     };
+  },
+  computed: {
+    filteredParametres() {
+      return this.parametres.filter((entry) => {
+        let matches = true;
+        if (this.selectedDepartement) {
+          matches =
+            matches &&
+            entry.departement
+              .toLowerCase()
+              .includes(this.selectedDepartement.toLowerCase());
+        }
+        if (this.selectedTechnicien) {
+          matches =
+            matches &&
+            entry.nom_intervenant
+              .toLowerCase()
+              .includes(this.selectedTechnicien.toLowerCase());
+        }
+        if (this.selectedDate) {
+          matches = matches && entry.date_intervention === this.selectedDate;
+        }
+        return matches;
+      });
+    },
   },
   mounted() {
     this.loadData();
@@ -75,7 +145,12 @@ export default {
         });
     },
     getCellClass(value) {
-      if (value === "OK SAV" || value === "OK RACC") {
+      if (
+        value === "OK SAV" ||
+        value === "OK RACC" ||
+        value === "OK RACC; OK RACC" ||
+        value === "OK RACC;"
+      ) {
         return "ok-cell";
       } else if (value === "NOK SAV" || value === "NOK RACC") {
         return "nok-cell";
@@ -94,13 +169,18 @@ export default {
         headerContainer.scrollLeft = tableContainer.scrollLeft;
       });
     },
+    clearFilters() {
+      this.selectedDepartement = "";
+      this.selectedTechnicien = "";
+      this.selectedDate = "";
+    },
   },
 };
 </script>
 
 <style scoped>
 .main-content {
-  width: 100%;
+  width: 95%;
   padding: 20px;
   background-color: #f8f9fa;
   color: #333;
@@ -108,9 +188,52 @@ export default {
   box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
 }
 
+/* Filtres */
+.filters {
+  width: 65%;
+  margin-bottom: 20px;
+  padding: 10px;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 200px;
+}
+.filter-group label {
+  margin-bottom: 5px;
+  font-weight: bold;
+  font-size: 14px;
+}
+.filter-group input {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+.filter-actions {
+  display: flex;
+  align-items: flex-end;
+}
+.filter-actions button {
+  padding: 8px 16px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.filter-actions button:hover {
+  background-color: #0056b3;
+}
+
 .header-container {
   width: 65%;
-  overflow-x: auto; /* Barre de défilement horizontale */
+  overflow-x: auto;
   border-radius: 8px 8px 0 0;
   max-width: 100vw;
   white-space: nowrap;
@@ -122,12 +245,12 @@ export default {
   border-collapse: collapse;
   font-size: 13px;
   min-width: 1200px;
-  table-layout: fixed; /* Force les colonnes à avoir la même largeur */
+  table-layout: fixed;
 }
 
 .table-container {
   width: 65%;
-  overflow-x: auto; /* Barre de défilement horizontale */
+  overflow-x: auto;
   border-radius: 0 0 8px 8px;
   max-width: 100vw;
   white-space: nowrap;
@@ -139,15 +262,16 @@ table {
   border-collapse: collapse;
   font-size: 13px;
   min-width: 1200px;
-  table-layout: fixed; /* Force les colonnes à avoir la même largeur */
+  table-layout: fixed;
 }
 
-th, td {
+th,
+td {
   border: 1px solid #ddd;
   padding: 10px;
   text-align: left;
   white-space: nowrap;
-  width: 120px; /* Largeur fixe pour chaque colonne */
+  width: 120px;
 }
 
 th {
@@ -161,7 +285,6 @@ td {
   color: #333;
 }
 
-/* Alternance de couleur pour les lignes */
 tbody tr:nth-child(odd) {
   background-color: #f9f9f9;
 }
@@ -170,35 +293,33 @@ tbody tr:nth-child(even) {
   background-color: #ffffff;
 }
 
-/* Effet hover sur les lignes */
 tbody tr:hover {
   background-color: #e3f2fd;
   transition: background-color 0.3s ease-in-out;
 }
 
-/* Styles pour les cellules OK et NOK */
 .ok-cell {
-  background-color: #c8e6c9; /* Vert clair */
+  background-color: #c8e6c9;
 }
 
 .nok-cell {
-  background-color: #ffcc80; /* Orange clair */
+  background-color: #ffcc80;
 }
 
 @media (max-width: 768px) {
   .header-container,
-  .table-container {
+  .table-container,
+  .filters {
     width: 90%;
     margin-left: 10px;
   }
-
   table {
     font-size: 12px;
   }
-
-  th, td {
+  th,
+  td {
     padding: 8px;
-    width: 100px; /* Ajustez la largeur pour les petits écrans */
+    width: 100px;
   }
 }
 </style>

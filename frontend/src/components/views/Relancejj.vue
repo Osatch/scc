@@ -4,6 +4,14 @@
     
     <!-- Filtres -->
     <div class="filters">
+      <!-- Bouton toggle pour filtres supplémentaires -->
+      <div class="toggle-extra-filters">
+        <button @click="toggleExtraFilters">
+          {{ showExtraFilters ? '-' : '+' }}
+        </button>
+      </div>
+      
+      <!-- Filtres de base -->
       <div class="filter-grid">
         <!-- Filtre Statut -->
         <div class="filter-group">
@@ -27,7 +35,7 @@
             <option value="">Tous</option>
             <option value="08:00-12:00">Entre 08h00 et 12h00</option>
             <option value="12:00-14:00">Entre 12h00 et 14h00</option>
-            <option value="14:00-18:00">Entre14h00 et 18h00</option>
+            <option value="14:00-18:00">Entre 14h00 et 18h00</option>
             <option value="18:00-">Après 18h00</option>
           </select>
         </div>
@@ -37,8 +45,27 @@
           <input type="text" id="filter-departement" v-model="selectedDepartement" placeholder="Filtrer par département" />
         </div>
       </div>
+      
+      <!-- Filtres supplémentaires (affichés/masqués) -->
+      <div v-if="showExtraFilters" class="extra-filters">
+        <!-- Filtre Jeton -->
+        <div class="filter-group">
+          <label for="filter-jeton">Jeton</label>
+          <input type="text" id="filter-jeton" v-model="selectedJeton" placeholder="Filtrer par jeton" />
+        </div>
+        <!-- Filtre Technicien -->
+        <div class="filter-group">
+          <label for="filter-technicien">Technicien</label>
+          <input type="text" id="filter-technicien" v-model="selectedTechnicien" placeholder="Rechercher le technicien" />
+        </div>
+        <!-- Filtre PEC -->
+        <div class="filter-group">
+          <label for="filter-pec">PEC</label>
+          <input type="text" id="filter-pec" v-model="selectedPec" placeholder="Rechercher le PEC" />
+        </div>
+      </div>
+      
       <div class="filter-actions">
-        
         <button @click="clearFilters">Effacer</button>
       </div>
     </div>
@@ -89,29 +116,30 @@ export default {
       selectedStatut: "",
       selectedDate: "",
       selectedCreneau: "",
-      selectedDepartement: ""
+      selectedDepartement: "",
+      // Filtres supplémentaires
+      selectedJeton: "",
+      selectedTechnicien: "",
+      selectedPec: "",
+      showExtraFilters: false
     };
   },
   computed: {
     filteredRelances() {
       return this.relances.filter(relance => {
-        // Vérifie le statut
+        // Filtre de base
         const statutMatch = this.selectedStatut === "" || 
           (this.selectedStatut === "Vide" && !relance.statut) ||
           relance.statut === this.selectedStatut;
         
-        // Vérifie la date
         const dateMatch = !this.selectedDate || relance.date_rdv === this.selectedDate;
         
-        // Vérifie le département
         const departementMatch = !this.selectedDepartement || 
           relance.departement.toLowerCase().includes(this.selectedDepartement.toLowerCase());
         
-        // Vérifie le créneau horaire sur l'heure prévue (format "HH:MM")
         let creneauMatch = true;
         if (this.selectedCreneau) {
           const [start, end] = this.selectedCreneau.split('-');
-          // On vérifie si relance.heure_prevue est définie
           if (relance.heure_prevue) {
             if (start && relance.heure_prevue < start) {
               creneauMatch = false;
@@ -124,7 +152,18 @@ export default {
           }
         }
         
-        return statutMatch && dateMatch && departementMatch && creneauMatch;
+        // Filtres supplémentaires
+        const jetonMatch = !this.selectedJeton || 
+          relance.jeton_commande.toLowerCase().includes(this.selectedJeton.toLowerCase());
+        
+        const technicienMatch = !this.selectedTechnicien || 
+          relance.techniciens.toLowerCase().includes(this.selectedTechnicien.toLowerCase());
+        
+        const pecMatch = !this.selectedPec || 
+          relance.pec.toLowerCase().includes(this.selectedPec.toLowerCase());
+        
+        return statutMatch && dateMatch && departementMatch && creneauMatch &&
+               jetonMatch && technicienMatch && pecMatch;
       });
     }
   },
@@ -140,15 +179,17 @@ export default {
         console.error("Erreur lors de la récupération des relances :", error);
       }
     },
-    applyFilters() {
-      // Le filtrage se fait côté client via la computed property.
-      // Si vous souhaitez effectuer le filtrage côté serveur, vous pouvez envoyer les filtres en paramètres.
+    toggleExtraFilters() {
+      this.showExtraFilters = !this.showExtraFilters;
     },
     clearFilters() {
       this.selectedStatut = "";
       this.selectedDate = "";
       this.selectedCreneau = "";
       this.selectedDepartement = "";
+      this.selectedJeton = "";
+      this.selectedTechnicien = "";
+      this.selectedPec = "";
     },
     getStatusClass(statut) {
       if (statut === "Cloturée") return "status-cloturee";
@@ -172,6 +213,23 @@ export default {
   box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
 }
 
+/* Bouton toggle pour filtres supplémentaires */
+.toggle-extra-filters {
+  margin-bottom: 10px;
+}
+.toggle-extra-filters button {
+  padding: 5px 10px;
+  font-size: 16px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.toggle-extra-filters button:hover {
+  background-color: #0056b3;
+}
+
 /* Filtres */
 .filters {
   width: 95%;
@@ -181,7 +239,8 @@ export default {
   border: 1px solid #ddd;
   border-radius: 8px;
 }
-.filter-grid {
+.filter-grid,
+.extra-filters {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 15px;

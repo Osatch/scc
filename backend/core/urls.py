@@ -24,10 +24,11 @@ from .views import (
 
 urlpatterns = [
 
-    #tokent  
+   # Endpoint pour obtenir un token (obtain pair : access et refresh)
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    # Endpoint pour rafraîchir le token d'accès
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-
+    # Endpoint protégé, accessible uniquement si le token est fourni
     path("protected-endpoint/", protected_view, name="protected-endpoint"),
 
 
@@ -78,6 +79,7 @@ urlpatterns = [
 
     # Endpoints d'import
     path('user/profile/', user_profile, name='user_profile'),
+    path('api/protected/', protected_view, name='protected-endpoint'),
     path('import_ard2/', import_ard2, name='import_ard2'),
     path('import_grdv/', import_grdv, name='import_grdv'),
     path('sync_relancejj/', import_grdv, name='sync_relancejj'),

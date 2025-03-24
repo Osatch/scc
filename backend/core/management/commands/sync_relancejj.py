@@ -41,6 +41,7 @@ class Command(BaseCommand):
                 "heure_debut": ard2_instance.debut_intervention.time() if ard2_instance.debut_intervention else None,
                 "heure_fin": ard2_instance.fin_intervention.time() if ard2_instance.fin_intervention else None,
                 "departement": ard2_instance.departement if ard2_instance.departement else None,
+                "techniciens": ard2_instance.technicien  # Affecte techniciens de RelanceJJ avec technicien de ARD2
             }
 
             # Mise à jour ou création de l'instance RelanceJJ
