@@ -70,8 +70,8 @@ class Command(BaseCommand):
             # Initialiser les données pour ce technicien pour ce jour
             if technicien not in gantt_data:
                 gantt_data[technicien] = {
-                    "secteur": ard.departement,          # Conserve secteur si besoin
-                    "departement": ard.departement,        # Nouveau champ: récupère le département depuis ARD2
+                    "secteur": ard.departement,          # Conserve secteur/département si besoin
+                    "departement": ard.departement,
                     "nom_intervenant": technicien,
                     "heure_08": "",
                     "heure_09": "",
@@ -108,6 +108,7 @@ class Command(BaseCommand):
                     "heure_18": data["interventions"].get("heure_18", ""),
                 }
 
+                # Calcul des indicateurs
                 ok_count = 0
                 filled_cells = 0
                 for val in horaires.values():
@@ -121,6 +122,7 @@ class Command(BaseCommand):
                 filled_total = sum(1 for v in horaires.values() if v)
                 taux_remplissage = (filled_total / total_slots * 100)
 
+                # Ici, update_or_create utilise nom_intervenant et date_intervention pour éviter les doublons
                 gantt_obj, created = Gantt.objects.update_or_create(
                     nom_intervenant=data["nom_intervenant"],
                     date_intervention=intervention_date,

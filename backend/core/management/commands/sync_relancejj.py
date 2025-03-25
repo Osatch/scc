@@ -1,9 +1,11 @@
 import unicodedata
 from django.core.management.base import BaseCommand
-from core.models import GRDV, ARD2, RelanceJJ
+from core.models import GRDV, ARD2, RelanceJJ, Parametres  # Importez Parametres avec les champs requis
 
 class Command(BaseCommand):
-    help = "Synchronise les données de GRDV et ARD2 dans RelanceJJ en mettant à jour si le jeton existe déjà"
+    help = ("Synchronise les données de GRDV et ARD2 dans RelanceJJ en mettant à jour si le jeton_commande et la date_rdv "
+            "correspondent à une entrée existante, sinon crée une nouvelle ligne. "
+            "Ensuite, met à jour le numéro technicien à partir de Parametres.")
 
     def handle(self, *args, **kwargs):
         # Affichage des valeurs de jeton_commande présentes dans ARD2 pour débogage
@@ -36,20 +38,56 @@ class Command(BaseCommand):
                 ))
                 continue
 
-            # Préparation des valeurs à mettre à jour/créer
+            # Détermination de la date du RDV à partir de GRDV (si elle existe)
+            date_rdv = grdv.date_rdv.date() if grdv.date_rdv else None
+
+            # Préparation des valeurs à mettre à jour/créer dans RelanceJJ
             defaults = {
+                "grdv": grdv,  # Association à GRDV
                 "heure_debut": ard2_instance.debut_intervention.time() if ard2_instance.debut_intervention else None,
                 "heure_fin": ard2_instance.fin_intervention.time() if ard2_instance.fin_intervention else None,
                 "departement": ard2_instance.departement if ard2_instance.departement else None,
                 "techniciens": ard2_instance.technicien  # Affecte techniciens de RelanceJJ avec technicien de ARD2
             }
 
-            # Mise à jour ou création de l'instance RelanceJJ
-            relance, created = RelanceJJ.objects.update_or_create(
-                grdv=grdv,
+            # Recherche dans RelanceJJ avec jeton_commande ET date_rdv
+            relance_qs = RelanceJJ.objects.filter(
                 jeton_commande=ard2_instance.jeton_commande,
-                defaults=defaults
+                date_rdv=date_rdv
             )
 
-            action = "Créé" if created else "Mis à jour"
-            self.stdout.write(self.style.SUCCESS(f"{action} RelanceJJ pour GRDV {grdv.id}"))
+            if relance_qs.exists():
+                # Si une entrée correspondante existe, on la met à jour
+                relance = relance_qs.first()
+                for key, value in defaults.items():
+                    setattr(relance, key, value)
+                relance.save()
+                action = "Mis à jour"
+            else:
+                # Sinon, on crée une nouvelle entrée
+                # Remarque : update_or_create ne permet pas de créer plusieurs entrées avec le même jeton_commande
+                # si la date diffère, d'où l'utilisation d'une simple création.
+                defaults.update({
+                    "jeton_commande": ard2_instance.jeton_commande
+                })
+                relance = RelanceJJ.objects.create(**defaults)
+                action = "Créé"
+
+            self.stdout.write(self.style.SUCCESS(f"{action} RelanceJJ pour GRDV {grdv.id} (date_rdv: {date_rdv})"))
+
+            # Synchronisation du numéro technicien à partir de la table Parametres.
+            param = Parametres.objects.filter(
+                nom_tech__iexact=relance.techniciens,
+                departement__iexact=relance.departement
+            ).first()
+
+            if param and param.numero_technicien:
+                relance.numero = param.numero_technicien
+                relance.save()
+                self.stdout.write(self.style.SUCCESS(
+                    f"Mis à jour le numéro technicien pour RelanceJJ de GRDV {grdv.id} à {param.numero_technicien}"
+                ))
+            else:
+                self.stdout.write(self.style.WARNING(
+                    f"Aucun paramètre trouvé pour technicien '{relance.techniciens}' et département '{relance.departement}' pour GRDV {grdv.id}"
+                ))

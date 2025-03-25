@@ -13,12 +13,13 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from .models import (
     Gantt, GanttStatistics, ARD2, Parametres, RelanceJJ, NOK,
     ControlPhoto, Controlafroid, DebriefRACC, DebriefSAV,
-    InterventionsSAV, InterventionsRACC
+    InterventionsSAV, InterventionsRACC, Commentaire  # Ajout du modèle Commentaire
 )
 from .serializers import (
     GanttSerializer, GanttStatisticsSerializer, ARD2Serializer, ParametresSerializer,
     RelanceJJSerializer, NOKSerializer, ControlPhotoSerializer, ControlafroidSerializer,
-    DebriefRACCSerializer, DebriefSAVSerializer, InterventionsSAVSerializer, InterventionsRACCSerializer
+    DebriefRACCSerializer, DebriefSAVSerializer, InterventionsSAVSerializer, InterventionsRACCSerializer,
+    CommentaireSerializer  # Ajout du serializer CommentaireSerializer
 )
 from .forms import ParametresForm
 
@@ -107,10 +108,7 @@ def logout_view(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def user_profile(request):
-    # L'utilisateur doit être authentifié pour atteindre cette vue
     return Response({'name': request.user.username})
-#-----------protectview ---------
-
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -124,25 +122,19 @@ def ard2_list(request):
     serializer = ARD2Serializer(ard2_data, many=True)
     return Response(serializer.data)
 
-
 @api_view(['GET', 'POST', 'DELETE'])
 def parametres_list(request):
     if request.method == 'GET':
-        # Récupère et renvoie tous les paramètres
         parametres = Parametres.objects.all().order_by('id_tech')
         serializer = ParametresSerializer(parametres, many=True)
         return Response(serializer.data)
-    
     elif request.method == 'POST':
-        # Crée un nouveau paramètre à partir des données fournies
         serializer = ParametresSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=201)
         return Response(serializer.errors, status=400)
-    
     elif request.method == 'DELETE':
-        # Pour supprimer, on attend que la clé primaire soit passée dans le corps de la requête
         pk = request.data.get('pk')
         if not pk:
             return Response({"error": "Identifiant (pk) requis pour la suppression."}, status=400)
@@ -155,6 +147,39 @@ def relancejj_list(request):
     relances = RelanceJJ.objects.all().order_by('-date_rdv')
     serializer = RelanceJJSerializer(relances, many=True)
     return Response(serializer.data)
+
+# ======================= ENDPOINTS POUR COMMENTAIRES =======================
+
+@api_view(['GET', 'POST'])
+def commentaire_list(request):
+    if request.method == 'GET':
+        # Vous pouvez ordonner par created_date et created_time pour afficher les commentaires les plus récents en premier
+        commentaires = Commentaire.objects.all().order_by('-created_date', '-created_time')
+        serializer = CommentaireSerializer(commentaires, many=True)
+        return Response(serializer.data)
+    elif request.method == 'POST':
+        serializer = CommentaireSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=201)
+        return Response(serializer.errors, status=400)
+
+@api_view(['GET', 'PUT', 'DELETE'])
+def commentaire_detail(request, pk):
+    commentaire = get_object_or_404(Commentaire, pk=pk)
+    if request.method == 'GET':
+        serializer = CommentaireSerializer(commentaire)
+        return Response(serializer.data)
+    elif request.method == 'PUT':
+        serializer = CommentaireSerializer(commentaire, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=400)
+    elif request.method == 'DELETE':
+        commentaire.delete()
+        return Response({"message": "Commentaire supprimé avec succès"}, status=204)
+
 
 # ======================= VUES POUR NOK =======================
 
@@ -365,6 +390,7 @@ def import_grdv(request):
         return JsonResponse({'status': 'success', 'message': output.getvalue()})
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
 @csrf_exempt
 @require_POST
 def sync_relancejj(request):

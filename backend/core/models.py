@@ -969,4 +969,45 @@ class InterventionsRACC(models.Model):
     class Meta:
         verbose_name = "Intervention RACC"
         verbose_name_plural = "Interventions RACC"
+
+
+# Commentaire ===================================================================================
+
+
+from django.db import models
+from django.conf import settings
+from core.models import RelanceJJ
+from django.utils import timezone
+
+class Commentaire(models.Model):
+    jeton = models.ForeignKey(
+        RelanceJJ,
+        on_delete=models.CASCADE,
+        verbose_name="RelanceJJ associé",  # Référence l'objet entier
+        related_name="commentaires"
+    )
+    commentaire = models.TextField(verbose_name="Commentaire")
+    commentateur = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        verbose_name="Commentateur"
+    )
+    created_date = models.DateField(verbose_name="Date du commentaire", blank=True, null=True)
+    created_time = models.TimeField(verbose_name="Heure du commentaire", blank=True, null=True)
+    
+    def save(self, *args, **kwargs):
+        now = timezone.now()
+        # Utiliser la date_rdv de la relance si elle est définie, sinon la date actuelle
+        if not self.created_date:
+            self.created_date = self.jeton.date_rdv or now.date()
+        if not self.created_time:
+            self.created_time = now.time()
+        super().save(*args, **kwargs)
+    
+    def __str__(self):
+        return f"Commentaire par {self.commentateur.username} sur le jeton {self.jeton.jeton_commande}"
+
+
+
+
         

@@ -89,7 +89,8 @@
       </thead>
       <tbody>
         <tr v-for="relance in filteredRelances" :key="relance.id">
-          <td>{{ relance.jeton_commande }}</td>
+          <!-- Seul le jeton est cliquable -->
+          <td @click="openPopup(relance)" class="clickable">{{ relance.jeton_commande }}</td>
           <td>{{ relance.date_rdv }}</td>
           <td>{{ relance.activite }}</td>
           <td>{{ relance.techniciens }}</td>
@@ -103,6 +104,39 @@
         </tr>
       </tbody>
     </table>
+    
+    <!-- Popup Modal -->
+    <div v-if="showPopup" class="popup-overlay" @click="closePopup">
+      <div class="popup-content" @click.stop>
+        <h3>Détails de la Relance</h3>
+        <p><strong>Jeton:</strong> {{ selectedRelance.jeton_commande }}</p>
+        <p><strong>Date Intervention:</strong> {{ selectedRelance.date_rdv }}</p>
+        <p><strong>Activité:</strong> {{ selectedRelance.activite }}</p>
+        <p><strong>Techniciens:</strong> {{ selectedRelance.techniciens }}</p>
+        <p><strong>Numéro:</strong> {{ selectedRelance.numero }}</p>
+        <p><strong>Département:</strong> {{ selectedRelance.departement }}</p>
+        <p><strong>PEC:</strong> {{ selectedRelance.pec }}</p>
+        <p><strong>Statut:</strong> {{ selectedRelance.statut }}</p>
+        <p><strong>Heure Prévue:</strong> {{ selectedRelance.heure_prevue }}</p>
+        <p><strong>Heure Début:</strong> {{ selectedRelance.heure_debut || '-' }}</p>
+        <p><strong>Heure Fin:</strong> {{ selectedRelance.heure_fin || '-' }}</p>
+        <!-- Bouton pour afficher l'historique des commentaires -->
+        <button @click="fetchComments" class="history-button">Historique</button>
+        <!-- Affichage des commentaires si disponibles -->
+        <div v-if="showComments" class="comments-section">
+          <h4>Historique des Commentaires</h4>
+          <ul>
+            <li v-for="comment in comments" :key="comment.id">
+              <strong>{{ comment.commentateur_username }} ({{ comment.created_date }} {{ comment.created_time }}):</strong>
+              {{ comment.commentaire }}
+            </li>
+          </ul>
+          <button @click="hideComments" class="hide-history-button">Masquer</button>
+        </div>
+        <button @click="closePopup" class="close-button">Fermer</button>
+      </div>
+    </div>
+    
   </div>
 </template>
 
@@ -121,7 +155,13 @@ export default {
       selectedJeton: "",
       selectedTechnicien: "",
       selectedPec: "",
-      showExtraFilters: false
+      showExtraFilters: false,
+      // Pour la popup
+      showPopup: false,
+      selectedRelance: null,
+      // Pour l'historique des commentaires
+      showComments: false,
+      comments: []
     };
   },
   computed: {
@@ -195,6 +235,33 @@ export default {
       if (statut === "Cloturée") return "status-cloturee";
       if (statut === "Taguée") return "status-taguee";
       return "";
+    },
+    openPopup(relance) {
+      this.selectedRelance = relance;
+      this.showPopup = true;
+      // Réinitialiser les commentaires lors de l'ouverture du popup
+      this.comments = [];
+      this.showComments = false;
+    },
+    closePopup() {
+      this.showPopup = false;
+      this.selectedRelance = null;
+      this.comments = [];
+      this.showComments = false;
+    },
+    async fetchComments() {
+      // On suppose que l'API accepte un paramètre "jeton" pour récupérer les commentaires liés
+      try {
+        const response = await axios.get(`http://127.0.0.1:8000/api/commentaires/?jeton=${this.selectedRelance.jeton_commande}`);
+        this.comments = response.data;
+        this.showComments = true;
+      } catch (error) {
+        console.error("Erreur lors de la récupération des commentaires :", error);
+      }
+    },
+    hideComments() {
+      this.showComments = false;
+      this.comments = [];
     }
   }
 };
@@ -323,6 +390,53 @@ tbody tr:hover {
   color: #856404;
 }
 
+/* Rendre le jeton cliquable */
+.clickable {
+  cursor: pointer;
+  text-decoration: underline;
+  color: #007bff;
+}
+
+/* Popup Modal */
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+.popup-content {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  position: relative;
+}
+.history-button,
+.hide-history-button,
+.close-button {
+  margin-top: 10px;
+  padding: 8px 16px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.history-button:hover,
+.hide-history-button:hover,
+.close-button:hover {
+  background-color: #0056b3;
+}
+
+/* Responsive adjustments */
 @media (max-width: 768px) {
   table {
     font-size: 12px;

@@ -18,7 +18,9 @@ from .views import (
     debriefracc_list, debriefracc_detail,  # Vues pour la gestion des DebriefRACC
     debriefsav_list, debriefsav_detail,  # Vues pour la gestion des DebriefSAV
     interventionssav_list, interventionssav_detail,  # Vues pour la gestion des InterventionsSAV
-    import_ard2, import_grdv, protected_view # Vues pour lancer les imports
+    import_ard2, import_grdv, protected_view, # Vues pour lancer les imports
+    commentaire_list,
+    commentaire_detail,# Vues de commentaire 
 
 )
 
@@ -83,5 +85,10 @@ urlpatterns = [
     path('import_ard2/', import_ard2, name='import_ard2'),
     path('import_grdv/', import_grdv, name='import_grdv'),
     path('sync_relancejj/', import_grdv, name='sync_relancejj'),
+
+    #commentaire 
+    path('commentaires/', commentaire_list, name='commentaire_list'),
+    path('commentaires/<int:pk>/', commentaire_detail, name='commentaire_detail'),
+
 
 ]

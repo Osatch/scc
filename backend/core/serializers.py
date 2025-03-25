@@ -2,7 +2,7 @@ from rest_framework import serializers
 from django import forms
 from .models import (
     Gantt, GRDV, GanttStatistics, ARD2, Parametres, RelanceJJ, NOK,
-    ControlPhoto, Controlafroid, DebriefRACC, DebriefSAV, InterventionsSAV, InterventionsRACC
+    ControlPhoto, Controlafroid, DebriefRACC, DebriefSAV, InterventionsSAV, InterventionsRACC, Commentaire
 )
 
 # Serializer pour le modèle Gantt
@@ -77,6 +77,25 @@ class InterventionsRACCSerializer(serializers.ModelSerializer):
         model = InterventionsRACC
         fields = '__all__'
 
+# Serializer pour le modèle Commentaire
+class CommentaireSerializer(serializers.ModelSerializer):
+    # Lecture seule pour afficher le username du commentateur et le jeton_commande lié à RelanceJJ
+    commentateur_username = serializers.ReadOnlyField(source='commentateur.username')
+    jeton_commande = serializers.ReadOnlyField(source='jeton.jeton_commande')
+
+    class Meta:
+        model = Commentaire
+        fields = [
+            'id', 
+            'jeton', 
+            'jeton_commande', 
+            'commentaire', 
+            'commentateur', 
+            'commentateur_username',
+            'created_date',
+            'created_time'
+        ]
+
 # Formulaire pour le modèle Parametres
 class ParametresForm(forms.ModelForm):
     class Meta:
@@ -85,5 +104,6 @@ class ParametresForm(forms.ModelForm):
         widgets = {
             'actif_depuis': forms.DateInput(attrs={'type': 'date'}),
         }
+
 class ProtectedSerializer(serializers.Serializer):
     message = serializers.CharField()
