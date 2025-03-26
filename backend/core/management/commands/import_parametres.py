@@ -37,6 +37,10 @@ class Command(BaseCommand):
                     departement = row.get('Département', '').strip() or '-'
                     log_free = row.get('Log free', '').strip() or '-'
                     numero_technicien = row.get('Numéro', '').strip() or '-'
+                    # Nouveaux champs ajoutés
+                    nom_prenom_grdv = row.get('Nom prénom Grdv', '').strip() or '-'
+                    id_grdv = row.get('ID Grdv', '').strip() or '-'
+                    
                     # Pour le champ date, on récupère la valeur brute
                     actif_depuis_str = row.get('Actif depuis', '').strip()
                     controle_photo = row.get('Controle photo', '').strip() or '-'
@@ -72,6 +76,8 @@ class Command(BaseCommand):
                         'zone': zone,
                         'grille_actif': grille_actif,
                         'societe': societe,
+                        'nom_prenom_grdv': nom_prenom_grdv,
+                        'id_grdv': id_grdv,
                     }
 
                     # Vérification pour éviter l'enregistrement des mêmes données
@@ -87,7 +93,9 @@ class Command(BaseCommand):
                             existing.manager == manager and
                             existing.zone == zone and
                             existing.grille_actif == grille_actif and
-                            existing.societe == societe
+                            existing.societe == societe and
+                            existing.nom_prenom_grdv == nom_prenom_grdv and
+                            existing.id_grdv == id_grdv
                         ):
                             self.stdout.write(self.style.NOTICE(
                                 f"Enregistrement déjà existant et identique pour ID tech {id_tech}."

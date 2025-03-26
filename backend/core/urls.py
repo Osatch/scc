@@ -1,5 +1,6 @@
 # core/urls.py
 from django.urls import path
+
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from .views import (
@@ -21,6 +22,7 @@ from .views import (
     import_ard2, import_grdv, protected_view, # Vues pour lancer les imports
     commentaire_list,
     commentaire_detail,# Vues de commentaire 
+    parametres_list,  #les param
 
 )
 
@@ -43,6 +45,11 @@ urlpatterns = [
 
     # Paramètres
     path('parametres/', parametres_list, name='parametres-list'),
+        # Pour récupérer la liste et créer un paramètre
+    path('parametres/', parametres_list, name='parametres_list'),
+    # Pour récupérer, mettre à jour ou supprimer un paramètre spécifique via son pk
+  
+    
 
     # Relances JJ
     path('relances/', relancejj_list, name='relancejj-list'),

@@ -1,6 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
+
 from django.core.management import call_command
 from django.contrib.auth import authenticate
 import io
@@ -13,20 +15,22 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from .models import (
     Gantt, GanttStatistics, ARD2, Parametres, RelanceJJ, NOK,
     ControlPhoto, Controlafroid, DebriefRACC, DebriefSAV,
-    InterventionsSAV, InterventionsRACC, Commentaire  # Ajout du modèle Commentaire
+    InterventionsSAV, InterventionsRACC, Commentaire
 )
 from .serializers import (
     GanttSerializer, GanttStatisticsSerializer, ARD2Serializer, ParametresSerializer,
     RelanceJJSerializer, NOKSerializer, ControlPhotoSerializer, ControlafroidSerializer,
     DebriefRACCSerializer, DebriefSAVSerializer, InterventionsSAVSerializer, InterventionsRACCSerializer,
-    CommentaireSerializer  # Ajout du serializer CommentaireSerializer
+    CommentaireSerializer
 )
 from .forms import ParametresForm
 
 # ======================= VUES POUR INTERVENTIONS RACC =======================
-
 @api_view(['GET', 'POST'])
 def interventionsracc_list(request):
+    """
+    Liste et création des interventions RACC.
+    """
     if request.method == 'GET':
         interventions = InterventionsRACC.objects.all().order_by('-date_intervention')
         serializer = InterventionsRACCSerializer(interventions, many=True)
@@ -40,6 +44,9 @@ def interventionsracc_list(request):
 
 @api_view(['GET', 'PUT', 'DELETE'])
 def interventionsracc_detail(request, pk):
+    """
+    Détail, mise à jour et suppression d'une intervention RACC.
+    """
     intervention = get_object_or_404(InterventionsRACC, pk=pk)
     if request.method == 'GET':
         serializer = InterventionsRACCSerializer(intervention)
@@ -55,27 +62,38 @@ def interventionsracc_detail(request, pk):
         return Response({"message": "Intervention RACC supprimée avec succès"}, status=204)
 
 # ======================= AUTRES VUES EXISTANTES =======================
-
 @api_view(['GET'])
 def gantt_list(request):
+    """
+    Liste des entrées Gantt.
+    """
     gantt_data = Gantt.objects.all()
     serializer = GanttSerializer(gantt_data, many=True)
     return Response(serializer.data)
 
 @api_view(['GET'])
 def gantt_detail(request, pk):
+    """
+    Détail d'une entrée Gantt.
+    """
     gantt_entry = get_object_or_404(Gantt, pk=pk)
     serializer = GanttSerializer(gantt_entry)
     return Response(serializer.data)
 
 @api_view(['GET'])
 def gantt_statistics_list(request):
+    """
+    Liste des statistiques Gantt.
+    """
     statistics_data = GanttStatistics.objects.all()
     serializer = GanttStatisticsSerializer(statistics_data, many=True)
     return Response(serializer.data)
 
 @api_view(['GET'])
 def gantt_statistics_detail(request, pk):
+    """
+    Détail d'une statistique Gantt.
+    """
     statistics_entry = get_object_or_404(GanttStatistics, pk=pk)
     serializer = GanttStatisticsSerializer(statistics_entry)
     return Response(serializer.data)
@@ -83,6 +101,9 @@ def gantt_statistics_detail(request, pk):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def login_view(request):
+    """
+    Endpoint pour l'authentification. Retourne un token JWT si les identifiants sont corrects.
+    """
     username = request.data.get('username')
     password = request.data.get('password')
     user = authenticate(username=username, password=password)
@@ -96,6 +117,9 @@ def login_view(request):
 
 @api_view(['POST'])
 def logout_view(request):
+    """
+    Déconnexion de l'utilisateur en blacklistant le refresh token.
+    """
     try:
         refresh_token = request.data["refresh"]
         token = RefreshToken(refresh_token)
@@ -104,36 +128,61 @@ def logout_view(request):
     except Exception as e:
         return Response({"error": str(e)}, status=400)
 
-# Nouvelle vue pour retourner le profil de l'utilisateur
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def user_profile(request):
+    """
+    Retourne le profil de l'utilisateur connecté.
+    """
     return Response({'name': request.user.username})
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def protected_view(request):
-    print(request.headers)  # Affiche les headers reçus
+    """
+    Vue protégée qui affiche les headers reçus et le nom de l'utilisateur connecté.
+    """
+    print(request.headers)  # Affiche les headers reçus dans la console
     return Response({'message': 'Bienvenue dans la vue protégée !', 'user': request.user.username})
 
 @api_view(['GET'])
 def ard2_list(request):
+    """
+    Liste des enregistrements ARD2.
+    """
     ard2_data = ARD2.objects.all().order_by('-date_importation')
     serializer = ARD2Serializer(ard2_data, many=True)
     return Response(serializer.data)
-
-@api_view(['GET', 'POST', 'DELETE'])
+@api_view(['GET', 'POST', 'PUT', 'DELETE'])
 def parametres_list(request):
+    """
+    Liste, création, mise à jour et suppression des paramètres.
+    Note : Le modèle Parametres intègre désormais les champs 'nom_prenom_grdv' et 'id_grdv'.
+    Pour la mise à jour (PUT) et la suppression (DELETE), l'identifiant (pk) doit être fourni dans request.data.
+    """
     if request.method == 'GET':
         parametres = Parametres.objects.all().order_by('id_tech')
         serializer = ParametresSerializer(parametres, many=True)
         return Response(serializer.data)
+    
     elif request.method == 'POST':
         serializer = ParametresSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=201)
         return Response(serializer.errors, status=400)
+    
+    elif request.method == 'PUT':
+        pk = request.data.get('pk')
+        if not pk:
+            return Response({"error": "Identifiant (pk) requis pour la mise à jour."}, status=400)
+        parametre = get_object_or_404(Parametres, pk=pk)
+        serializer = ParametresSerializer(parametre, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=400)
+    
     elif request.method == 'DELETE':
         pk = request.data.get('pk')
         if not pk:
@@ -144,16 +193,21 @@ def parametres_list(request):
 
 @api_view(['GET'])
 def relancejj_list(request):
+    """
+    Liste des relances JJ.
+    """
     relances = RelanceJJ.objects.all().order_by('-date_rdv')
     serializer = RelanceJJSerializer(relances, many=True)
     return Response(serializer.data)
 
 # ======================= ENDPOINTS POUR COMMENTAIRES =======================
-
 @api_view(['GET', 'POST'])
 def commentaire_list(request):
+    """
+    Liste et création de commentaires.
+    Les commentaires sont triés par date et heure de création de manière décroissante.
+    """
     if request.method == 'GET':
-        # Vous pouvez ordonner par created_date et created_time pour afficher les commentaires les plus récents en premier
         commentaires = Commentaire.objects.all().order_by('-created_date', '-created_time')
         serializer = CommentaireSerializer(commentaires, many=True)
         return Response(serializer.data)
@@ -166,6 +220,9 @@ def commentaire_list(request):
 
 @api_view(['GET', 'PUT', 'DELETE'])
 def commentaire_detail(request, pk):
+    """
+    Détail, mise à jour et suppression d'un commentaire.
+    """
     commentaire = get_object_or_404(Commentaire, pk=pk)
     if request.method == 'GET':
         serializer = CommentaireSerializer(commentaire)
@@ -180,11 +237,12 @@ def commentaire_detail(request, pk):
         commentaire.delete()
         return Response({"message": "Commentaire supprimé avec succès"}, status=204)
 
-
 # ======================= VUES POUR NOK =======================
-
 @api_view(['GET', 'POST'])
 def nok_list(request):
+    """
+    Liste et création des enregistrements NOK.
+    """
     if request.method == 'GET':
         noks = NOK.objects.all().order_by('-date_rdv')
         serializer = NOKSerializer(noks, many=True)
@@ -198,6 +256,9 @@ def nok_list(request):
 
 @api_view(['GET', 'PUT', 'DELETE'])
 def nok_detail(request, pk):
+    """
+    Détail, mise à jour et suppression d'un enregistrement NOK.
+    """
     nok = get_object_or_404(NOK, pk=pk)
     if request.method == 'GET':
         serializer = NOKSerializer(nok)
@@ -213,9 +274,11 @@ def nok_detail(request, pk):
         return Response({"message": "NOK supprimé avec succès"}, status=204)
 
 # ======================= VUES POUR CONTROLPHOTO =======================
-
 @api_view(['GET', 'POST'])
 def controlphoto_list(request):
+    """
+    Liste et création des enregistrements ControlPhoto.
+    """
     if request.method == 'GET':
         controlphotos = ControlPhoto.objects.all().order_by('-date')
         serializer = ControlPhotoSerializer(controlphotos, many=True)
@@ -229,6 +292,9 @@ def controlphoto_list(request):
 
 @api_view(['GET', 'PUT', 'DELETE'])
 def controlphoto_detail(request, pk):
+    """
+    Détail, mise à jour et suppression d'un enregistrement ControlPhoto.
+    """
     controlphoto = get_object_or_404(ControlPhoto, pk=pk)
     if request.method == 'GET':
         serializer = ControlPhotoSerializer(controlphoto)
@@ -244,9 +310,11 @@ def controlphoto_detail(request, pk):
         return Response({"message": "ControlPhoto supprimé avec succès"}, status=204)
 
 # ======================= VUES POUR CONTROLAFROID =======================
-
 @api_view(['GET', 'POST'])
 def controlafroid_list(request):
+    """
+    Liste et création des enregistrements Controlafroid.
+    """
     if request.method == 'GET':
         controlafroids = Controlafroid.objects.all().order_by('-control_photo__date')
         serializer = ControlafroidSerializer(controlafroids, many=True)
@@ -260,6 +328,9 @@ def controlafroid_list(request):
 
 @api_view(['GET', 'PUT', 'DELETE'])
 def controlafroid_detail(request, pk):
+    """
+    Détail, mise à jour et suppression d'un enregistrement Controlafroid.
+    """
     controlafroid = get_object_or_404(Controlafroid, pk=pk)
     if request.method == 'GET':
         serializer = ControlafroidSerializer(controlafroid)
@@ -275,9 +346,11 @@ def controlafroid_detail(request, pk):
         return Response({"message": "Controlafroid supprimé avec succès"}, status=204)
 
 # ======================= VUES POUR DEBRIEFRACC =======================
-
 @api_view(['GET', 'POST'])
 def debriefracc_list(request):
+    """
+    Liste et création des enregistrements Debrief RACC.
+    """
     if request.method == 'GET':
         debriefraccs = DebriefRACC.objects.all().order_by('-date')
         serializer = DebriefRACCSerializer(debriefraccs, many=True)
@@ -291,6 +364,9 @@ def debriefracc_list(request):
 
 @api_view(['GET', 'PUT', 'DELETE'])
 def debriefracc_detail(request, pk):
+    """
+    Détail, mise à jour et suppression d'un enregistrement Debrief RACC.
+    """
     debriefracc = get_object_or_404(DebriefRACC, pk=pk)
     if request.method == 'GET':
         serializer = DebriefRACCSerializer(debriefracc)
@@ -306,9 +382,11 @@ def debriefracc_detail(request, pk):
         return Response({"message": "DebriefRACC supprimé avec succès"}, status=204)
 
 # ======================= VUES POUR DEBRIEFSAV =======================
-
 @api_view(['GET', 'POST'])
 def debriefsav_list(request):
+    """
+    Liste et création des enregistrements Debrief SAV.
+    """
     if request.method == 'GET':
         debriefsavs = DebriefSAV.objects.all().order_by('-date')
         serializer = DebriefSAVSerializer(debriefsavs, many=True)
@@ -322,6 +400,9 @@ def debriefsav_list(request):
 
 @api_view(['GET', 'PUT', 'DELETE'])
 def debriefsav_detail(request, pk):
+    """
+    Détail, mise à jour et suppression d'un enregistrement Debrief SAV.
+    """
     debriefsav = get_object_or_404(DebriefSAV, pk=pk)
     if request.method == 'GET':
         serializer = DebriefSAVSerializer(debriefsav)
@@ -337,9 +418,11 @@ def debriefsav_detail(request, pk):
         return Response({"message": "DebriefSAV supprimé avec succès"}, status=204)
 
 # ======================= VUES POUR INTERVENTIONSSAV =======================
-
 @api_view(['GET', 'POST'])
 def interventionssav_list(request):
+    """
+    Liste et création des interventions SAV.
+    """
     if request.method == 'GET':
         interventions = InterventionsSAV.objects.all().order_by('-date_intervention')
         serializer = InterventionsSAVSerializer(interventions, many=True)
@@ -353,6 +436,9 @@ def interventionssav_list(request):
 
 @api_view(['GET', 'PUT', 'DELETE'])
 def interventionssav_detail(request, pk):
+    """
+    Détail, mise à jour et suppression d'une intervention SAV.
+    """
     intervention = get_object_or_404(InterventionsSAV, pk=pk)
     if request.method == 'GET':
         serializer = InterventionsSAVSerializer(intervention)
@@ -368,12 +454,12 @@ def interventionssav_detail(request, pk):
         return Response({"message": "Intervention SAV supprimée avec succès"}, status=204)
 
 # ======================= ENDPOINTS D'IMPORT =======================
-
-from django.views.decorators.csrf import csrf_exempt
-
 @csrf_exempt
 @require_POST
 def import_ard2(request):
+    """
+    Exécute la commande d'importation ARD2 et retourne le résultat.
+    """
     try:
         output = io.StringIO()
         call_command('import_ard2', stdout=output)
@@ -384,6 +470,9 @@ def import_ard2(request):
 @csrf_exempt
 @require_POST
 def import_grdv(request):
+    """
+    Exécute la commande d'importation GRDV et retourne le résultat.
+    """
     try:
         output = io.StringIO()
         call_command('import_grdv', stdout=output)
@@ -394,6 +483,9 @@ def import_grdv(request):
 @csrf_exempt
 @require_POST
 def sync_relancejj(request):
+    """
+    Exécute la commande de synchronisation des relances JJ et retourne le résultat.
+    """
     try:
         output = io.StringIO()
         call_command('sync_relancejj', stdout=output)

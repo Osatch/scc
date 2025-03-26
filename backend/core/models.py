@@ -402,8 +402,6 @@ class RelanceJJ(models.Model):
     
 
 
-from django.db import models
-
 class Parametres(models.Model):
     # Choix pour les champs avec des options prédéfinies
     COMPETENCE_CHOICES = [
@@ -443,9 +441,13 @@ class Parametres(models.Model):
     log_technicien = models.CharField(max_length=255, verbose_name="Log Technicien", blank=True, null=True)
     mdp = models.CharField(max_length=255, verbose_name="Mot de passe", blank=True, null=True)
     
-    # Nouveaux champs optionnels
+    # Nouveaux champs optionnels existants
     numero_technicien = models.CharField(max_length=50, verbose_name="Numéro du Technicien", blank=True, null=True)
     societe = models.CharField(max_length=255, verbose_name="Société", blank=True, null=True)
+    
+    # Nouvelles colonnes ajoutées
+    nom_prenom_grdv = models.CharField(max_length=255, verbose_name="Nom prénom Grdv", blank=True, null=True)
+    id_grdv = models.CharField(max_length=255, verbose_name="ID Grdv", blank=True, null=True)
 
     def __str__(self):
         return f"{self.id_tech} - {self.nom_tech}"

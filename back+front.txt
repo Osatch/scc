@@ -80,7 +80,7 @@ github
 
 git init
 git add .
-git commit -m "24-03 / 18h50"
+git commit -m "25-03 / 18h40"
 git remote add origin https://github.com/Osatch/scc.git
 git push -u origin main
 
@@ -159,9 +159,11 @@ python manage.py sync_relancejj
 python manage.py import_gantt
 python manage.py import_gantt --date 2025-03-22
 
+python manage.py import_parametres
 
 
 TRUNCATE TABLE `core_ard2`;
 TRUNCATE TABLE`core_grdv`;
 TRUNCATE TABLE`core_relancejj`;
 TRUNCATE TABLE`core_gantt`;
+TRUNCATE TABLE`core_parametres`;
