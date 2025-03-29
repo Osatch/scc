@@ -6,7 +6,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.core.management import call_command
 from django.contrib.auth import authenticate
 import io
-
+from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -15,13 +15,13 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from .models import (
     Gantt, GanttStatistics, ARD2, Parametres, RelanceJJ, NOK,
     ControlPhoto, Controlafroid, DebriefRACC, DebriefSAV,
-    InterventionsSAV, InterventionsRACC, Commentaire
+    InterventionsSAV, InterventionsRACC, Commentaire, Parametres
 )
 from .serializers import (
     GanttSerializer, GanttStatisticsSerializer, ARD2Serializer, ParametresSerializer,
     RelanceJJSerializer, NOKSerializer, ControlPhotoSerializer, ControlafroidSerializer,
     DebriefRACCSerializer, DebriefSAVSerializer, InterventionsSAVSerializer, InterventionsRACCSerializer,
-    CommentaireSerializer
+    CommentaireSerializer, ParametresSerializer
 )
 from .forms import ParametresForm
 
@@ -103,10 +103,11 @@ def gantt_statistics_detail(request, pk):
 def login_view(request):
     """
     Endpoint pour l'authentification. Retourne un token JWT si les identifiants sont corrects.
+    Utilise l'email comme identifiant, car USERNAME_FIELD est défini sur 'email'.
     """
-    username = request.data.get('username')
+    email = request.data.get('email')
     password = request.data.get('password')
-    user = authenticate(username=username, password=password)
+    user = authenticate(username=email, password=password)
     if user:
         refresh = RefreshToken.for_user(user)
         return Response({
@@ -134,7 +135,7 @@ def user_profile(request):
     """
     Retourne le profil de l'utilisateur connecté.
     """
-    return Response({'name': request.user.username})
+    return Response({'name': request.user.email})
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -142,7 +143,7 @@ def protected_view(request):
     """
     Vue protégée qui affiche les headers reçus et le nom de l'utilisateur connecté.
     """
-    print(request.headers)  # Affiche les headers reçus dans la console
+    print(request.headers)
     return Response({'message': 'Bienvenue dans la vue protégée !', 'user': request.user.username})
 
 @api_view(['GET'])
@@ -153,43 +154,41 @@ def ard2_list(request):
     ard2_data = ARD2.objects.all().order_by('-date_importation')
     serializer = ARD2Serializer(ard2_data, many=True)
     return Response(serializer.data)
-@api_view(['GET', 'POST', 'PUT', 'DELETE'])
+
+@api_view(['GET', 'POST'])
 def parametres_list(request):
     """
-    Liste, création, mise à jour et suppression des paramètres.
-    Note : Le modèle Parametres intègre désormais les champs 'nom_prenom_grdv' et 'id_grdv'.
-    Pour la mise à jour (PUT) et la suppression (DELETE), l'identifiant (pk) doit être fourni dans request.data.
+    Endpoint pour récupérer la liste des paramètres et en créer un nouveau.
     """
     if request.method == 'GET':
         parametres = Parametres.objects.all().order_by('id_tech')
         serializer = ParametresSerializer(parametres, many=True)
         return Response(serializer.data)
-    
     elif request.method == 'POST':
         serializer = ParametresSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=201)
-        return Response(serializer.errors, status=400)
-    
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET', 'PUT', 'DELETE'])
+def parametre_detail(request, pk):
+    """
+    Endpoint pour récupérer, mettre à jour ou supprimer un paramètre spécifique via son identifiant.
+    """
+    parametre = get_object_or_404(Parametres, pk=pk)
+    if request.method == 'GET':
+        serializer = ParametresSerializer(parametre)
+        return Response(serializer.data)
     elif request.method == 'PUT':
-        pk = request.data.get('pk')
-        if not pk:
-            return Response({"error": "Identifiant (pk) requis pour la mise à jour."}, status=400)
-        parametre = get_object_or_404(Parametres, pk=pk)
         serializer = ParametresSerializer(parametre, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
-        return Response(serializer.errors, status=400)
-    
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     elif request.method == 'DELETE':
-        pk = request.data.get('pk')
-        if not pk:
-            return Response({"error": "Identifiant (pk) requis pour la suppression."}, status=400)
-        parametre = get_object_or_404(Parametres, pk=pk)
         parametre.delete()
-        return Response({"message": "Paramètre supprimé avec succès."}, status=204)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 @api_view(['GET'])
 def relancejj_list(request):
@@ -489,6 +488,36 @@ def sync_relancejj(request):
     try:
         output = io.StringIO()
         call_command('sync_relancejj', stdout=output)
+        return JsonResponse({'status': 'success', 'message': output.getvalue()})
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+@csrf_exempt
+@require_POST
+def import_parametres(request):
+    """
+    Exécute la commande d'importation des paramètres et retourne le résultat.
+    """
+    try:
+        output = io.StringIO()
+        call_command('import_parametres', stdout=output)
+        return JsonResponse({'status': 'success', 'message': output.getvalue()})
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+@csrf_exempt
+@require_POST
+def import_gantt(request):
+    """
+    Exécute la commande d'importation Gantt avec une date et retourne le résultat.
+    La date doit être transmise en paramètre GET, par exemple ?date=2025-03-22.
+    """
+    date = request.GET.get('date')
+    if not date:
+        return JsonResponse({'status': 'error', 'message': 'Paramètre "date" requis.'}, status=400)
+    try:
+        output = io.StringIO()
+        call_command('import_gantt', date=date, stdout=output)
         return JsonResponse({'status': 'success', 'message': output.getvalue()})
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)

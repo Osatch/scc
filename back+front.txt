@@ -26,46 +26,49 @@ python manage.py migrate
 
 
 stucture du code 
-/backend/
-│── manage.py
-│── Bot/
-│   ├── imortard2.py
-│   ├── importgrdv.py
-│── config/
-│   ├── __init__.py
-│   ├── settings.py
-│   ├── urls.py  # Ce fichier
-│   ├── wsgi.py
-│   ├── asgi.py
-│── core/
-│   ├── __init__.py
-│   ├── models.py
-│   ├── views.py
-│   ├── urls.py  # Ici, les routes spécifiques à l'application
-│   ├── serializers.py
-│   ├── admin.py
-│   ├── apps.py
-│   ├── migrations/
-│   ├── templates/
-│   ├── static/
-forntend /src/
-├── components/
-│   ├── views/
-│   │   ├── Gantt.vue
-│   │   ├── Relancejj.vue
-│   │   ├── DebriefRACC.vue
-│   │   ├── DebriefSAV.vue
-│   │   ├── ControlPhoto.vue
-│   │   ├── ControlFroid.vue
-│   │   ├── Nok.vue
-│   │   ├── InterventionsSAV.vue
-│   │   ├── InterventionsRACC.vue
-│   │   └── Parametres.vue
-│   ├── Sidebar.vue
-│   └── Header.vue
-    └── Dashboard.vue
-├── App.vue
-└── main.js
+
+/scc/
+    /backend/
+    │── manage.py
+    │── Bot/
+    │   ├── imortard2.py
+    │   ├── importgrdv.py
+    │── config/
+    │   ├── __init__.py
+    │   ├── settings.py
+    │   ├── urls.py  # Ce fichier
+    │   ├── wsgi.py
+    │   ├── asgi.py
+    │── core/
+    │   ├── __init__.py
+    │   ├── models.py
+    │   ├── views.py
+    │   ├── urls.py  
+    │   ├── serializers.py
+    │   ├── admin.py
+    │   ├── apps.py
+    │   ├── migrations/
+    │   ├── management/commands/import_grdv.py 
+    │   ├── templates/
+    │   ├── static/
+    forntend /src/
+    ├── components/
+    │   ├── views/
+    │   │   ├── Gantt.vue
+    │   │   ├── Relancejj.vue
+    │   │   ├── DebriefRACC.vue
+    │   │   ├── DebriefSAV.vue
+    │   │   ├── ControlPhoto.vue
+    │   │   ├── ControlFroid.vue
+    │   │   ├── Nok.vue
+    │   │   ├── InterventionsSAV.vue
+    │   │   ├── InterventionsRACC.vue
+    │   │   └── Parametres.vue
+    │   ├── Sidebar.vue
+    │   └── Header.vue
+        └── Dashboard.vue
+    ├── App.vue
+    └── main.js
 /backend/
 
 
@@ -80,7 +83,7 @@ github
 
 git init
 git add .
-git commit -m "25-03 / 18h40"
+git commit -m "26-03 / 18h40"
 git remote add origin https://github.com/Osatch/scc.git
 git push -u origin main
 

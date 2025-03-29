@@ -1,8 +1,65 @@
-from django.contrib.auth.models import AbstractUser
+#AbstractUserfrom django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils import timezone
 
 # Create your models here.
+
+#les roles multi users ***************************
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+from django.db import models
+
+# Définition des rôles disponibles pour vos utilisateurs
+ROLE_CHOICES = [
+    ('admin', 'Admin'),
+    ('staff', 'Staff'),
+    ('user', 'Utilisateur'),
+]
+
+class CustomUserManager(BaseUserManager):
+    def create_user(self, email, password=None, role='user', **extra_fields):
+        """
+        Crée et enregistre un utilisateur avec l'email et le mot de passe donnés.
+        Le rôle par défaut est 'user'.
+        """
+        if not email:
+            raise ValueError("L'email doit être renseigné")
+        # Normaliser l'email pour éviter les duplications
+        email = self.normalize_email(email)
+        # Créer l'instance de l'utilisateur avec le rôle et les autres champs supplémentaires
+        user = self.model(email=email, role=role, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, email, password, **extra_fields):
+        """
+        Crée et enregistre un superutilisateur avec l'email et le mot de passe donnés.
+        Pour un superutilisateur, le rôle est forcé à 'admin' et certains flags sont définis.
+        """
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        # On force le rôle à 'admin' pour le superutilisateur
+        return self.create_user(email, password, role='admin', **extra_fields)
+
+class CustomUser(AbstractBaseUser, PermissionsMixin):
+    email = models.EmailField(unique=True, max_length=191)
+    first_name = models.CharField(max_length=30, blank=True)
+    last_name = models.CharField(max_length=30, blank=True)
+    # Champ pour définir le rôle de l'utilisateur
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='user')
+    is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
+
+    objects = CustomUserManager()
+
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = []
+
+    def __str__(self):
+        return self.email
+
+
+
 
 
 #le GRDV *****************************************
@@ -459,7 +516,7 @@ class Parametres(models.Model):
 
 
 
-#le nok from django.db import models=================================================================
+#le nok =================================================================
 class NOK(models.Model):
     jeton = models.CharField(max_length=20)
     date_rdv = models.DateField()
@@ -977,9 +1034,8 @@ class InterventionsRACC(models.Model):
 
 
 from django.db import models
-from django.conf import settings
-from core.models import RelanceJJ
 from django.utils import timezone
+from core.models import RelanceJJ
 
 class Commentaire(models.Model):
     jeton = models.ForeignKey(
@@ -990,7 +1046,7 @@ class Commentaire(models.Model):
     )
     commentaire = models.TextField(verbose_name="Commentaire")
     commentateur = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        'core.CustomUser',  # Référence explicite vers CustomUser
         on_delete=models.CASCADE,
         verbose_name="Commentateur"
     )
@@ -1008,6 +1064,7 @@ class Commentaire(models.Model):
     
     def __str__(self):
         return f"Commentaire par {self.commentateur.username} sur le jeton {self.jeton.jeton_commande}"
+
 
 
 

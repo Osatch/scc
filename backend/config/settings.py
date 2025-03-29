@@ -29,20 +29,22 @@ ALLOWED_HOSTS = []
 
 
 # Application definition
-
 INSTALLED_APPS = [
+    # Apps Django par défaut
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    
+    # Applications tierces
     'rest_framework',
     'rest_framework_simplejwt',
     'corsheaders',
-    'core',
     
-
+    # Application interne (où se trouve votre modèle personnalisé)
+    'core',
 ]
 
 MIDDLEWARE = [
@@ -53,6 +55,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # Middleware pour gérer les requêtes CORS
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
 ]
@@ -62,7 +65,7 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [],  # Vous pouvez ajouter ici le chemin de vos templates si nécessaire
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -81,17 +84,17 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',  # Utilisez MySQL comme moteur de base de données
-        'NAME': 'scc_db',              # Nom de la base de données
-        'USER': 'root',                       # Utilisateur MySQL (par défaut "root")
-        'PASSWORD': '',                       # Mot de passe MySQL (vide par défaut)
-        'HOST': 'localhost',                  # Hôte de la base de données
-        'PORT': '3306',                       # Port MySQL (par défaut 3306)
+        'NAME': 'scc_db',                      # Nom de la base de données
+        'USER': 'root',                        # Utilisateur MySQL (par défaut "root")
+        'PASSWORD': '',                        # Mot de passe MySQL (vide par défaut)
+        'HOST': 'localhost',                   # Hôte de la base de données
+        'PORT': '3306',                        # Port MySQL (par défaut 3306)
     }
 }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -123,25 +126,37 @@ USE_I18N = True
 
 USE_TZ = True
 
-CORS_ALLOW_ALL_ORIGINS = True
 
+# CORS configuration : autoriser les requêtes depuis votre projet Vue.js
+CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",  # URL de ton projet Vue.js
+    "http://localhost:5173",  # URL de votre projet Vue.js
 ]
 
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
-
 STATIC_URL = 'static/'
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+
+# ------------------------
+# Personnalisation de l'utilisateur
+# ------------------------
+# Spécifiez à Django d'utiliser votre modèle utilisateur personnalisé
+# Le modèle se trouve dans l'application "core" et le nom du modèle est "CustomUser"
+AUTH_USER_MODEL = 'core.CustomUser'
+
+
+# ------------------------
+# Configuration de Django REST Framework
+# ------------------------
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',  # Utilise JWT pour l'authentification
     ),
 }

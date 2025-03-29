@@ -6,18 +6,33 @@
       <span class="text-lg font-semibold">{{ activeAccountName }}</span>
     </div>
 
-    <!-- Liste déroulante pour lancer l'import -->
+    <!-- Liste déroulante pour lancer divers imports -->
     <div class="relative">
       <select
         @change="handleImport($event)"
-        class="bg-gray-200 text-gray-700 p-2 rounded focus:outline-none"
+        class="bg-gray-200 text-gray-700 p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
       >
         <option value="">Importer données...</option>
         <option value="ard2">Importer ARD2</option>
-        <option value="grdv">Importer GRDV</option>
-        <option value="srjj">Syncor Relacejj</option>
+        <option value="grdv">Importer GRDV (via dropdown)</option>
+        <option value="sync_relancejj">Sync Relancejj</option>
+        <option value="parametres">Importer Paramètres</option>
+        <option value="gantt">Importer Gantt</option>
       </select>
     </div>
+
+    <!-- Bouton dédié pour lancer le bot GRDV (import GRDV) -->
+    <div class="flex flex-col items-center">
+      <button
+        class="flex items-center justify-center w-10 h-10 bg-blue-500 text-white rounded-full shadow-md hover:bg-blue-600 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-300"
+        @click="launchGrdvBot"
+      >
+        <CloudUpload class="w-6 h-6" />
+      </button>
+      <span class="IT">GRDV</span>
+    </div>
+
+
 
     <!-- Boutons de statistiques, rafraîchissement et déconnexion -->
     <div class="flex items-center gap-4">
@@ -47,7 +62,7 @@
 </template>
 
 <script>
-import { PowerIcon, RefreshCwIcon as RefreshIcon, UserIcon, BarChart } from "lucide-vue-next";
+import { PowerIcon, RefreshCwIcon as RefreshIcon, UserIcon, BarChart, CloudUpload } from "lucide-vue-next";
 import GanttStat from "./views/GanttStat.vue";
 
 export default {
@@ -57,6 +72,7 @@ export default {
     RefreshIcon,
     UserIcon,
     BarChart,
+    CloudUpload,
     GanttStat,
   },
   data() {
@@ -99,13 +115,24 @@ export default {
       const importType = event.target.value;
       if (!importType) return;
       let endpoint = "";
+      
       if (importType === "ard2") {
         endpoint = "http://127.0.0.1:8000/api/import_ard2/";
       } else if (importType === "grdv") {
         endpoint = "http://127.0.0.1:8000/api/import_grdv/";
-      } else if (importType === "srjj") {
+      } else if (importType === "sync_relancejj") {
         endpoint = "http://127.0.0.1:8000/api/sync_relancejj/";
+      } else if (importType === "parametres") {
+        endpoint = "http://127.0.0.1:8000/api/import_parametres/";
+      } else if (importType === "gantt") {
+        const date = prompt("Entrez la date (YYYY-MM-DD) :");
+        if (!date) {
+          event.target.value = "";
+          return;
+        }
+        endpoint = `http://127.0.0.1:8000/api/import_gantt/?date=${date}`;
       }
+      
       try {
         const accessToken = localStorage.getItem("access");
         if (!accessToken) {
@@ -133,6 +160,34 @@ export default {
         event.target.value = "";
       }
     },
+    async launchGrdvBot() {
+      try {
+        const accessToken = localStorage.getItem("access");
+        if (!accessToken) {
+          alert("Token d'accès introuvable");
+          return;
+        }
+        const response = await fetch("http://127.0.0.1:8000/api/import_grdv/", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+          },
+        });
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error(`Erreur HTTP ${response.status}:`, errorText);
+          alert("Erreur lors du lancement du bot GRDV");
+          return;
+        }
+        const data = await response.json();
+        alert(`Bot GRDV lancé avec succès:\n${data.message}`);
+      } catch (error) {
+        console.error("Erreur lors du lancement du bot GRDV :", error);
+        alert("Erreur lors du lancement du bot GRDV");
+      }
+    },
     refresh() {
       console.log("Rafraîchissement en cours...");
       this.fetchAccountName();
@@ -143,7 +198,6 @@ export default {
       this.$router.push("/");
     },
     handleStatistics() {
-      // Ouvrir la popup Statistiques
       this.showStatModal = true;
     },
     closeStatModal() {

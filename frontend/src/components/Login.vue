@@ -12,9 +12,9 @@
       <!-- Formulaire -->
       <form @submit.prevent="login" class="login-form">
         <input
-          v-model="username"
+          v-model="email"
           type="text"
-          placeholder="Nom d'utilisateur"
+          placeholder="Email"
           required
           class="input-field"
         />
@@ -43,7 +43,7 @@ import axios from 'axios';
 export default {
   data() {
     return {
-      username: '',
+      email: '',        // Utilisez "email" au lieu de "username"
       password: '',
       errorMessage: '',
     };
@@ -52,7 +52,7 @@ export default {
     async login() {
       try {
         const response = await axios.post('http://127.0.0.1:8000/api/login/', {
-          username: this.username,
+          email: this.email,      // Envoyer "email" ici
           password: this.password,
         });
 
@@ -69,17 +69,18 @@ export default {
 </script>
 
 <style scoped>
+/* Vos styles personnalisés */
 .login-page {
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100vh;
   width: 100vw;
-  position: fixed; /* Fixe la page pour éviter l'impact des autres styles */
+  position: fixed;
   top: 0;
   left: 0;
-  background-color: #f3f4f6; /* Fond gris clair */
-  z-index: 10000; /* Assure que la page est bien visible */
+  background-color: #f3f4f6;
+  z-index: 10000;
 }
 
 .login-container {
@@ -93,7 +94,6 @@ export default {
   color: #ffffff;
 }
 
-
 .logo-container {
   margin-bottom: 1.5rem;
 }
@@ -101,12 +101,12 @@ export default {
 .logo {
   width: 200px;
   height: auto;
-  filter: brightness(0) invert(1); /* Pour un logo blanc */
+  filter: brightness(0) invert(1);
 }
 
 .login-title {
   font-size: 1.8rem;
-  color: #ffffff; /* Texte en blanc */
+  color: #ffffff;
   margin-bottom: 1.5rem;
 }
 
@@ -118,22 +118,22 @@ export default {
 
 .input-field {
   padding: 0.8rem;
-  border: 1px solid #444; /* Bordure sombre */
+  border: 1px solid #444;
   border-radius: 5px;
   font-size: 1rem;
   outline: none;
-  background-color: #2c2c2c; /* Fond sombre pour les champs */
-  color: #ffffff; /* Texte en blanc */
+  background-color: #2c2c2c;
+  color: #ffffff;
   transition: border-color 0.3s ease;
 }
 
 .input-field:focus {
-  border-color: #007bff; /* Bordure bleue au focus */
+  border-color: #007bff;
 }
 
 .login-button {
   padding: 0.8rem;
-  background-color: #007bff; /* Bouton bleu */
+  background-color: #007bff;
   color: #fff;
   border: none;
   border-radius: 5px;
@@ -143,17 +143,17 @@ export default {
 }
 
 .login-button:hover {
-  background-color: #0056b3; /* Bouton bleu foncé au survol */
+  background-color: #0056b3;
 }
 
 .error-message {
-  color: #ff4d4d; /* Rouge pour les erreurs */
+  color: #ff4d4d;
   margin-top: 1rem;
 }
 
 .additional-text {
   margin-top: 1.5rem;
-  color: #a0a0a0; /* Texte gris clair */
+  color: #a0a0a0;
   font-size: 0.9rem;
 }
 </style>

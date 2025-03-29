@@ -1,6 +1,7 @@
 <template>
   <div class="main-content">
     <h2>Liste des Paramètres</h2>
+    <!-- Le bouton ADD ouvre la modal -->
     <button @click="toggleGlobalEditMode">ADD</button>
 
     <!-- Section Filtres -->
@@ -72,11 +73,11 @@
         </table>
       </div>
 
-      <!-- Corps du tableau scrollable (seule la scrollbar du corps est visible) -->
+      <!-- Corps du tableau scrollable -->
       <div class="body-container" ref="tableContainer" @scroll="syncScroll">
         <table class="body-table">
           <tbody>
-            <tr v-for="param in filteredParametres" :key="param.id_tech">
+            <tr v-for="param in filteredParametres" :key="param.id">
               <!-- Colonne ID avec menu de modification/suppression -->
               <td class="id-cell">
                 <!-- Mode non édition -->
@@ -94,7 +95,7 @@
                 </div>
                 <!-- Mode édition inline -->
                 <div v-else>
-                  <input type="text" v-model="editingRowData.id_tech" disabled />
+                  <input type="text" class="inline-edit-input" v-model="editingRowData.id_tech" disabled />
                   <button class="validate-button" @click="validateEdit(param.id)">Valider</button>
                   <button class="cancel-button" @click="cancelEdit">Annuler</button>
                 </div>
@@ -105,7 +106,7 @@
                   {{ param.nom_tech }}
                 </template>
                 <template v-else>
-                  <input type="text" v-model="editingRowData.nom_tech" />
+                  <input type="text" class="inline-edit-input" v-model="editingRowData.nom_tech" />
                 </template>
               </td>
               <td>
@@ -113,7 +114,7 @@
                   {{ param.departement }}
                 </template>
                 <template v-else>
-                  <input type="text" v-model="editingRowData.departement" />
+                  <input type="text" class="inline-edit-input" v-model="editingRowData.departement" />
                 </template>
               </td>
               <td>
@@ -121,7 +122,7 @@
                   {{ param.log_free }}
                 </template>
                 <template v-else>
-                  <input type="text" v-model="editingRowData.log_free" />
+                  <input type="text" class="inline-edit-input" v-model="editingRowData.log_free" />
                 </template>
               </td>
               <td>
@@ -129,7 +130,7 @@
                   {{ param.competence }}
                 </template>
                 <template v-else>
-                  <input type="text" v-model="editingRowData.competence" />
+                  <input type="text" class="inline-edit-input" v-model="editingRowData.competence" />
                 </template>
               </td>
               <td>
@@ -137,7 +138,7 @@
                   {{ param.actif_depuis }}
                 </template>
                 <template v-else>
-                  <input type="text" v-model="editingRowData.actif_depuis" />
+                  <input type="date" class="inline-edit-input" v-model="editingRowData.actif_depuis" />
                 </template>
               </td>
               <td>
@@ -145,7 +146,7 @@
                   {{ param.controle_photo }}
                 </template>
                 <template v-else>
-                  <input type="text" v-model="editingRowData.controle_photo" />
+                  <input type="text" class="inline-edit-input" v-model="editingRowData.controle_photo" />
                 </template>
               </td>
               <td>
@@ -153,7 +154,7 @@
                   {{ param.manager }}
                 </template>
                 <template v-else>
-                  <input type="text" v-model="editingRowData.manager" />
+                  <input type="text" class="inline-edit-input" v-model="editingRowData.manager" />
                 </template>
               </td>
               <td>
@@ -161,7 +162,7 @@
                   {{ param.zone }}
                 </template>
                 <template v-else>
-                  <input type="text" v-model="editingRowData.zone" />
+                  <input type="text" class="inline-edit-input" v-model="editingRowData.zone" />
                 </template>
               </td>
               <td>
@@ -169,7 +170,7 @@
                   {{ param.grille_actif }}
                 </template>
                 <template v-else>
-                  <input type="text" v-model="editingRowData.grille_actif" />
+                  <input type="text" class="inline-edit-input" v-model="editingRowData.grille_actif" />
                 </template>
               </td>
               <td>
@@ -177,7 +178,7 @@
                   {{ param.log_technicien }}
                 </template>
                 <template v-else>
-                  <input type="text" v-model="editingRowData.log_technicien" />
+                  <input type="text" class="inline-edit-input" v-model="editingRowData.log_technicien" />
                 </template>
               </td>
               <td>
@@ -185,7 +186,7 @@
                   {{ param.numero_technicien }}
                 </template>
                 <template v-else>
-                  <input type="text" v-model="editingRowData.numero_technicien" />
+                  <input type="text" class="inline-edit-input" v-model="editingRowData.numero_technicien" />
                 </template>
               </td>
               <td>
@@ -193,7 +194,7 @@
                   {{ param.societe }}
                 </template>
                 <template v-else>
-                  <input type="text" v-model="editingRowData.societe" />
+                  <input type="text" class="inline-edit-input" v-model="editingRowData.societe" />
                 </template>
               </td>
               <td>
@@ -201,7 +202,7 @@
                   {{ param.nom_prenom_grdv }}
                 </template>
                 <template v-else>
-                  <input type="text" v-model="editingRowData.nom_prenom_grdv" />
+                  <input type="text" class="inline-edit-input" v-model="editingRowData.nom_prenom_grdv" />
                 </template>
               </td>
               <td>
@@ -209,7 +210,7 @@
                   {{ param.id_grdv }}
                 </template>
                 <template v-else>
-                  <input type="text" v-model="editingRowData.id_grdv" />
+                  <input type="text" class="inline-edit-input" v-model="editingRowData.id_grdv" />
                 </template>
               </td>
             </tr>
@@ -218,9 +219,11 @@
       </div>
     </div>
 
-    <!-- Formulaire d'ajout global -->
-    <div v-if="globalEditMode">
-      <formulaire-parametre @cancel="toggleGlobalEditMode" @submit="handleSubmit" />
+    <!-- Modal pour le formulaire d'ajout -->
+    <div v-if="globalEditMode" class="modal-overlay">
+      <div class="modal">
+        <formulaire-parametre @cancel="toggleGlobalEditMode" @submit="handleSubmit" />
+      </div>
     </div>
   </div>
 </template>
@@ -284,7 +287,6 @@ export default {
         });
     },
     updateDummyWidth() {
-      // Ajuste la largeur de l'en-tête pour correspondre à celle du corps
       if (this.$refs.tableContainer && this.$refs.headerContainer) {
         this.$refs.headerContainer.firstElementChild.style.minWidth =
           this.$refs.tableContainer.firstElementChild.offsetWidth + 'px';
@@ -297,6 +299,7 @@ export default {
         this.$refs.headerContainer.scrollLeft = scrollLeft;
       }
     },
+    // Ouvre/ferme la modal
     toggleGlobalEditMode() {
       this.globalEditMode = !this.globalEditMode;
     },
@@ -342,11 +345,11 @@ export default {
       this.editingRowData = { ...param };
       this.menuRowId = null;
     },
-    // PUT : Mise à jour d'un paramètre via l'édition inline (utilise "id")
+    // PUT : Mise à jour d'un paramètre via l'édition inline
     validateEdit(rowId) {
       const index = this.parametres.findIndex(p => p.id === rowId);
       if (index !== -1) {
-        axios.put(`http://127.0.0.1:8000/api/parametres/${rowId}`, this.editingRowData)
+        axios.put(`http://127.0.0.1:8000/api/parametres/${rowId}/`, this.editingRowData)
           .then(response => {
             this.parametres[index] = response.data;
             this.editingRowId = null;
@@ -369,7 +372,7 @@ export default {
         return;
       }
       if (confirm("Êtes-vous sûr de vouloir supprimer cette ligne ?")) {
-        axios.delete(`http://127.0.0.1:8000/api/parametres/${param.id}`)
+        axios.delete(`http://127.0.0.1:8000/api/parametres/${param.id}/`)
           .then(() => {
             this.parametres = this.parametres.filter(p => p.id !== param.id);
           })
@@ -441,7 +444,7 @@ export default {
 
 /* Conteneur du tableau */
 .table-container {
-  width: 65%;
+  width: 42%;
   background-color: #ffffff;
   border-radius: 0 0 8px 8px;
   overflow: hidden;
@@ -556,6 +559,37 @@ export default {
 }
 .cancel-button:hover {
   background-color: #c82333;
+}
+
+/* Styles pour les champs d'édition inline */
+.inline-edit-input {
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 200;
+}
+.modal {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  max-width: 800px;
+  width: 100%;
+  position: relative;
 }
 
 /* Responsive */
