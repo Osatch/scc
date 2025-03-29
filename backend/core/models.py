@@ -4,14 +4,22 @@ from django.utils import timezone
 
 # Create your models here.
 
-#les roles multi users ***************************
+# Create your models here.
+
+# Les rôles multi utilisateurs ***************************
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
+
+
 
 # Définition des rôles disponibles pour vos utilisateurs
 ROLE_CHOICES = [
     ('admin', 'Admin'),
-    ('staff', 'Staff'),
+    ('chef_plateau', 'Chef de plateau'),
+    ('manager', 'Manager'),
+    ('agent', 'Agent'),
+    ('technicien', 'Technicien'),
+    ('direction', 'Direction'),
     ('user', 'Utilisateur'),
 ]
 
@@ -38,7 +46,6 @@ class CustomUserManager(BaseUserManager):
         """
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
-        # On force le rôle à 'admin' pour le superutilisateur
         return self.create_user(email, password, role='admin', **extra_fields)
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
@@ -46,7 +53,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     first_name = models.CharField(max_length=30, blank=True)
     last_name = models.CharField(max_length=30, blank=True)
     # Champ pour définir le rôle de l'utilisateur
-    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='user')
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='user')
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
 

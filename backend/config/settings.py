@@ -160,3 +160,4 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',  # Utilise JWT pour l'authentification
     ),
 }
+
