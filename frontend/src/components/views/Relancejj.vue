@@ -63,6 +63,11 @@
           <label for="filter-pec">PEC</label>
           <input type="text" id="filter-pec" v-model="selectedPec" placeholder="Rechercher le PEC" />
         </div>
+        <!-- Filtre Société -->
+        <div class="filter-group">
+          <label for="filter-societe">Société</label>
+          <input type="text" id="filter-societe" v-model="selectedSociete" placeholder="Rechercher la société" />
+        </div>
       </div>
       
       <div class="filter-actions">
@@ -80,6 +85,7 @@
           <th>Techniciens</th>
           <th>Numéro</th>
           <th>Département</th>
+          <th>Société</th>
           <th>PEC</th>
           <th>Statut</th>
           <th>Heure Prévue</th>
@@ -89,13 +95,13 @@
       </thead>
       <tbody>
         <tr v-for="relance in filteredRelances" :key="relance.id">
-          <!-- Seul le jeton est cliquable -->
           <td @click="openPopup(relance)" class="clickable">{{ relance.jeton_commande }}</td>
           <td>{{ relance.date_rdv }}</td>
           <td>{{ relance.activite }}</td>
           <td>{{ relance.techniciens }}</td>
           <td>{{ relance.numero }}</td>
           <td>{{ relance.departement }}</td>
+          <td>{{ relance.societe }}</td>
           <td>{{ relance.pec }}</td>
           <td :class="getStatusClass(relance.statut)">{{ relance.statut }}</td>
           <td>{{ relance.heure_prevue }}</td>
@@ -115,6 +121,7 @@
         <p><strong>Techniciens:</strong> {{ selectedRelance.techniciens }}</p>
         <p><strong>Numéro:</strong> {{ selectedRelance.numero }}</p>
         <p><strong>Département:</strong> {{ selectedRelance.departement }}</p>
+        <p><strong>Société:</strong> {{ selectedRelance.societe }}</p>
         <p><strong>PEC:</strong> {{ selectedRelance.pec }}</p>
         <p><strong>Statut:</strong> {{ selectedRelance.statut }}</p>
         <p><strong>Heure Prévue:</strong> {{ selectedRelance.heure_prevue }}</p>
@@ -155,6 +162,7 @@ export default {
       selectedJeton: "",
       selectedTechnicien: "",
       selectedPec: "",
+      selectedSociete: "",
       showExtraFilters: false,
       // Pour la popup
       showPopup: false,
@@ -195,15 +203,15 @@ export default {
         // Filtres supplémentaires
         const jetonMatch = !this.selectedJeton || 
           relance.jeton_commande.toLowerCase().includes(this.selectedJeton.toLowerCase());
-        
         const technicienMatch = !this.selectedTechnicien || 
           relance.techniciens.toLowerCase().includes(this.selectedTechnicien.toLowerCase());
-        
         const pecMatch = !this.selectedPec || 
           relance.pec.toLowerCase().includes(this.selectedPec.toLowerCase());
+        const societeMatch = !this.selectedSociete ||
+          (relance.societe && relance.societe.toLowerCase().includes(this.selectedSociete.toLowerCase()));
         
         return statutMatch && dateMatch && departementMatch && creneauMatch &&
-               jetonMatch && technicienMatch && pecMatch;
+               jetonMatch && technicienMatch && pecMatch && societeMatch;
       });
     }
   },
@@ -230,6 +238,7 @@ export default {
       this.selectedJeton = "";
       this.selectedTechnicien = "";
       this.selectedPec = "";
+      this.selectedSociete = "";
     },
     getStatusClass(statut) {
       if (statut === "Cloturée") return "status-cloturee";
@@ -250,7 +259,6 @@ export default {
       this.showComments = false;
     },
     async fetchComments() {
-      // On suppose que l'API accepte un paramètre "jeton" pour récupérer les commentaires liés
       try {
         const response = await axios.get(`http://127.0.0.1:8000/api/commentaires/?jeton=${this.selectedRelance.jeton_commande}`);
         this.comments = response.data;
@@ -268,6 +276,7 @@ export default {
 </script>
 
 <style scoped>
+/* Votre CSS existant */
 .main-content {
   margin-left: 250px;
   margin-top: 80px;
@@ -299,7 +308,7 @@ export default {
 
 /* Filtres */
 .filters {
-  width: 95%;
+  width: 90%;
   margin-bottom: 20px;
   padding: 10px;
   background-color: #fff;

@@ -53,6 +53,8 @@ stucture du code
     │   ├── static/
     forntend /src/
     ├── components/
+    │   ├── views-agent/
+    │   │   ├── Agent-ControlPhoto.vue
     │   ├── views/
     │   │   ├── Gantt.vue
     │   │   ├── Relancejj.vue
@@ -67,6 +69,8 @@ stucture du code
     │   ├── Sidebar.vue
     │   └── Header.vue
         └── Dashboard.vue
+    │   ├── Agent-dashboard.vue
+    │   ├── Agent-sidebar.vue
     ├── App.vue
     └── main.js
 /backend/
@@ -164,9 +168,11 @@ python manage.py import_gantt --date 2025-03-22
 
 python manage.py import_parametres
 python manage.py import_gantt
+python manage.py sync_controlphoto
 
 TRUNCATE TABLE `core_ard2`;
 TRUNCATE TABLE`core_grdv`;
 TRUNCATE TABLE`core_relancejj`;
 TRUNCATE TABLE`core_gantt`;
 TRUNCATE TABLE`core_parametres`;
+TRUNCATE TABLE `core_controlphoto`;

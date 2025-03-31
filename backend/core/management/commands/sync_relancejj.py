@@ -1,11 +1,11 @@
 import unicodedata
 from django.core.management.base import BaseCommand
-from core.models import GRDV, ARD2, RelanceJJ, Parametres  # Importez Parametres avec les champs requis
+from core.models import GRDV, ARD2, RelanceJJ, Parametres  # Assurez-vous que les modèles sont correctement importés
 
 class Command(BaseCommand):
     help = ("Synchronise les données de GRDV et ARD2 dans RelanceJJ en mettant à jour si le jeton_commande et la date_rdv "
             "correspondent à une entrée existante, sinon crée une nouvelle ligne. "
-            "Ensuite, met à jour le numéro technicien à partir de Parametres.")
+            "Ensuite, met à jour le numéro technicien et la société à partir de Parametres.")
 
     def handle(self, *args, **kwargs):
         # Affichage des valeurs de jeton_commande présentes dans ARD2 pour débogage
@@ -65,8 +65,6 @@ class Command(BaseCommand):
                 action = "Mis à jour"
             else:
                 # Sinon, on crée une nouvelle entrée
-                # Remarque : update_or_create ne permet pas de créer plusieurs entrées avec le même jeton_commande
-                # si la date diffère, d'où l'utilisation d'une simple création.
                 defaults.update({
                     "jeton_commande": ard2_instance.jeton_commande
                 })
@@ -75,17 +73,20 @@ class Command(BaseCommand):
 
             self.stdout.write(self.style.SUCCESS(f"{action} RelanceJJ pour GRDV {grdv.id} (date_rdv: {date_rdv})"))
 
-            # Synchronisation du numéro technicien à partir de la table Parametres.
+            # Synchronisation du numéro technicien et de la société à partir de la table Parametres.
             param = Parametres.objects.filter(
                 nom_tech__iexact=relance.techniciens,
                 departement__iexact=relance.departement
             ).first()
 
-            if param and param.numero_technicien:
-                relance.numero = param.numero_technicien
+            if param:
+                if param.numero_technicien:
+                    relance.numero = param.numero_technicien
+                if param.societe:
+                    relance.societe = param.societe
                 relance.save()
                 self.stdout.write(self.style.SUCCESS(
-                    f"Mis à jour le numéro technicien pour RelanceJJ de GRDV {grdv.id} à {param.numero_technicien}"
+                    f"Mis à jour le numéro technicien et la société pour RelanceJJ de GRDV {grdv.id} (numéro: {param.numero_technicien}, société: {param.societe})"
                 ))
             else:
                 self.stdout.write(self.style.WARNING(

@@ -32,7 +32,9 @@
       <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
 
       <!-- Texte supplémentaire -->
-      <p class="additional-text">Bienvenue sur TECHNO SMART. Connectez-vous pour accéder à votre espace.</p>
+      <p class="additional-text">
+        Bienvenue sur TECHNO SMART. Connectez-vous pour accéder à votre espace.
+      </p>
     </div>
   </div>
 </template>
@@ -43,7 +45,7 @@ import axios from 'axios';
 export default {
   data() {
     return {
-      email: '',        // Utilisez "email" au lieu de "username"
+      email: '',
       password: '',
       errorMessage: '',
     };
@@ -52,16 +54,32 @@ export default {
     async login() {
       try {
         const response = await axios.post('http://127.0.0.1:8000/api/login/', {
-          email: this.email,      // Envoyer "email" ici
+          email: this.email,
           password: this.password,
         });
 
+        // Stockage des tokens dans le localStorage
         localStorage.setItem('access', response.data.access);
         localStorage.setItem('refresh', response.data.refresh);
 
-        this.$router.push('/dashboard'); // Redirige vers le dashboard
+        // Récupérer le rôle renvoyé par l'API
+        const userRole = response.data.role;
+        console.log("Rôle de l'utilisateur :", userRole);
+
+        // Redirection selon le rôle
+        if (userRole === 'admin') {
+          this.$router.push('/Admin-dashboard');
+        } else if (userRole === 'agent') {
+          this.$router.push('/Agent-dashboard');
+        } else if (userRole === 'manager') {
+          this.$router.push('/dashboard');
+        } else {
+          // Redirection par défaut si le rôle n'est pas reconnu
+          this.$router.push('/dashboard');
+        }
       } catch (error) {
         this.errorMessage = "Identifiants incorrects";
+        console.error("Erreur lors de la connexion :", error);
       }
     },
   },
@@ -69,7 +87,6 @@ export default {
 </script>
 
 <style scoped>
-/* Vos styles personnalisés */
 .login-page {
   display: flex;
   justify-content: center;

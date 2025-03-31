@@ -3,7 +3,7 @@
     <h2>Contrôle Photo</h2>
     <p>Vérification des photos prises sur le terrain.</p>
 
-    <!-- Tableau pour afficher les données -->
+    <!-- Affichage d'un message de chargement -->
     <div v-if="loading" class="loading">Chargement en cours...</div>
     <div v-else class="table-container">
       <table>
@@ -14,9 +14,20 @@
             <th>Heure</th>
             <th>Technicien</th>
             <th>Groupe Tech</th>
+            <th>Actif Depuis</th>
+            <th>Zone Manager</th>
             <th>Statut</th>
+            <th>Secteur</th>
+            <th>Statut PTO</th>
+            <th>Synchro</th>
+            <th>Statu de L'appel</th>
+            <th>Agent</th>
             <th>Résultats Vérification</th>
             <th>Commentaire</th>
+            <th>Société</th>
+            <th>Numéro</th>
+            <!-- Nouvelle colonne ajoutée -->
+            <th>Nouvelle Colonne</th>
           </tr>
         </thead>
         <tbody>
@@ -26,11 +37,22 @@
             <td>{{ item.heure }}</td>
             <td>{{ item.tech }}</td>
             <td>{{ item.groupe_tech }}</td>
+            <td>{{ item.actif_depuis }}</td>
+            <td>{{ item.zone_manager }}</td>
             <td :class="{ 'ok-cell': item.statut === 'Cloturée', 'nok-cell': item.statut === 'Taguée' }">
               {{ item.statut }}
             </td>
+            <td>{{ item.secteur }}</td>
+            <td>{{ item.statut_pto }}</td>
+            <td>{{ item.synchro }}</td>
+            <td>{{ item.statut_appel}}</td>
+            <td>{{ item.agent }}</td>
             <td>{{ item.resultats_verification }}</td>
             <td>{{ item.commentaire }}</td>
+            <td>{{ item.societe }}</td>
+            <td>{{ item.numero }}</td>
+            <!-- Affichage de la nouvelle donnée -->
+            
           </tr>
         </tbody>
       </table>
@@ -51,13 +73,14 @@ export default {
     };
   },
   created() {
-    // Récupérer les données de l'API lors de la création du composant
+    // Chargement des données dès la création du composant
     this.fetchControlPhotos();
   },
   methods: {
     async fetchControlPhotos() {
       try {
-        const response = await axios.get('/api/controlphoto/'); // Remplacez par votre URL d'API
+        // Remplacez '/api/controlphoto/' par l'URL de votre API
+        const response = await axios.get('/api/controlphoto/');
         this.controlphotos = response.data;
       } catch (error) {
         this.error = "Erreur lors du chargement des données.";
@@ -80,29 +103,10 @@ export default {
   box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-.header-container {
-  width: 65%;
-  overflow-x: auto; /* Barre de défilement horizontale */
-  border-radius: 8px 8px 0 0;
-  max-width: 100vw;
-  white-space: nowrap;
-  background-color: #ffffff;
-}
-
-.header-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-  min-width: 1200px;
-  table-layout: fixed; /* Force les colonnes à avoir la même largeur */
-}
-
 .table-container {
-  width: 65%;
-  overflow-x: auto; /* Barre de défilement horizontale */
-  border-radius: 0 0 8px 8px;
-  max-width: 100vw;
-  white-space: nowrap;
+  width: 100%;
+  overflow-x: auto; /* Permet un défilement horizontal si nécessaire */
+  border-radius: 8px;
   background-color: #ffffff;
 }
 
@@ -110,8 +114,8 @@ table {
   width: 100%;
   border-collapse: collapse;
   font-size: 13px;
-  min-width: 1200px;
-  table-layout: fixed; /* Force les colonnes à avoir la même largeur */
+  min-width: 1200px; /* Largeur minimale pour gérer toutes les colonnes */
+  table-layout: fixed; /* Pour que toutes les colonnes aient la même largeur */
 }
 
 th, td {
@@ -119,7 +123,7 @@ th, td {
   padding: 10px;
   text-align: left;
   white-space: nowrap;
-  width: 120px; /* Largeur fixe pour chaque colonne */
+  width: 120px;
 }
 
 th {
@@ -137,7 +141,6 @@ td {
 tbody tr:nth-child(odd) {
   background-color: #f9f9f9;
 }
-
 tbody tr:nth-child(even) {
   background-color: #ffffff;
 }
@@ -148,29 +151,25 @@ tbody tr:hover {
   transition: background-color 0.3s ease-in-out;
 }
 
-/* Styles pour les cellules OK et NOK */
+/* Styles spécifiques pour les cellules selon le statut */
 .ok-cell {
   background-color: #c8e6c9; /* Vert clair */
 }
-
 .nok-cell {
   background-color: #ffcc80; /* Orange clair */
 }
 
 @media (max-width: 768px) {
-  .header-container,
   .table-container {
     width: 90%;
     margin-left: 10px;
   }
-
   table {
     font-size: 12px;
   }
-
   th, td {
     padding: 8px;
-    width: 100px; /* Ajustez la largeur pour les petits écrans */
+    width: 100px;
   }
 }
 </style>

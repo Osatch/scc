@@ -336,8 +336,6 @@ class ARD2(models.Model):
 
   
   #Relance jj =====================================================================================
-
-         
 import unicodedata
 from django.db import models
 
@@ -395,6 +393,11 @@ class RelanceJJ(models.Model):
         blank=True,
         verbose_name="Département (provenant de ARD2.departement)"
     )
+    societe = models.CharField(
+        max_length=255,
+        blank=True,
+        verbose_name="Société"
+    )
     pec = models.CharField(
         max_length=255,
         verbose_name="PEC (saisi manuellement)",
@@ -449,7 +452,7 @@ class RelanceJJ(models.Model):
             else:
                 self.jeton_commande = ""
 
-        # **Ajout : Mise à jour automatique du statut**
+        # Mise à jour automatique du statut
         if self.heure_debut and self.heure_fin:
             self.statut = "Cloturée"
         elif self.heure_debut and not self.heure_fin:
@@ -461,6 +464,8 @@ class RelanceJJ(models.Model):
 
     def __str__(self):
         return f"{self.jeton_commande} - {self.date_rdv} - {self.activite}"
+
+
 
 #model param =======================================================================================
     
@@ -608,6 +613,11 @@ class ControlPhoto(models.Model):
     resultats_verification = models.CharField(max_length=50, choices=RESULTATS_VERIFICATION_CHOICES, null=True, blank=True)  # Résultats vérification
     commentaire = models.TextField(null=True, blank=True)  # Commentaire
 
+    # Nouvelles colonnes ajoutées
+    societe = models.CharField(max_length=255, null=True, blank=True)  # Société
+    numero = models.CharField(max_length=50, null=True, blank=True)    # Numéro
+    statut_appel = models.CharField(max_length=50, null=True, blank=True)  # Statut Appel, par défaut null
+
     def __str__(self):
         return f"{self.jeton.jeton} - {self.date} - {self.tech}"
 
@@ -617,7 +627,7 @@ class ControlPhoto(models.Model):
 
 
 
-#control a froid
+#control a froid==================================================================================================================
 from django.db import models
 from .models import ControlPhoto  # Assurez-vous d'importer le modèle ControlPhoto
 
@@ -663,7 +673,7 @@ class Controlafroid(models.Model):
 
 
 
-#debrief racc 
+#debrief racc =======================================================================
 
 
 from django.db import models
@@ -861,7 +871,7 @@ class DebriefRACC(models.Model):
 
 
 
-#debrief SAV
+#debrief SAV ===============================================================================
 
 from django.db import models
 from .models import RelanceJJ, Parametres, ARD2
@@ -980,7 +990,7 @@ class InterventionsSAV(models.Model):
         verbose_name_plural = "Interventions SAV"
 
 
-#inter Racc
+#inter Racc=================================================================================
 
 from django.db import models
 
