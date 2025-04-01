@@ -105,5 +105,6 @@ class ParametresForm(forms.ModelForm):
             'actif_depuis': forms.DateInput(attrs={'type': 'date'}),
         }
 
+# Serializer pour une réponse protégée
 class ProtectedSerializer(serializers.Serializer):
     message = serializers.CharField()

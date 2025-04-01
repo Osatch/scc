@@ -284,6 +284,7 @@ def controlphoto_list(request):
         controlphotos = ControlPhoto.objects.all().order_by('-date')
         serializer = ControlPhotoSerializer(controlphotos, many=True)
         return Response(serializer.data)
+    
     elif request.method == 'POST':
         serializer = ControlPhotoSerializer(data=request.data)
         if serializer.is_valid():
@@ -297,15 +298,18 @@ def controlphoto_detail(request, pk):
     Détail, mise à jour et suppression d'un enregistrement ControlPhoto.
     """
     controlphoto = get_object_or_404(ControlPhoto, pk=pk)
+    
     if request.method == 'GET':
         serializer = ControlPhotoSerializer(controlphoto)
         return Response(serializer.data)
+
     elif request.method == 'PUT':
         serializer = ControlPhotoSerializer(controlphoto, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=400)
+
     elif request.method == 'DELETE':
         controlphoto.delete()
         return Response({"message": "ControlPhoto supprimé avec succès"}, status=204)

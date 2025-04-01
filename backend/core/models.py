@@ -560,9 +560,7 @@ class NOK(models.Model):
 
 
 #Control photo =================================================================================
-
 from django.db import models
-from .models import RelanceJJ  # Assurez-vous d'importer le modèle RelanceJJ
 
 class ControlPhoto(models.Model):
     GROUPE_TECH_CHOICES = [
@@ -598,28 +596,30 @@ class ControlPhoto(models.Model):
         ('Non validé', 'Non validé'),
     ]
 
-    jeton = models.ForeignKey(RelanceJJ, on_delete=models.CASCADE, related_name='control_photos')  # Référence au jeton de la table RelanceJJ
-    date = models.DateField()  # Date d'intervention de RelanceJJ
-    heure = models.TimeField()  # Heure d'intervention de RelanceJJ
-    tech = models.CharField(max_length=255)  # Nom du technicien de RelanceJJ
-    groupe_tech = models.CharField(max_length=2, choices=GROUPE_TECH_CHOICES)  # Groupe tech (G1, G2, ...)
+    # Le champ jeton est maintenant un champ normal de type CharField sans relation
+    jeton = models.CharField(max_length=255)
+    
+    date = models.DateField()  # Date d'intervention
+    heure = models.TimeField()  # Heure d'intervention
+    tech = models.CharField(max_length=255)  # Nom du technicien
+    groupe_tech = models.CharField(max_length=2, choices=GROUPE_TECH_CHOICES)
     actif_depuis = models.DateField()  # Date du début d'activité de l'agent
-    zone_manager = models.CharField(max_length=10, choices=ZONE_MANAGER_CHOICES, null=True, blank=True)  # Zone/Manager (Zone1, Zone2, #N/A)
-    statut = models.CharField(max_length=20, choices=STATUT_CHOICES)  # Statut de RelanceJJ
-    secteur = models.CharField(max_length=255)  # Secteur de RelanceJJ
-    statut_pto = models.CharField(max_length=50, choices=STATUT_PTO_CHOICES, null=True, blank=True)  # Statut PTO
-    synchro = models.CharField(max_length=3, choices=SYNCHRO_CHOICES, null=True, blank=True)  # Synchro (OK, NOK)
-    agent = models.CharField(max_length=255)  # Nom de l'agent qui a suivi le technicien (PEC PAR de RelanceJJ)
-    resultats_verification = models.CharField(max_length=50, choices=RESULTATS_VERIFICATION_CHOICES, null=True, blank=True)  # Résultats vérification
-    commentaire = models.TextField(null=True, blank=True)  # Commentaire
+    zone_manager = models.CharField(max_length=10, choices=ZONE_MANAGER_CHOICES, null=True, blank=True)
+    statut = models.CharField(max_length=20, choices=STATUT_CHOICES)
+    secteur = models.CharField(max_length=255)
+    statut_pto = models.CharField(max_length=50, choices=STATUT_PTO_CHOICES, null=True, blank=True)
+    synchro = models.CharField(max_length=3, choices=SYNCHRO_CHOICES, null=True, blank=True)
+    agent = models.CharField(max_length=255)
+    resultats_verification = models.CharField(max_length=50, choices=RESULTATS_VERIFICATION_CHOICES, null=True, blank=True)
+    commentaire = models.TextField(null=True, blank=True)
 
     # Nouvelles colonnes ajoutées
-    societe = models.CharField(max_length=255, null=True, blank=True)  # Société
-    numero = models.CharField(max_length=50, null=True, blank=True)    # Numéro
-    statut_appel = models.CharField(max_length=50, null=True, blank=True)  # Statut Appel, par défaut null
+    societe = models.CharField(max_length=255, null=True, blank=True)
+    numero = models.CharField(max_length=50, null=True, blank=True)
+    statut_appel = models.CharField(max_length=50, null=True, blank=True)
 
     def __str__(self):
-        return f"{self.jeton.jeton} - {self.date} - {self.tech}"
+        return f"{self.jeton} - {self.date} - {self.tech}"
 
     def save(self, *args, **kwargs):
         # Vous pouvez ajouter ici des logiques supplémentaires si nécessaire

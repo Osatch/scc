@@ -1,175 +1,345 @@
 <template>
   <div class="main-content">
-    <h2>Contrôle Photo</h2>
-    <p>Vérification des photos prises sur le terrain.</p>
-
-    <!-- Affichage d'un message de chargement -->
-    <div v-if="loading" class="loading">Chargement en cours...</div>
-    <div v-else class="table-container">
-      <table>
-        <thead>
-          <tr>
-            <th>Jeton</th>
-            <th>Date</th>
-            <th>Heure</th>
-            <th>Technicien</th>
-            <th>Groupe Tech</th>
-            <th>Actif Depuis</th>
-            <th>Zone Manager</th>
-            <th>Statut</th>
-            <th>Secteur</th>
-            <th>Statut PTO</th>
-            <th>Synchro</th>
-            <th>Statu de L'appel</th>
-            <th>Agent</th>
-            <th>Résultats Vérification</th>
-            <th>Commentaire</th>
-            <th>Société</th>
-            <th>Numéro</th>
-            <!-- Nouvelle colonne ajoutée -->
-            <th>Nouvelle Colonne</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="item in controlphotos" :key="item.id">
-            <td>{{ item.jeton }}</td>
-            <td>{{ item.date }}</td>
-            <td>{{ item.heure }}</td>
-            <td>{{ item.tech }}</td>
-            <td>{{ item.groupe_tech }}</td>
-            <td>{{ item.actif_depuis }}</td>
-            <td>{{ item.zone_manager }}</td>
-            <td :class="{ 'ok-cell': item.statut === 'Cloturée', 'nok-cell': item.statut === 'Taguée' }">
-              {{ item.statut }}
-            </td>
-            <td>{{ item.secteur }}</td>
-            <td>{{ item.statut_pto }}</td>
-            <td>{{ item.synchro }}</td>
-            <td>{{ item.statut_appel}}</td>
-            <td>{{ item.agent }}</td>
-            <td>{{ item.resultats_verification }}</td>
-            <td>{{ item.commentaire }}</td>
-            <td>{{ item.societe }}</td>
-            <td>{{ item.numero }}</td>
-            <!-- Affichage de la nouvelle donnée -->
-            
-          </tr>
-        </tbody>
-      </table>
+    <h2>Liste des Contrôles Photo</h2>
+    
+    <!-- Filtres -->
+    <div class="filters">
+      <!-- Bouton toggle pour filtres supplémentaires -->
+      <div class="toggle-extra-filters">
+        <button @click="toggleExtraFilters">
+          {{ showExtraFilters ? '-' : '+' }}
+        </button>
+      </div>
+      
+      <!-- Filtres de base -->
+      <div class="filter-grid">
+        <!-- Filtre Statut -->
+        <div class="filter-group">
+          <label for="filter-statut">Statut</label>
+          <select id="filter-statut" v-model="selectedStatut">
+            <option value="">Tous</option>
+            <option value="Cloturée">Clôturée</option>
+            <option value="Taguée">Taguée</option>
+            <option value="Vide">Vide</option>
+          </select>
+        </div>
+        <!-- Filtre Date -->
+        <div class="filter-group">
+          <label for="filter-date">Date</label>
+          <input type="date" id="filter-date" v-model="selectedDate" placeholder="Filtrer par date" />
+        </div>
+        <!-- Filtre Technicien -->
+        <div class="filter-group">
+          <label for="filter-technicien">Technicien</label>
+          <input type="text" id="filter-technicien" v-model="selectedTechnicien" placeholder="Filtrer par technicien" />
+        </div>
+        <!-- Filtre Jeton -->
+        <div class="filter-group">
+          <label for="filter-jeton">Jeton</label>
+          <input type="text" id="filter-jeton" v-model="selectedJeton" placeholder="Filtrer par jeton" />
+        </div>
+      </div>
+      
+      <!-- Filtres supplémentaires (affichés/masqués) -->
+      <div v-if="showExtraFilters" class="extra-filters">
+        <!-- Filtre Société -->
+        <div class="filter-group">
+          <label for="filter-societe">Société</label>
+          <input type="text" id="filter-societe" v-model="selectedSociete" placeholder="Filtrer par société" />
+        </div>
+      </div>
+      
+      <div class="filter-actions">
+        <button @click="clearFilters">Effacer</button>
+      </div>
     </div>
+    
+    <!-- Pagination (au-dessus du tableau) -->
+    <div class="pagination">
+      <button @click="prevPage" :disabled="currentPage === 1">Précédent</button>
+      <span>Page {{ currentPage }} sur {{ totalPages }}</span>
+      <button @click="nextPage" :disabled="currentPage === totalPages">Suivant</button>
+    </div>
+    
+    <!-- Tableau des contrôles photo -->
+    <table>
+      <thead>
+        <tr>
+          <th>Jeton</th>
+          <th>Date</th>
+          <th>Heure</th>
+          <th>Technicien</th>
+          <th>Groupe Tech</th>
+          <th>Actif Depuis</th>
+          <th>Zone Manager</th>
+          <th>Statut</th>
+          <th>Secteur</th>
+          <th>Statut PTO</th>
+          <th>Synchro</th>
+          <th>Statut d'Appel</th>
+          <th>Agent</th>
+          <th>Résultats Vérification</th>
+          <th>Commentaire</th>
+          <th>Société</th>
+          <th>Numéro</th>
+          <th>Nouvelle Colonne</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="photo in paginatedControlPhotos" :key="photo.id">
+          <td>{{ photo.jeton }}</td>
+          <td>{{ photo.date }}</td>
+          <td>{{ photo.heure }}</td>
+          <td>{{ photo.tech }}</td>
+          <td>{{ photo.groupe_tech }}</td>
+          <td>{{ photo.actif_depuis }}</td>
+          <td>{{ photo.zone_manager }}</td>
+          <td :class="{ 'ok-cell': photo.statut === 'Cloturée', 'nok-cell': photo.statut === 'Taguée' }">
+            {{ photo.statut }}
+          </td>
+          <td>{{ photo.secteur }}</td>
+          <td>{{ photo.statut_pto }}</td>
+          <td>{{ photo.synchro }}</td>
+          <td>{{ photo.statut_appel }}</td>
+          <td>{{ photo.agent }}</td>
+          <td>{{ photo.resultats_verification }}</td>
+          <td>{{ photo.commentaire }}</td>
+          <td>{{ photo.societe }}</td>
+          <td>{{ photo.numero }}</td>
+          <td>{{ photo.nouvelle_colonne }}</td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </template>
 
 <script>
-import axios from 'axios';
+import axios from "axios";
 
 export default {
   name: "ControlPhoto",
   data() {
     return {
-      controlphotos: [], // Liste des enregistrements ControlPhoto
-      loading: true,     // État de chargement
-      error: null,       // Gestion des erreurs
+      controlphotos: [],
+      selectedStatut: "",
+      selectedDate: "",
+      selectedTechnicien: "",
+      selectedJeton: "", // Le modèle pour le filtre Jeton
+      selectedSociete: "",
+      showExtraFilters: false,
+      // Pagination
+      currentPage: 1,
+      perPage: 10, // Nombre d'éléments par page
     };
   },
-  created() {
-    // Chargement des données dès la création du composant
+  computed: {
+    filteredControlPhotos() {
+      return this.controlphotos.filter(photo => {
+        const statutMatch = !this.selectedStatut || 
+          (this.selectedStatut === "Vide" && !photo.statut) ||
+          photo.statut === this.selectedStatut;
+        const dateMatch = !this.selectedDate || photo.date === this.selectedDate;
+        const technicienMatch = !this.selectedTechnicien || 
+          (photo.tech && photo.tech.toLowerCase().includes(this.selectedTechnicien.toLowerCase()));
+        const jetonMatch = !this.selectedJeton || 
+          (photo.jeton && photo.jeton.toLowerCase().includes(this.selectedJeton.toLowerCase())); // Vérification par jeton
+        const societeMatch = !this.selectedSociete || 
+          (photo.societe && photo.societe.toLowerCase().includes(this.selectedSociete.toLowerCase()));
+        return statutMatch && dateMatch && technicienMatch && jetonMatch && societeMatch;
+      });
+    },
+    totalPages() {
+      return Math.ceil(this.filteredControlPhotos.length / this.perPage);
+    },
+    paginatedControlPhotos() {
+      const start = (this.currentPage - 1) * this.perPage;
+      return this.filteredControlPhotos.slice(start, start + this.perPage);
+    }
+  },
+  mounted() {
     this.fetchControlPhotos();
   },
   methods: {
     async fetchControlPhotos() {
       try {
-        // Remplacez '/api/controlphoto/' par l'URL de votre API
-        const response = await axios.get('/api/controlphoto/');
+        const response = await axios.get("http://127.0.0.1:8000/api/controlphoto/");
         this.controlphotos = response.data;
       } catch (error) {
-        this.error = "Erreur lors du chargement des données.";
-        console.error(error);
-      } finally {
-        this.loading = false;
+        console.error("Erreur lors de la récupération des contrôles photo :", error);
       }
     },
-  },
+    toggleExtraFilters() {
+      this.showExtraFilters = !this.showExtraFilters;
+    },
+    clearFilters() {
+      this.selectedStatut = "";
+      this.selectedDate = "";
+      this.selectedTechnicien = "";
+      this.selectedJeton = ""; // Réinitialisation du filtre Jeton
+      this.selectedSociete = "";
+      // Réinitialisation de la pagination
+      this.currentPage = 1;
+    },
+    nextPage() {
+      if (this.currentPage < this.totalPages) {
+        this.currentPage++;
+      }
+    },
+    prevPage() {
+      if (this.currentPage > 1) {
+        this.currentPage--;
+      }
+    }
+  }
 };
 </script>
 
 <style scoped>
 .main-content {
-  width: 100%;
+  margin-left: 250px;
+  margin-top: 80px;
   padding: 20px;
+  width: calc(100% - 250px);
+  min-height: calc(100vh - 80px);
   background-color: #f8f9fa;
   color: #333;
   border-radius: 8px;
   box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-.table-container {
-  width: 100%;
-  overflow-x: auto; /* Permet un défilement horizontal si nécessaire */
+/* Filtres */
+.filters {
+  width: 90%;
+  margin-bottom: 20px;
+  padding: 10px;
+  background-color: #fff;
+  border: 1px solid #ddd;
   border-radius: 8px;
-  background-color: #ffffff;
+}
+.filter-grid,
+.extra-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+}
+.filter-group {
+  display: flex;
+  flex-direction: column;
+}
+.filter-group label {
+  margin-bottom: 5px;
+  font-weight: bold;
+  font-size: 14px;
+}
+.filter-group input,
+.filter-group select {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+.filter-actions {
+  margin-top: 10px;
+  display: flex;
+  gap: 10px;
+}
+.filter-actions button {
+  padding: 8px 16px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.filter-actions button:hover {
+  background-color: #0056b3;
+}
+.toggle-extra-filters {
+  margin-bottom: 10px;
+}
+.toggle-extra-filters button {
+  padding: 5px 10px;
+  font-size: 16px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.toggle-extra-filters button:hover {
+  background-color: #0056b3;
 }
 
+/* Tableau */
 table {
-  width: 100%;
+  width: 95%;
   border-collapse: collapse;
+  margin: 20px auto 0 20px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   font-size: 13px;
-  min-width: 1200px; /* Largeur minimale pour gérer toutes les colonnes */
-  table-layout: fixed; /* Pour que toutes les colonnes aient la même largeur */
 }
-
 th, td {
   border: 1px solid #ddd;
   padding: 10px;
   text-align: left;
-  white-space: nowrap;
-  width: 120px;
 }
-
 th {
-  background-color: #000000;
-  color: white;
+  background-color: #000;
+  color: #fff;
   text-transform: uppercase;
   font-weight: bold;
 }
-
 td {
   color: #333;
 }
-
-/* Alternance de couleur pour les lignes */
 tbody tr:nth-child(odd) {
   background-color: #f9f9f9;
 }
 tbody tr:nth-child(even) {
   background-color: #ffffff;
 }
-
-/* Effet hover sur les lignes */
 tbody tr:hover {
   background-color: #e3f2fd;
   transition: background-color 0.3s ease-in-out;
 }
-
-/* Styles spécifiques pour les cellules selon le statut */
 .ok-cell {
-  background-color: #c8e6c9; /* Vert clair */
+  background-color: #c8e6c9;
 }
 .nok-cell {
-  background-color: #ffcc80; /* Orange clair */
+  background-color: #ffcc80;
 }
 
+/* Pagination */
+.pagination {
+  margin-bottom: 20px; /* Espacement avant le tableau */
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.pagination button {
+  padding: 8px 16px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Responsive adjustments */
 @media (max-width: 768px) {
-  .table-container {
+  table {
+    font-size: 12px;
     width: 90%;
     margin-left: 10px;
   }
-  table {
-    font-size: 12px;
-  }
   th, td {
     padding: 8px;
-    width: 100px;
   }
 }
 </style>

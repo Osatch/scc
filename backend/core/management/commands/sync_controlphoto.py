@@ -3,11 +3,14 @@ from django.core.management.base import BaseCommand
 from core.models import RelanceJJ, ControlPhoto, ARD2  # Assurez-vous que ARD2 est importé
 
 class Command(BaseCommand):
-    help = ("Synchronise les données de RelanceJJ dans ControlPhoto. "
-            "Mapping : date = date_rdv, heure = heure_prevue, tech = techniciens, "
-            "numero = numero, groupe_tech = 'G1' par défaut, actif_depuis = date_rdv, "
-            "zone_manager = '#N/A', statut = statut, secteur = departement, "
-            "societe = societe, synchro = etat_intervention d'ARD2 (si instance trouvée).")
+    help = (
+        "Synchronise les données de RelanceJJ dans ControlPhoto. "
+        "Mapping : date = date_rdv, heure = heure_prevue, tech = techniciens, "
+        "numero = numero, groupe_tech = 'G1' par défaut, actif_depuis = date_rdv, "
+        "zone_manager = '#N/A', statut = statut, secteur = departement, "
+        "societe = societe, synchro = etat_intervention d'ARD2 (si instance trouvée), "
+        "jeton = jeton_commande de RelanceJJ."
+    )
 
     def handle(self, *args, **kwargs):
         relances = RelanceJJ.objects.all()
@@ -16,6 +19,7 @@ class Command(BaseCommand):
         for relance in relances:
             # Préparation des valeurs à mettre à jour/créer dans ControlPhoto
             defaults = {
+                "jeton": relance.jeton_commande,  # Ajout direct du champ jeton
                 "date": relance.date_rdv,
                 "heure": relance.heure_prevue,
                 "tech": relance.techniciens,
@@ -28,16 +32,15 @@ class Command(BaseCommand):
                 "societe": relance.societe,
             }
 
-            # Import depuis ARD2 : récupération de l'instance correspondant à RelanceJJ
-            # On suppose que le lien se fait via le champ jeton_commande
+            # Récupération de l'instance ARD2 liée via jeton_commande
             ard_instance = ARD2.objects.filter(jeton_commande=relance.jeton_commande).first()
             if ard_instance:
                 defaults["synchro"] = ard_instance.etat_intervention
             else:
-                defaults["synchro"] = None  # ou vous pouvez définir une valeur par défaut
+                defaults["synchro"] = None  # ou définir une valeur par défaut
 
-            # Recherche d'une instance ControlPhoto liée à ce RelanceJJ (via le champ jeton)
-            control_photo_instance = ControlPhoto.objects.filter(jeton=relance).first()
+            # Recherche d'une instance ControlPhoto liée à ce RelanceJJ via jeton
+            control_photo_instance = ControlPhoto.objects.filter(jeton=relance.jeton_commande).first()
 
             if control_photo_instance:
                 # Mise à jour de l'instance existante
@@ -46,8 +49,7 @@ class Command(BaseCommand):
                 control_photo_instance.save()
                 action = "Mis à jour"
             else:
-                # Création d'une nouvelle instance
-                defaults.update({"jeton": relance})
+                # Création d'une nouvelle instance avec les valeurs par défaut
                 control_photo_instance = ControlPhoto.objects.create(**defaults)
                 action = "Créé"
 

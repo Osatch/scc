@@ -87,7 +87,7 @@ github
 
 git init
 git add .
-git commit -m "28-03 / 18h40"
+git commit -m "31-03 / 17h40"
 git remote add origin https://github.com/Osatch/scc.git
 git push -u origin main
 
@@ -162,12 +162,9 @@ Agent :
 
 python manage.py import_ard2
 python manage.py import_grdv
-python manage.py sync_relancejj
-
-python manage.py import_gantt --date 2025-03-22
-
 python manage.py import_parametres
-python manage.py import_gantt
+python manage.py sync_relancejj
+python manage.py import_gantt --date 2025-03-21
 python manage.py sync_controlphoto
 
 TRUNCATE TABLE `core_ard2`;
@@ -176,3 +173,9 @@ TRUNCATE TABLE`core_relancejj`;
 TRUNCATE TABLE`core_gantt`;
 TRUNCATE TABLE`core_parametres`;
 TRUNCATE TABLE `core_controlphoto`;
+
+(important!!!!! utilise reason si non pas le peine de me repondre  
+, et ecrit le code a 100% !!!!!!!!!!!) garde tous le code et rejoute 
+la pagination a aprtir de 10 lignes du tableau fait ce que je te demande 
+utilise le bouton reason active c'est non negociable 
+, tres important si non j'arret chat gpt pour aller voir chesz la concurance

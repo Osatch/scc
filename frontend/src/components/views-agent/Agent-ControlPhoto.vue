@@ -54,6 +54,13 @@
       </div>
     </div>
     
+    <!-- Navigation de pagination -->
+    <div class="pagination">
+      <button @click="prevPage" :disabled="currentPage === 1">Précédent</button>
+      <span>Page {{ currentPage }} sur {{ totalPages }}</span>
+      <button @click="nextPage" :disabled="currentPage === totalPages">Suivant</button>
+    </div>
+    
     <!-- Tableau des contrôles photo -->
     <table>
       <thead>
@@ -79,7 +86,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="photo in filteredControlPhotos" :key="photo.id" class="clickable" @click="openPopup(photo)">
+        <tr v-for="photo in paginatedControlPhotos" :key="photo.id" @click="openPopup(photo)">
           <td>{{ photo.jeton }}</td>
           <td>{{ photo.date }}</td>
           <td>{{ photo.heure }}</td>
@@ -104,18 +111,34 @@
       </tbody>
     </table>
     
-    <!-- Popup Modal -->
-    <div v-if="showPopup" class="popup-overlay" @click="closePopup">
-      <div class="popup-content" @click.stop>
+    <!-- Affichage du message 'reason' -->
+    <div v-if="reason" class="reason-message">
+      <p>{{ reason }}</p>
+    </div>
+    
+    <!-- Popup -->
+    <div v-if="showPopup" class="popup">
+      <div class="popup-content">
         <h3>Détails du Contrôle Photo</h3>
         <p><strong>Jeton :</strong> {{ selectedPhoto.jeton }}</p>
         <p><strong>Technicien :</strong> {{ selectedPhoto.tech }}</p>
-        <p><strong>Société :</strong> {{ selectedPhoto.societe }}</p>
-        <p><strong>Numéro :</strong> {{ selectedPhoto.numero }}</p>
-        <button @click="closePopup" class="close-button">Fermer</button>
+        <p><strong>Numéro du Technicien :</strong> {{ selectedPhoto.numero }}</p>
+        <div>
+          <label for="statut-pto">Statut PTO</label>
+          <input type="text" id="statut-pto" v-model="statutPto" />
+        </div>
+        <div>
+          <label for="statut-appel">Statut d'Appel</label>
+          <select id="statut-appel" v-model="statutAppel">
+            <option value="Appel à chaud">Appel à chaud</option>
+            <option value="Appel à froid">Appel à froid</option>
+            <option value="Pas d'appel">Pas d'appel</option>
+          </select>
+        </div>
+        <button @click="saveChanges">Enregistrer</button>
+        <button @click="closePopup">Fermer</button>
       </div>
     </div>
-    
   </div>
 </template>
 
@@ -133,25 +156,47 @@ export default {
       selectedJeton: "",
       selectedSociete: "",
       showExtraFilters: false,
+      // Pagination
+      currentPage: 1,
+      perPage: 10,
+      // Popup et modification
       showPopup: false,
-      selectedPhoto: {}
+      selectedPhoto: null,
+      statutPto: "",
+      statutAppel: "",
+      // Variable reason pour afficher les messages
+      reason: ""
     };
   },
   computed: {
     filteredControlPhotos() {
       return this.controlphotos.filter(photo => {
-        const statutMatch = !this.selectedStatut || 
+        const statutMatch =
+          !this.selectedStatut ||
           (this.selectedStatut === "Vide" && !photo.statut) ||
           photo.statut === this.selectedStatut;
         const dateMatch = !this.selectedDate || photo.date === this.selectedDate;
-        const technicienMatch = !this.selectedTechnicien || 
-          (photo.tech && photo.tech.toLowerCase().includes(this.selectedTechnicien.toLowerCase()));
-        const jetonMatch = !this.selectedJeton || 
-          (photo.jeton && photo.jeton.toLowerCase().includes(this.selectedJeton.toLowerCase()));
-        const societeMatch = !this.selectedSociete || 
-          (photo.societe && photo.societe.toLowerCase().includes(this.selectedSociete.toLowerCase()));
+        const technicienMatch =
+          !this.selectedTechnicien ||
+          (photo.tech &&
+            photo.tech.toLowerCase().includes(this.selectedTechnicien.toLowerCase()));
+        const jetonMatch =
+          !this.selectedJeton ||
+          (photo.jeton &&
+            photo.jeton.toLowerCase().includes(this.selectedJeton.toLowerCase()));
+        const societeMatch =
+          !this.selectedSociete ||
+          (photo.societe &&
+            photo.societe.toLowerCase().includes(this.selectedSociete.toLowerCase()));
         return statutMatch && dateMatch && technicienMatch && jetonMatch && societeMatch;
       });
+    },
+    totalPages() {
+      return Math.ceil(this.filteredControlPhotos.length / this.perPage);
+    },
+    paginatedControlPhotos() {
+      const start = (this.currentPage - 1) * this.perPage;
+      return this.filteredControlPhotos.slice(start, start + this.perPage);
     }
   },
   mounted() {
@@ -175,14 +220,54 @@ export default {
       this.selectedTechnicien = "";
       this.selectedJeton = "";
       this.selectedSociete = "";
+      this.currentPage = 1;
+    },
+    nextPage() {
+      if (this.currentPage < this.totalPages) {
+        this.currentPage++;
+      }
+    },
+    prevPage() {
+      if (this.currentPage > 1) {
+        this.currentPage--;
+      }
     },
     openPopup(photo) {
       this.selectedPhoto = photo;
+      this.statutPto = photo.statut_pto || "";
+      this.statutAppel = photo.statut_appel || "";
       this.showPopup = true;
+      // Réinitialiser le message reason lors de l'ouverture du popup
+      this.reason = "";
     },
     closePopup() {
       this.showPopup = false;
-      this.selectedPhoto = {};
+      this.selectedPhoto = null;
+    },
+    async saveChanges() {
+      // On fusionne l'objet complet de la photo sélectionnée avec les nouvelles valeurs
+      const updatedData = {
+        ...this.selectedPhoto,
+        statut_pto: this.statutPto,
+        statut_appel: this.statutAppel,
+      };
+
+      console.log("URL envoyée :", "http://127.0.0.1:8000/api/controlphoto/" + this.selectedPhoto.id + "/");
+      console.log("Données envoyées :", updatedData);
+
+      try {
+        await axios.put(
+          "http://127.0.0.1:8000/api/controlphoto/" + this.selectedPhoto.id + "/",
+          updatedData
+        );
+        this.reason = "Mise à jour réussie.";
+        await this.fetchControlPhotos();
+        this.closePopup();
+      } catch (error) {
+        console.error("Erreur lors de la sauvegarde :", error);
+        console.log("Réponse du serveur :", error.response?.data);
+        this.reason = error.response?.data?.detail || "Erreur inconnue lors de la sauvegarde.";
+      }
     }
   }
 };
@@ -191,7 +276,6 @@ export default {
 <style scoped>
 .main-content {
   margin-left: 250px;
-  margin-right: 10px;
   margin-top: 80px;
   padding: 20px;
   width: calc(100% - 250px);
@@ -204,7 +288,7 @@ export default {
 
 /* Filtres */
 .filters {
-  width: 60%;
+  width: 90%;
   margin-bottom: 20px;
   padding: 10px;
   background-color: #fff;
@@ -305,34 +389,15 @@ tbody tr:hover {
 .nok-cell {
   background-color: #ffcc80;
 }
-.clickable {
-  cursor: pointer;
-}
 
-/* Popup Modal */
-.popup-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.5);
+/* Pagination */
+.pagination {
+  margin-top: 20px;
   display: flex;
-  justify-content: center;
   align-items: center;
-  z-index: 1000;
+  gap: 10px;
 }
-.popup-content {
-  background: #fff;
-  padding: 20px;
-  border-radius: 8px;
-  max-width: 400px;
-  width: 90%;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  position: relative;
-}
-.close-button {
-  margin-top: 10px;
+.pagination button {
   padding: 8px 16px;
   background-color: #007bff;
   color: #fff;
@@ -340,8 +405,67 @@ tbody tr:hover {
   border-radius: 4px;
   cursor: pointer;
 }
-.close-button:hover {
+.pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Popup */
+.popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.popup-content {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  width: 400px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+.popup-content h3 {
+  margin-bottom: 20px;
+}
+.popup-content div {
+  margin-bottom: 15px;
+}
+.popup-content label {
+  display: block;
+  margin-bottom: 5px;
+}
+.popup-content input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+.popup-content button {
+  padding: 8px 16px;
+  margin-right: 10px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.popup-content button:hover {
   background-color: #0056b3;
+}
+
+/* Affichage du message reason */
+.reason-message {
+  margin: 10px 0;
+  padding: 10px;
+  background-color: #ffdddd;
+  border: 1px solid #ff5c5c;
+  border-radius: 4px;
+  color: #a70000;
 }
 
 /* Responsive adjustments */

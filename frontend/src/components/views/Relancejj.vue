@@ -75,6 +75,13 @@
       </div>
     </div>
     
+    <!-- Pagination (au-dessus du tableau) -->
+    <div class="pagination">
+      <button @click="prevPage" :disabled="currentPage === 1">Précédent</button>
+      <span>Page {{ currentPage }} sur {{ totalPages }}</span>
+      <button @click="nextPage" :disabled="currentPage === totalPages">Suivant</button>
+    </div>
+    
     <!-- Tableau des relances -->
     <table>
       <thead>
@@ -94,7 +101,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="relance in filteredRelances" :key="relance.id">
+        <tr v-for="relance in paginatedRelances" :key="relance.id">
           <td @click="openPopup(relance)" class="clickable">{{ relance.jeton_commande }}</td>
           <td>{{ relance.date_rdv }}</td>
           <td>{{ relance.activite }}</td>
@@ -143,7 +150,6 @@
         <button @click="closePopup" class="close-button">Fermer</button>
       </div>
     </div>
-    
   </div>
 </template>
 
@@ -169,7 +175,10 @@ export default {
       selectedRelance: null,
       // Pour l'historique des commentaires
       showComments: false,
-      comments: []
+      comments: [],
+      // Pagination
+      currentPage: 1,
+      perPage: 10 // Nombre d'éléments par page
     };
   },
   computed: {
@@ -213,6 +222,13 @@ export default {
         return statutMatch && dateMatch && departementMatch && creneauMatch &&
                jetonMatch && technicienMatch && pecMatch && societeMatch;
       });
+    },
+    totalPages() {
+      return Math.ceil(this.filteredRelances.length / this.perPage);
+    },
+    paginatedRelances() {
+      const start = (this.currentPage - 1) * this.perPage;
+      return this.filteredRelances.slice(start, start + this.perPage);
     }
   },
   mounted() {
@@ -239,6 +255,7 @@ export default {
       this.selectedTechnicien = "";
       this.selectedPec = "";
       this.selectedSociete = "";
+      this.currentPage = 1; // Réinitialiser la page à 1 lors de l'effacement des filtres
     },
     getStatusClass(statut) {
       if (statut === "Cloturée") return "status-cloturee";
@@ -270,6 +287,16 @@ export default {
     hideComments() {
       this.showComments = false;
       this.comments = [];
+    },
+    nextPage() {
+      if (this.currentPage < this.totalPages) {
+        this.currentPage++;
+      }
+    },
+    prevPage() {
+      if (this.currentPage > 1) {
+        this.currentPage--;
+      }
     }
   }
 };
@@ -351,6 +378,30 @@ export default {
 }
 .filter-actions button:hover {
   background-color: #0056b3;
+}
+
+/* Pagination */
+.pagination {
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.pagination button {
+  padding: 8px 16px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.pagination button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+.pagination span {
+  font-size: 14px;
+  color: #333;
 }
 
 /* Tableau */
