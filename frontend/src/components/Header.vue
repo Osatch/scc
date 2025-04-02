@@ -169,7 +169,7 @@ export default {
           alert("Token d'accès introuvable");
           return;
         }
-        const response = await fetch("http://127.0.0.1:8000/api/import_grdv/", {
+        const response = await fetch("http://192.168.127.28:8000/api/import_grdv/", {
           method: "POST",
           headers: {
             "Authorization": `Bearer ${accessToken}`,

@@ -583,16 +583,26 @@ class ControlPhoto(models.Model):
     STATUT_PTO_CHOICES = [
         ('//', '//'),
         ('PTO et CAB absents', 'PTO et CAB absents'),
-        ('première pose nécessaire', 'première pose nécessaire'),
+    
+        ("Remise en conformité", "Remise en conformité"),
+        ("NE", "NE"),
+        ("PTO et CAB presents", "PTO et CAB presents"),
+        ("conformes a remplacer", "conformes a remplacer"),
+        ("PTO a remettre en conformité et CAB conforme", "PTO a remettre en conformité et CAB conforme"),
+        ("PTO present et CAB non conforme a remplacer", "PTO present et CAB non conforme a remplacer"),
+        ("PTO mal positionné a déplacer et nouveau CAB a poser", "PTO mal positionné a déplacer et nouveau CAB a poser"),
+        ("PTO et CAB absent", "PTO et CAB absent"),
+        ("première pose nécessaire", "première pose nécessaire"),
+        ("PTO a deplacer par confort et nouveau CAB a poser", "PTO a deplacer par confort et nouveau CAB a poser"),
     ]
-
     SYNCHRO_CHOICES = [
         ('OK', 'OK'),
         ('NOK', 'NOK'),
     ]
 
     RESULTATS_VERIFICATION_CHOICES = [
-        ('Rectifié et validé', 'Rectifié et validé'),
+        ('Validé', 'Validé'),
+        ('Débrief modifié','Débrief modifié'),
         ('Non validé', 'Non validé'),
     ]
 
@@ -607,7 +617,8 @@ class ControlPhoto(models.Model):
     zone_manager = models.CharField(max_length=10, choices=ZONE_MANAGER_CHOICES, null=True, blank=True)
     statut = models.CharField(max_length=20, choices=STATUT_CHOICES)
     secteur = models.CharField(max_length=255)
-    statut_pto = models.CharField(max_length=50, choices=STATUT_PTO_CHOICES, null=True, blank=True)
+    statut_pto = models.CharField(max_length=100, choices=STATUT_PTO_CHOICES, null=True, blank=True)
+
     synchro = models.CharField(max_length=3, choices=SYNCHRO_CHOICES, null=True, blank=True)
     agent = models.CharField(max_length=255)
     resultats_verification = models.CharField(max_length=50, choices=RESULTATS_VERIFICATION_CHOICES, null=True, blank=True)
@@ -675,199 +686,72 @@ class Controlafroid(models.Model):
 
 #debrief racc =======================================================================
 
-
 from django.db import models
 
 class DebriefRACC(models.Model):
-    # Choix pour certains champs
+    # Champs principaux (issus d'autres modèles ou saisis)
+    jeton = models.CharField(max_length=10, verbose_name="Jeton")
+    date = models.DateField(null=True, blank=True, verbose_name="Date")
+    tech = models.CharField(max_length=255, null=True, blank=True, verbose_name="Tech")
+    numero_technicien = models.CharField(max_length=50, null=True, blank=True, verbose_name="Numéro technicien")
+    nouveaux_tech = models.CharField(max_length=255, null=True, blank=True, verbose_name="Nouveaux tech")
+    zone_manager = models.CharField(max_length=255, null=True, blank=True, verbose_name="Zone / manager")
+    code_cloture_technicien = models.TextField(null=True, blank=True, verbose_name="Code clôture technicien")
+    reference_pm = models.CharField(max_length=255, null=True, blank=True, verbose_name="Référence PM")
+    
+    # Choix prédéfinis pour certains champs
     APPEL_TECH_CHOICES = [
         ("Pas d'appel", "Pas d'appel"),
         ("Appel à chaud", "Appel à chaud"),
-        ('null', 'null'),
     ]
     SYNCHRO_CHOICES = [
         ('Echec', 'Echec'),
         ('Taguées', 'Taguées'),
-        ('null', 'null'),
     ]
     TYPE_ECHEC_CHOICES = [
         ('Echec client', 'Echec client'),
         ("Echec d'acces", "Echec d'acces"),
-        ('null', 'null'),
     ]
     RESULTAT_CONTROLE_CHOICES = [
         ('RAS', 'RAS'),
-        ('null', 'null'),
     ]
 
-    # Clés étrangères
-    # On référence RelanceJJ qui contient déjà les liens vers ARD2 et GRDV.
-    # Les données seront utilisées selon les conditions suivantes :
-    # - Pour date et heure : si RelanceJJ.activite == "RACC" et si l'intervention est terminée (terminee True)
-    # - Pour tech, reference_pm, secteur : si ARD2.etat_intervention == "NOK"
-    relance = models.ForeignKey(
-        "RelanceJJ",
-        on_delete=models.CASCADE,
-        related_name="debriefs",
-        null=True,
-        blank=True,
-        help_text="RelanceJJ associée (doit avoir activite='RACC' et éventuellement être terminée)"
-    )
-    # Référence aux paramètres du technicien
-    parametre = models.ForeignKey(
-        "Parametres",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        help_text="Paramètres du technicien (pour numéro et zone, optionnel)"
-    )
-
-    # Champs saisis manuellement ou optionnels
-    nouveaux_tech = models.CharField(
-        max_length=255,
-        null=True,
-        blank=True,
-        help_text="Champ saisi manuellement (nouveaux tech)"
-    )
-    code_cloture_technicien = models.TextField(
-        null=True,
-        blank=True,
-        help_text="Code de clôture du technicien (optionnel)"
-    )
     appel_tech = models.CharField(
         max_length=20,
         choices=APPEL_TECH_CHOICES,
         null=True,
         blank=True,
-        default='null',
-        help_text="Appel tech (optionnel)"
+        verbose_name="Appel tech"
     )
     synchro = models.CharField(
         max_length=20,
         choices=SYNCHRO_CHOICES,
         null=True,
         blank=True,
-        default='null',
-        help_text="Synchro (optionnel)"
+        verbose_name="Synchro"
     )
+    secteur = models.CharField(max_length=255, null=True, blank=True, verbose_name="Secteur")
     type_echec = models.CharField(
-        max_length=20,
+        max_length=50,
         choices=TYPE_ECHEC_CHOICES,
         null=True,
         blank=True,
-        default='null',
-        help_text="Type d'échec (optionnel)"
+        verbose_name="Type d'échec"
     )
-    pec_par = models.CharField(
-        max_length=255,
-        null=True,
-        blank=True,
-        help_text="PEC PAR (optionnel)"
-    )
+    pec_par = models.CharField(max_length=255, null=True, blank=True, verbose_name="PEC par")
     resultat_controle = models.CharField(
         max_length=10,
         choices=RESULTAT_CONTROLE_CHOICES,
         null=True,
         blank=True,
-        default='null',
-        help_text="Résultat du contrôle (optionnel)"
+        verbose_name="Résultat du contrôle"
     )
-    diagnostic = models.TextField(
-        null=True,
-        blank=True,
-        help_text="Diagnostic (optionnel)"
-    )
-
-    # Propriétés pour accéder aux données des modèles référencés
-
-    @property
-    def jeton(self):
-        """
-        Renvoie la référence au jeton (instance ARD2) via RelanceJJ.
-        """
-        if self.relance:
-            return self.relance.jeton  # RelanceJJ doit avoir une FK 'jeton' vers ARD2
-        return None
-
-    @property
-    def date(self):
-        """
-        Renvoie la date de début d'intervention provenant de GRDV (via RelanceJJ)
-        si RelanceJJ.activite == "RACC" et si l'intervention est terminée (terminee True).
-        """
-        if self.relance and self.relance.grdv:
-            if self.relance.activite == "RACC" and getattr(self.relance, 'terminee', False):
-                return self.relance.grdv.debut.date()
-        return None
-
-    @property
-    def heure(self):
-        """
-        Renvoie l'heure de début d'intervention provenant de GRDV (via RelanceJJ)
-        si RelanceJJ.activite == "RACC" et si l'intervention est terminée.
-        """
-        if self.relance and self.relance.grdv:
-            if self.relance.activite == "RACC" and getattr(self.relance, 'terminee', False):
-                return self.relance.grdv.debut.time()
-        return None
-
-    @property
-    def tech(self):
-        """
-        Renvoie le technicien depuis ARD2 (via RelanceJJ)
-        si ARD2.etat_intervention == "NOK".
-        """
-        if self.relance and self.relance.jeton:
-            ard2 = self.relance.jeton
-            if ard2.etat_intervention == "NOK":
-                return ard2.technicien
-        return None
-
-    @property
-    def reference_pm(self):
-        """
-        Renvoie le PM depuis ARD2 (via RelanceJJ)
-        si ARD2.etat_intervention == "NOK".
-        """
-        if self.relance and self.relance.jeton:
-            ard2 = self.relance.jeton
-            if ard2.etat_intervention == "NOK":
-                return ard2.pm
-        return None
-
-    @property
-    def secteur(self):
-        """
-        Renvoie le département depuis ARD2 (via RelanceJJ)
-        si ARD2.etat_intervention == "NOK".
-        """
-        if self.relance and self.relance.jeton:
-            ard2 = self.relance.jeton
-            if ard2.etat_intervention == "NOK":
-                return ard2.departement
-        return None
-
-    @property
-    def numero_technicien(self):
-        """
-        Renvoie l'identifiant du technicien depuis Parametres.
-        """
-        if self.parametre:
-            return self.parametre.id_tech
-        return None
-
-    @property
-    def zone_manager(self):
-        """
-        Renvoie la zone (ou manager) depuis Parametres.
-        """
-        if self.parametre:
-            return self.parametre.zone  # ou parametre.manager selon votre mapping
-        return None
+    diagnostic = models.TextField(null=True, blank=True, verbose_name="Diagnostic")
+    action = models.TextField(null=True, blank=True, verbose_name="Action")
 
     def __str__(self):
-        jeton_str = self.jeton.jeton_commande if self.jeton and hasattr(self.jeton, 'jeton_commande') else "Aucun Jeton"
-        return f"{jeton_str} - {self.date} - {self.tech}"
+        return f"{self.jeton} - {self.date} - {self.tech}"
+
 
 
 
@@ -877,58 +761,29 @@ from django.db import models
 from .models import RelanceJJ, Parametres, ARD2
 
 class DebriefSAV(models.Model):
-    # Choix pour les champs avec des options prédéfinies
-    APPEL_TECH_CHOICES = [
-        ("Pas d'appel", "Pas d'appel"),
-        ("Appel à chaud", "Appel à chaud"),
-        (None, 'null'),
-    ]
-
-    SYNCHRO_CHOICES = [
-        ('Echec', 'Echec'),
-        ('Taguée', 'Taguée'),
-        (None, 'null'),
-    ]
-
-    TYPE_ECHEC_CHOICES = [
-        ('Echec client', 'Echec client'),
-        ('Echec d\'acces', 'Echec d\'acces'),
-        (None, 'null'),
-    ]
-
-    RESULTAT_CONTROLE_CHOICES = [
-        ('RAS', 'RAS'),
-        (None, 'null'),
-    ]
-
-    # Champs du modèle
     jeton = models.ForeignKey(RelanceJJ, on_delete=models.CASCADE, related_name='debriefs_sav', limit_choices_to={'activite': 'SAV'})
-    date = models.DateField(verbose_name="Date d'intervention")  # Date d'intervention de RelanceJJ
-    heure = models.TimeField(verbose_name="Heure d'intervention")  # Heure d'intervention de RelanceJJ
-    tech = models.CharField(max_length=255, verbose_name="Nom du technicien")  # Nom du technicien de RelanceJJ
-    numero_tech = models.CharField(max_length=50, verbose_name="Numéro du technicien")  # Numéro de RelanceJJ
-    nouveaux_tech = models.DateField(verbose_name="Nouveaux tech", null=True, blank=True)  # Date qui vient de Parametres
-    zone_manager = models.CharField(max_length=255, verbose_name="Zone/Manager", null=True, blank=True)  # Vient de manager de Parametres
-    code_cloture_tech = models.TextField(verbose_name="Code clôture technicien", null=True, blank=True)  # Texte libre
-    reference_pm = models.CharField(max_length=50, verbose_name="Référence PM", null=True, blank=True)  # Vient avec le numéro de jeton de ARD2
-    appel_tech = models.CharField(max_length=20, choices=APPEL_TECH_CHOICES, verbose_name="Appel tech", null=True, blank=True)  # Choix prédéfinis
-    synchro = models.CharField(max_length=10, choices=SYNCHRO_CHOICES, verbose_name="Synchro", null=True, blank=True)  # Choix prédéfinis
-    secteur = models.CharField(max_length=255, verbose_name="Secteur", null=True, blank=True)  # Secteur de RelanceJJ
-    type_echec = models.CharField(max_length=20, choices=TYPE_ECHEC_CHOICES, verbose_name="Type d'échec", null=True, blank=True)  # Choix prédéfinis
-    pec_par = models.CharField(max_length=255, verbose_name="PEC par", null=True, blank=True)  # PEC PAR de RelanceJJ
-    resultat_controle = models.CharField(max_length=10, choices=RESULTAT_CONTROLE_CHOICES, verbose_name="Résultat du contrôle", null=True, blank=True)  # Choix prédéfinis
-    diagnostic = models.TextField(verbose_name="Diagnostic", null=True, blank=True)  # Texte libre
+    date = models.DateField(verbose_name="Date d'intervention")
+    heure = models.TimeField(verbose_name="Heure d'intervention")
+    tech = models.CharField(max_length=255, verbose_name="Nom du technicien")
+    numero_tech = models.CharField(max_length=50, verbose_name="Numéro du technicien")
+    
+    tel_contact = models.CharField(max_length=20, verbose_name="Téléphone de contact", null=True, blank=True)
+    secteur = models.CharField(max_length=255, verbose_name="Secteur", null=True, blank=True)
+    integration = models.CharField(max_length=255, verbose_name="Intégration", null=True, blank=True)
+    zone_manager = models.CharField(max_length=255, verbose_name="Zone / Manager", null=True, blank=True)
+    termine = models.BooleanField(default=False, verbose_name="Terminé")
+    synchro = models.CharField(max_length=10, choices=[('Echec', 'Echec'), ('Taguée', 'Taguée')], verbose_name="Synchro", null=True, blank=True)
+    reference_pm = models.CharField(max_length=50, verbose_name="Référence PM", null=True, blank=True)
+    issu_intervention = models.TextField(verbose_name="Issu de l'intervention", null=True, blank=True)
+    pec_par = models.CharField(max_length=255, verbose_name="PEC par", null=True, blank=True)
+    code_cloture = models.TextField(verbose_name="Code clôture", null=True, blank=True)
+    debrief = models.TextField(verbose_name="Débrief", null=True, blank=True)
+    photos = models.TextField(verbose_name="Photos", null=True, blank=True)
 
     def __str__(self):
         return f"{self.jeton.jeton} - {self.date} - {self.tech}"
 
     def save(self, *args, **kwargs):
-        # Récupérer les données supplémentaires des modèles Parametres et ARD2
-        if not self.nouveaux_tech:
-            parametre = Parametres.objects.filter(id_tech=self.numero_tech).first()
-            if parametre:
-                self.nouveaux_tech = parametre.actif_depuis
-
         if not self.zone_manager:
             parametre = Parametres.objects.filter(id_tech=self.numero_tech).first()
             if parametre:
@@ -940,6 +795,7 @@ class DebriefSAV(models.Model):
                 self.reference_pm = ard2.pm
 
         super().save(*args, **kwargs)
+
 
 
 #inter sav

@@ -131,6 +131,7 @@ USE_TZ = True
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",  # URL de votre projet Vue.js
+   #"http://192.168.127.28:5173",
 ]
 
 

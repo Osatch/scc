@@ -16,6 +16,7 @@ import Parametres from "./components/views/Parametres.vue";
 import ARD2 from "./components/views/Ard2Table.vue";
 import AgentHeader from "./components/Agent-header.vue";
 import AgentControlPhoto from "./components/views-agent/Agent-ControlPhoto.vue";
+import AgentControlFroid from "./components/views-agent/Agent-ControlFroid.vue";
 
 const routes = [
   { path: "/", component: Login },
@@ -31,6 +32,7 @@ const routes = [
       { path: "debrief/racc", component: DebriefRACC },
       { path: "debrief/sav", component: DebriefSAV },
       { path:"AgentControlPhoto", component: AgentControlPhoto},
+      {path:"AgentControlFroid",component:AgentControlFroid},
 
 
     ]

@@ -49,7 +49,7 @@
       const menuItems = [
         { label: "Relance JJ", path: "/relancejj" },
         { label: "Contrôle Photo (à chaud)", path: "/AgentControlPhoto" },
-        { label: "Contrôle à Froid", path: "/control-froid" },
+        { label: "Contrôle à Froid", path: "/AgentControlFroid" },
         {
           label: "Débrief",
           subItems: [
