@@ -53,7 +53,7 @@ export default {
     // Méthode pour récupérer les interventions NOK depuis l'API
     async fetchNokList() {
       try {
-        const response = await axios.get("http://127.0.0.1:8000/api/nok/");
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/nok/`);
         this.nokList = response.data; // Mettre à jour la liste des NOK
       } catch (error) {
         console.error("Erreur lors de la récupération des interventions NOK :", error);

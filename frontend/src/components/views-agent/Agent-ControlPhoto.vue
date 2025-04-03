@@ -150,7 +150,7 @@ export default {
   methods: {
     async fetchControlPhotos() {
       try {
-        const response = await axios.get("http://127.0.0.1:8000/api/controlphoto/");
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/controlphoto/`);
         this.controlphotos = response.data;
       } catch (error) {
         console.error("Erreur lors de la récupération des contrôles photo :", error);

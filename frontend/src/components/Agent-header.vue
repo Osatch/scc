@@ -89,7 +89,7 @@ export default {
         if (!accessToken) {
           throw new Error("Token d'accès introuvable dans localStorage");
         }
-        const response = await fetch("http://127.0.0.1:8000/api/user/profile/", {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/user/profile/`, {
           method: "GET",
           headers: {
             "Authorization": `Bearer ${accessToken}`,

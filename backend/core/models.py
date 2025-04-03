@@ -685,7 +685,6 @@ class Controlafroid(models.Model):
 
 
 #debrief racc =======================================================================
-
 from django.db import models
 
 class DebriefRACC(models.Model):
@@ -698,8 +697,12 @@ class DebriefRACC(models.Model):
     zone_manager = models.CharField(max_length=255, null=True, blank=True, verbose_name="Zone / manager")
     code_cloture_technicien = models.TextField(null=True, blank=True, verbose_name="Code clôture technicien")
     reference_pm = models.CharField(max_length=255, null=True, blank=True, verbose_name="Référence PM")
-    
-    # Choix prédéfinis pour certains champs
+
+    # ✅ Nouveaux champs
+    societe = models.CharField(max_length=255, null=True, blank=True, verbose_name="Société")
+    manager = models.CharField(max_length=255, null=True, blank=True, verbose_name="Manager")
+
+    # Choix prédéfinis
     APPEL_TECH_CHOICES = [
         ("Pas d'appel", "Pas d'appel"),
         ("Appel à chaud", "Appel à chaud"),
@@ -756,41 +759,143 @@ class DebriefRACC(models.Model):
 
 
 #debrief SAV ===============================================================================
-
 from django.db import models
 from .models import RelanceJJ, Parametres, ARD2
 
 class DebriefSAV(models.Model):
-    jeton = models.ForeignKey(RelanceJJ, on_delete=models.CASCADE, related_name='debriefs_sav', limit_choices_to={'activite': 'SAV'})
+    jeton = models.ForeignKey(
+        RelanceJJ,
+        on_delete=models.CASCADE,
+        related_name='debriefs_sav',
+        limit_choices_to={'activite': 'SAV'}
+    )
+    jeton_commande = models.CharField(
+        max_length=100,
+        verbose_name="Jeton Commande",
+        editable=False,
+        blank=True
+    )
+    
+    societe = models.CharField(
+        max_length=255,
+        verbose_name="Société",
+        null=True,
+        blank=True
+    )
+
     date = models.DateField(verbose_name="Date d'intervention")
     heure = models.TimeField(verbose_name="Heure d'intervention")
     tech = models.CharField(max_length=255, verbose_name="Nom du technicien")
     numero_tech = models.CharField(max_length=50, verbose_name="Numéro du technicien")
     
-    tel_contact = models.CharField(max_length=20, verbose_name="Téléphone de contact", null=True, blank=True)
-    secteur = models.CharField(max_length=255, verbose_name="Secteur", null=True, blank=True)
-    integration = models.CharField(max_length=255, verbose_name="Intégration", null=True, blank=True)
-    zone_manager = models.CharField(max_length=255, verbose_name="Zone / Manager", null=True, blank=True)
+    tel_contact = models.CharField(
+        max_length=20,
+        verbose_name="Téléphone de contact",
+        null=True,
+        blank=True
+    )
+    secteur = models.CharField(
+        max_length=255,
+        verbose_name="Secteur",
+        null=True,
+        blank=True
+    )
+    integration = models.CharField(
+        max_length=255,
+        verbose_name="Intégration",
+        null=True,
+        blank=True
+    )
+    zone_manager = models.CharField(
+        max_length=255,
+        verbose_name="Zone / Manager",
+        null=True,
+        blank=True
+    )
+    manager = models.CharField(
+        max_length=255,
+        verbose_name="Manager",
+        null=True,
+        blank=True
+    )
     termine = models.BooleanField(default=False, verbose_name="Terminé")
-    synchro = models.CharField(max_length=10, choices=[('Echec', 'Echec'), ('Taguée', 'Taguée')], verbose_name="Synchro", null=True, blank=True)
-    reference_pm = models.CharField(max_length=50, verbose_name="Référence PM", null=True, blank=True)
-    issu_intervention = models.TextField(verbose_name="Issu de l'intervention", null=True, blank=True)
-    pec_par = models.CharField(max_length=255, verbose_name="PEC par", null=True, blank=True)
-    code_cloture = models.TextField(verbose_name="Code clôture", null=True, blank=True)
-    debrief = models.TextField(verbose_name="Débrief", null=True, blank=True)
-    photos = models.TextField(verbose_name="Photos", null=True, blank=True)
+
+    synchro = models.CharField(
+        max_length=10,
+        choices=[
+            ('Echec', 'Echec'),
+            ('Taguée', 'Taguée'),
+            ('OK', 'OK'),
+        ],
+        verbose_name="Synchro",
+        null=True,
+        blank=True
+    )
+
+    reference_pm = models.CharField(
+        max_length=50,
+        verbose_name="Référence PM",
+        null=True,
+        blank=True
+    )
+
+    appel_tech = models.CharField(
+        max_length=255,
+        verbose_name="Statut Appel Tech",
+        null=True,
+        blank=True
+    )
+
+    resultat_controle = models.CharField(
+        max_length=50,
+        verbose_name="Résultat Contrôle",
+        null=True,
+        blank=True
+    )
+
+    issu_intervention = models.TextField(
+        verbose_name="Issu de l'intervention",
+        null=True,
+        blank=True
+    )
+    pec_par = models.CharField(
+        max_length=255,
+        verbose_name="PEC par",
+        null=True,
+        blank=True
+    )
+    code_cloture = models.TextField(
+        verbose_name="Code clôture",
+        null=True,
+        blank=True
+    )
+    debrief = models.TextField(
+        verbose_name="Débrief",
+        null=True,
+        blank=True
+    )
+    photos = models.TextField(
+        verbose_name="Photos",
+        null=True,
+        blank=True
+    )
 
     def __str__(self):
-        return f"{self.jeton.jeton} - {self.date} - {self.tech}"
+        return f"{self.jeton.jeton_commande} - {self.date} - {self.tech}"
 
     def save(self, *args, **kwargs):
-        if not self.zone_manager:
+        self.jeton_commande = self.jeton.jeton_commande
+
+        if not self.zone_manager or not self.manager:
             parametre = Parametres.objects.filter(id_tech=self.numero_tech).first()
             if parametre:
-                self.zone_manager = parametre.zone
+                if not self.zone_manager:
+                    self.zone_manager = parametre.zone
+                if not self.manager:
+                    self.manager = parametre.manager
 
         if not self.reference_pm:
-            ard2 = ARD2.objects.filter(jeton_commande=self.jeton.jeton).first()
+            ard2 = ARD2.objects.filter(jeton_commande=self.jeton.jeton_commande).first()
             if ard2:
                 self.reference_pm = ard2.pm
 

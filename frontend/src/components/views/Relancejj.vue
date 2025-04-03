@@ -237,7 +237,7 @@ export default {
   methods: {
     async fetchRelances() {
       try {
-        const response = await axios.get("http://127.0.0.1:8000/api/relances/");
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/relances/`);
         this.relances = response.data;
       } catch (error) {
         console.error("Erreur lors de la récupération des relances :", error);
@@ -277,7 +277,7 @@ export default {
     },
     async fetchComments() {
       try {
-        const response = await axios.get(`http://127.0.0.1:8000/api/commentaires/?jeton=${this.selectedRelance.jeton_commande}`);
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/commentaires/?jeton=${this.selectedRelance.jeton_commande}`);
         this.comments = response.data;
         this.showComments = true;
       } catch (error) {

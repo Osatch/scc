@@ -25,7 +25,9 @@ SECRET_KEY = 'django-insecure-#ivagpa7q7sxr)jsz89syx+c)duw55l+9##llb%jcjrp)tetsn
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+#ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['192.168.127.28', 'localhost', '127.0.0.1']
+
 
 
 # Application definition
@@ -131,7 +133,7 @@ USE_TZ = True
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",  # URL de votre projet Vue.js
-   #"http://192.168.127.28:5173",
+    "http://192.168.127.28:5173",#ip de mon pc
 ]
 
 
@@ -168,3 +170,4 @@ CORS_ALLOW_METHODS = [
     'PUT',  # <-- Assurez-vous que PUT est autorisé
     'DELETE',
 ]
+

@@ -7,7 +7,7 @@ const loading = ref(true);
 
 const fetchData = async () => {
   try {
-    const response = await axios.get('http://localhost:8000/api/ARD2/');
+    const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/ARD2/`);
     ard2Data.value = response.data;
   } catch (error) {
     console.error('Erreur lors du chargement des données:', error);

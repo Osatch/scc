@@ -28,7 +28,7 @@ export default {
       try {
         // Récupérer le refresh token et appeler l'API de déconnexion
         const refresh = localStorage.getItem("refresh");
-        await axios.post("http://127.0.0.1:8000/api/logout/", { refresh });
+        await axios.post(`${import.meta.env.VITE_API_URL}/api/logout/`, { refresh });
         // Supprimer les tokens et rediriger vers la page de login
         localStorage.removeItem("access");
         localStorage.removeItem("refresh");

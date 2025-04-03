@@ -65,7 +65,7 @@
     <div class="table-container" ref="tableContainer">
       <table>
         <tbody>
-          <tr v-for="entry in filteredParametres" :key="entry.id">
+          <tr v-for="entry in paginatedParametres" :key="entry.id">
             <td>{{ entry.date_intervention }}</td>
             <td>{{ entry.nom_intervenant }}</td>
             <td>{{ entry.departement }}</td>
@@ -81,11 +81,18 @@
             <td :class="getCellClass(entry.heure_16)">{{ entry.heure_16 }}</td>
             <td :class="getCellClass(entry.heure_17)">{{ entry.heure_17 }}</td>
             <td :class="getCellClass(entry.heure_18)">{{ entry.heure_18 }}</td>
-            <td>{{ entry.taux_transfo }}</td>
-            <td>{{ entry.taux_remplissage }}</td>
+            <td>{{ formatPercentage(entry.taux_transfo) }}</td>
+            <td>{{ formatPercentage(entry.taux_remplissage) }}</td>
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination">
+      <button :disabled="currentPage === 1" @click="currentPage--">Précédent</button>
+      <span>Page {{ currentPage }} / {{ totalPages }}</span>
+      <button :disabled="currentPage === totalPages" @click="currentPage++">Suivant</button>
     </div>
   </div>
 </template>
@@ -102,6 +109,9 @@ export default {
       selectedDepartement: "",
       selectedTechnicien: "",
       selectedDate: "",
+      // Pagination
+      currentPage: 1,
+      itemsPerPage: 15,
     };
   },
   computed: {
@@ -128,15 +138,23 @@ export default {
         return matches;
       });
     },
+    paginatedParametres() {
+      const start = (this.currentPage - 1) * this.itemsPerPage;
+      return this.filteredParametres.slice(start, start + this.itemsPerPage);
+    },
+    totalPages() {
+      return Math.ceil(this.filteredParametres.length / this.itemsPerPage);
+    },
   },
   mounted() {
+    this.selectedDate = new Date().toISOString().split("T")[0];
     this.loadData();
     this.syncScroll();
   },
   methods: {
     loadData() {
       axios
-        .get("http://127.0.0.1:8000/api/gantt/")
+        .get(`${import.meta.env.VITE_API_URL}/api/gantt/`)
         .then((response) => {
           this.parametres = response.data;
         })
@@ -172,7 +190,13 @@ export default {
     clearFilters() {
       this.selectedDepartement = "";
       this.selectedTechnicien = "";
-      this.selectedDate = "";
+      this.selectedDate = new Date().toISOString().split("T")[0];
+      this.currentPage = 1;
+    },
+    formatPercentage(value) {
+      const number = parseFloat(value);
+      if (isNaN(number)) return value;
+      return Math.round(number) + "%";
     },
   },
 };
@@ -321,5 +345,27 @@ tbody tr:hover {
     padding: 8px;
     width: 100px;
   }
+}
+
+.pagination {
+  margin-top: 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+}
+
+.pagination button {
+  padding: 6px 12px;
+  background-color: #007bff;
+  border: none;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.pagination button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
 }
 </style>

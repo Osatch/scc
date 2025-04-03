@@ -93,7 +93,7 @@ export default {
         if (!accessToken) {
           throw new Error("Token d'accès introuvable dans localStorage");
         }
-        const response = await fetch("http://127.0.0.1:8000/api/user/profile/", {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/user/profile/`, {
           method: "GET",
           headers: {
             "Authorization": `Bearer ${accessToken}`,
@@ -119,20 +119,20 @@ export default {
       let endpoint = "";
       
       if (importType === "ard2") {
-        endpoint = "http://127.0.0.1:8000/api/import_ard2/";
+        endpoint = `${import.meta.env.VITE_API_URL}/api/import_ard2/`;
       } else if (importType === "grdv") {
-        endpoint = "http://127.0.0.1:8000/api/import_grdv/";
+        endpoint = `${import.meta.env.VITE_API_URL}/api/import_grdv/`;
       } else if (importType === "sync_relancejj") {
-        endpoint = "http://127.0.0.1:8000/api/sync_relancejj/";
+        endpoint = `${import.meta.env.VITE_API_URL}/api/sync_relancejj/`;
       } else if (importType === "parametres") {
-        endpoint = "http://127.0.0.1:8000/api/import_parametres/";
+        endpoint = `${import.meta.env.VITE_API_URL}/api/import_parametres/`;
       } else if (importType === "gantt") {
         const date = prompt("Entrez la date (YYYY-MM-DD) :");
         if (!date) {
           event.target.value = "";
           return;
         }
-        endpoint = `http://127.0.0.1:8000/api/import_gantt/?date=${date}`;
+        endpoint = `${import.meta.env.VITE_API_URL}/api/import_gantt/?date=${date}`;
       }
       
       try {
@@ -169,7 +169,7 @@ export default {
           alert("Token d'accès introuvable");
           return;
         }
-        const response = await fetch("http://192.168.127.28:8000/api/import_grdv/", {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/import_grdv/`, {
           method: "POST",
           headers: {
             "Authorization": `Bearer ${accessToken}`,

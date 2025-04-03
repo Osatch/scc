@@ -277,7 +277,7 @@ export default {
   methods: {
     // GET : Récupération de la liste des paramètres
     fetchParametres() {
-      axios.get("http://127.0.0.1:8000/api/parametres/")
+      axios.get(`${import.meta.env.VITE_API_URL}/api/parametres/`)
         .then(response => {
           this.parametres = response.data;
           this.$nextTick(() => { this.updateDummyWidth(); });
@@ -305,7 +305,7 @@ export default {
     },
     // POST : Ajout d'un nouveau paramètre via le formulaire
     handleSubmit(newData) {
-      axios.post("http://127.0.0.1:8000/api/parametres/", newData)
+      axios.post(`${import.meta.env.VITE_API_URL}/api/parametres/`, newData)
         .then(response => {
           this.parametres.push(response.data);
           this.toggleGlobalEditMode();
@@ -349,7 +349,7 @@ export default {
     validateEdit(rowId) {
       const index = this.parametres.findIndex(p => p.id === rowId);
       if (index !== -1) {
-        axios.put(`http://127.0.0.1:8000/api/parametres/${rowId}/`, this.editingRowData)
+        axios.put(`${import.meta.env.VITE_API_URL}/api/parametres/${rowId}/`, this.editingRowData)
           .then(response => {
             this.parametres[index] = response.data;
             this.editingRowId = null;
@@ -372,7 +372,7 @@ export default {
         return;
       }
       if (confirm("Êtes-vous sûr de vouloir supprimer cette ligne ?")) {
-        axios.delete(`http://127.0.0.1:8000/api/parametres/${param.id}/`)
+        axios.delete(`${import.meta.env.VITE_API_URL}/api/parametres/${param.id}/`)
           .then(() => {
             this.parametres = this.parametres.filter(p => p.id !== param.id);
           })

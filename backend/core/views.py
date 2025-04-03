@@ -103,21 +103,24 @@ def gantt_statistics_detail(request, pk):
 def login_view(request):
     """
     Endpoint pour l'authentification. Retourne un token JWT et le rôle de l'utilisateur
-    si les identifiants sont corrects. Utilise l'email comme identifiant, car USERNAME_FIELD
-    est défini sur 'email'.
+    si les identifiants sont corrects. Utilise l'email comme identifiant.
     """
     email = request.data.get('email')
     password = request.data.get('password')
-    user = authenticate(username=email, password=password)
-    if user:
+
+    # ⚠️ Correction ici : on passe email=email (et non username=email)
+    user = authenticate(request, email=email, password=password)
+
+    if user is not None:
         refresh = RefreshToken.for_user(user)
         return Response({
             'refresh': str(refresh),
             'access': str(refresh.access_token),
-            'role': user.role  # Ajout du rôle dans la réponse
+            'role': user.role,
+            'email': user.email
         })
-    return Response({'error': 'Invalid Credentials'}, status=400)
-
+    else:
+        return Response({'error': "Identifiants invalides"}, status=status.HTTP_400_BAD_REQUEST)
 @api_view(['POST'])
 def logout_view(request):
     """

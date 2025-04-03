@@ -18,6 +18,9 @@ import AgentHeader from "./components/Agent-header.vue";
 import AgentControlPhoto from "./components/views-agent/Agent-ControlPhoto.vue";
 import AgentControlFroid from "./components/views-agent/Agent-ControlFroid.vue";
 
+// Ajout explicite du composant ImportARD2
+import ImportARD2 from "./components/ImportARD2.vue";
+
 const routes = [
   { path: "/", component: Login },
   { 
@@ -25,18 +28,15 @@ const routes = [
     components: {
       default: AgentDashboard,  // contenu principal
       sidebar: AgentSidebar,    // barre latérale
-      header:AgentHeader,
+      header: AgentHeader,
     },
     children: [
       { path: "relancejj", component: RelanceJJ },
       { path: "debrief/racc", component: DebriefRACC },
       { path: "debrief/sav", component: DebriefSAV },
-      { path:"AgentControlPhoto", component: AgentControlPhoto},
-      {path:"AgentControlFroid",component:AgentControlFroid},
-
-
+      { path: "AgentControlPhoto", component: AgentControlPhoto },
+      { path: "AgentControlFroid", component: AgentControlFroid },
     ]
-
   },
   {
     path: "/dashboard",
@@ -53,6 +53,9 @@ const routes = [
       { path: "interventions/racc", component: InterventionsRACC },
       { path: "parametres", component: Parametres },
       { path: "ARD2", component: ARD2 },
+
+      // Route explicitement ajoutée pour ImportARD2
+      { path: "import-ard2", name: "ImportARD2", component: ImportARD2 },
     ],
   },
 ];

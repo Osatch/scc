@@ -53,8 +53,8 @@ export default {
   methods: {
     async login() {
       try {
-        const response = await axios.post('http://127.0.0.1:8000/api/login/', {
-          email: this.email,
+        const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/login/`, {
+          email: this.email, 
           password: this.password,
         });
 
@@ -78,8 +78,8 @@ export default {
           this.$router.push('/dashboard');
         }
       } catch (error) {
-        this.errorMessage = "Identifiants incorrects";
-        console.error("Erreur lors de la connexion :", error);
+        console.error("Erreur lors de la connexion :", error.response?.data || error.message);
+        this.errorMessage = error.response?.data?.error || "Identifiants incorrects";
       }
     },
   },

@@ -134,7 +134,7 @@ export default {
     submitForm() {
       // Remplacez l'URL par celle de votre API
       axios
-        .post("http://127.0.0.1:8000/api/parametres/", this.formData)
+        .post(`${import.meta.env.VITE_API_URL}/api/parametres/`, this.formData)
         .then((response) => {
           // Émettre l'événement "submit" avec les données de la réponse si nécessaire
           this.$emit("submit", response.data);
