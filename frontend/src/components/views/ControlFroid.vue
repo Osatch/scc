@@ -2,6 +2,52 @@
   <div class="main-content">
     <h2>Liste des Contrôles Photo - Agent (Froid)</h2>
 
+    <!-- Filtres ajoutés -->
+    <div class="filters">
+      <div class="filter-grid">
+        <div class="filter-group">
+          <label for="filter-agent">Agent</label>
+          <input type="text" id="filter-agent" v-model="selectedAgent" placeholder="Filtrer par agent" />
+        </div>
+        <div class="filter-group">
+          <label for="filter-statut">Statut</label>
+          <select id="filter-statut" v-model="selectedStatut">
+            <option value="">Tous</option>
+            <option value="Cloturée">Clôturée</option>
+            <option value="Taguée">Taguée</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="filter-jeton">Jeton</label>
+          <input type="text" id="filter-jeton" v-model="selectedJeton" placeholder="Filtrer par jeton" />
+        </div>
+        <div class="filter-group">
+          <label for="filter-date">Date</label>
+          <input type="date" id="filter-date" v-model="selectedDate" />
+        </div>
+        <div class="filter-group">
+          <label for="filter-creneau">Créneau Horaire</label>
+          <select id="filter-creneau" v-model="selectedCreneau">
+            <option value="">Tous</option>
+            <option value="08:00-12:00">08h00 à 12h00</option>
+            <option value="12:00-14:00">12h00 à 14h00</option>
+            <option value="14:00-18:00">14h00 à 18h00</option>
+            <option value="18:00-">Après 18h00</option>
+          </select>
+        </div>
+      </div>
+      <div class="filter-actions">
+        <button @click="clearFilters">Effacer les filtres</button>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination">
+      <button @click="prevPage" :disabled="currentPage === 1">Précédent</button>
+      <span>Page {{ currentPage }} sur {{ totalPages }}</span>
+      <button @click="nextPage" :disabled="currentPage === totalPages">Suivant</button>
+    </div>
+
     <table>
       <thead>
         <tr>
@@ -44,13 +90,9 @@
           <td>{{ photo.secteur }}</td>
           <td>{{ photo.statut_pto }}</td>
           <td>{{ photo.synchro }}</td>
-          <td :class="getAppelClass(photo.statut_appel)">
-            {{ photo.statut_appel }}
-          </td>
+          <td :class="getAppelClass(photo.statut_appel)">{{ photo.statut_appel }}</td>
           <td>{{ photo.agent }}</td>
-          <td :class="getVerificationClass(photo.resultats_verification)">
-            {{ photo.resultats_verification }}
-          </td>
+          <td :class="getVerificationClass(photo.resultats_verification)">{{ photo.resultats_verification }}</td>
           <td>{{ photo.commentaire }}</td>
           <td>{{ photo.societe }}</td>
           <td>{{ photo.numero }}</td>
@@ -104,18 +146,42 @@ export default {
       perPage: 10,
       showPopup: false,
       selectedPhoto: null,
-      reason: ""
+      reason: "",
+      selectedAgent: "",
+      selectedStatut: "",
+      selectedJeton: "",
+      selectedDate: "",
+      selectedCreneau: ""
     };
   },
   computed: {
     filteredControlPhotos() {
-      return this.controlphotos.filter(
-        photo => photo.agent && photo.statut_appel
-      );
+      return this.controlphotos.filter(photo => {
+        if (!photo.agent || !photo.statut_appel) return false;
+        const agentMatch = !this.selectedAgent || photo.agent.toLowerCase().includes(this.selectedAgent.toLowerCase());
+        const statutMatch = !this.selectedStatut || photo.statut === this.selectedStatut;
+        const jetonMatch = !this.selectedJeton || (photo.jeton && photo.jeton.toLowerCase().includes(this.selectedJeton.toLowerCase()));
+        const dateMatch = !this.selectedDate || photo.date === this.selectedDate;
+
+        let creneauMatch = true;
+        if (this.selectedCreneau && photo.heure) {
+          const heure = photo.heure;
+          const [start, end] = this.selectedCreneau.split("-");
+          if (start && heure < start) creneauMatch = false;
+          if (end && heure > end) creneauMatch = false;
+        } else if (this.selectedCreneau && !photo.heure) {
+          creneauMatch = false;
+        }
+
+        return agentMatch && statutMatch && jetonMatch && dateMatch && creneauMatch;
+      });
     },
     paginatedControlPhotos() {
       const start = (this.currentPage - 1) * this.perPage;
       return this.filteredControlPhotos.slice(start, start + this.perPage);
+    },
+    totalPages() {
+      return Math.ceil(this.filteredControlPhotos.length / this.perPage);
     }
   },
   mounted() {
@@ -129,6 +195,20 @@ export default {
       } catch (error) {
         console.error("Erreur lors de la récupération :", error);
       }
+    },
+    clearFilters() {
+      this.selectedAgent = "";
+      this.selectedStatut = "";
+      this.selectedJeton = "";
+      this.selectedDate = "";
+      this.selectedCreneau = "";
+      this.currentPage = 1;
+    },
+    nextPage() {
+      if (this.currentPage < this.totalPages) this.currentPage++;
+    },
+    prevPage() {
+      if (this.currentPage > 1) this.currentPage--;
     },
     openPopup(photo) {
       this.selectedPhoto = { ...photo };
@@ -152,33 +232,9 @@ export default {
       return '';
     },
     async saveChanges() {
-      const updatedData = {
-        id: this.selectedPhoto.id,
-        jeton: this.selectedPhoto.jeton,
-        date: this.selectedPhoto.date,
-        heure: this.selectedPhoto.heure,
-        tech: this.selectedPhoto.tech,
-        groupe_tech: this.selectedPhoto.groupe_tech,
-        actif_depuis: this.selectedPhoto.actif_depuis,
-        zone_manager: this.selectedPhoto.zone_manager,
-        statut: this.selectedPhoto.statut,
-        secteur: this.selectedPhoto.secteur,
-        statut_pto: this.selectedPhoto.statut_pto,
-        synchro: this.selectedPhoto.synchro,
-        agent: this.selectedPhoto.agent,
-        resultats_verification: this.selectedPhoto.resultats_verification,
-        commentaire: this.selectedPhoto.commentaire,
-        societe: this.selectedPhoto.societe,
-        numero: this.selectedPhoto.numero,
-        statut_appel: this.selectedPhoto.statut_appel,
-        nouvelle_colonne: this.selectedPhoto.nouvelle_colonne,
-      };
-
+      const updatedData = { ...this.selectedPhoto };
       try {
-        await axios.put(
-          `http://127.0.0.1:8000/api/controlphoto/${this.selectedPhoto.id}/`,
-          updatedData
-        );
+        await axios.put(`${import.meta.env.VITE_API_URL}/api/controlphoto/${this.selectedPhoto.id}/`, updatedData);
         this.reason = "Mise à jour réussie.";
         await this.fetchControlPhotos();
         this.closePopup();
@@ -190,6 +246,7 @@ export default {
   }
 };
 </script>
+
 
 <style scoped>
 /* Styles généraux */
@@ -203,6 +260,74 @@ export default {
   color: #333;
   border-radius: 8px;
   box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Filtres */
+.filters {
+  width: 90%;
+  margin: 20px auto;
+  padding: 10px;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+.filter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+}
+.filter-group {
+  display: flex;
+  flex-direction: column;
+}
+.filter-group label {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+.filter-group input,
+.filter-group select {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+.filter-actions {
+  margin-top: 15px;
+  text-align: right;
+}
+.filter-actions button {
+  padding: 8px 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.filter-actions button:hover {
+  background-color: #0056b3;
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+.pagination button {
+  padding: 6px 12px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.pagination button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+.pagination span {
+  font-weight: bold;
 }
 
 table {

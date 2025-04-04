@@ -1,70 +1,64 @@
 <template>
   <header class="bg-white shadow-md p-4 flex justify-between items-center ml-4 relative">
-    <!-- Affichage du nom du compte actif avec icône utilisateur -->
+    <!-- Affichage du nom du compte actif -->
     <div class="flex items-center gap-2">
       <UserIcon class="w-6 h-6 text-gray-700" />
       <span class="text-lg font-semibold">{{ activeAccountName }}</span>
     </div>
 
-    <!-- Liste déroulante pour lancer divers imports -->
-    <div class="relative">
-      <select
-        @change="handleImport($event)"
-        class="bg-gray-200 text-gray-700 p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-      >
-        <option value="">Importer données...</option>
-        <option value="ard2">Importer ARD2</option>
-        <option value="grdv">Importer GRDV (via dropdown)</option>
-        <option value="sync_relancejj">Sync Relancejj</option>
-        <option value="parametres">Importer Paramètres</option>
-        <option value="gantt">Importer Gantt</option>
-        
-
-      </select>
-    </div>
-
-    <!-- Bouton dédié pour lancer le bot GRDV (import GRDV) -->
-    <div class="flex flex-col items-center">
+    <!-- Bouton ARD uniquement -->
+    <div class="flex flex-col items-center gap-2">
       <button
-        class="flex items-center justify-center w-10 h-10 bg-blue-500 text-white rounded-full shadow-md hover:bg-blue-600 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-300"
-        @click="launchGrdvBot"
+        class="w-10 h-10 bg-gray-900 text-white rounded-md shadow-md flex items-center justify-center hover:bg-gray-800 transition relative"
+        title="Importer un fichier ARD"
+        @click="triggerFileUpload"
       >
-        <CloudUpload class="w-6 h-6" />
+        <CloudUpload class="w-5 h-5" />
       </button>
-      <span class="IT">GRDV</span>
+      <input
+        type="file"
+        ref="fileInput"
+        accept=".csv"
+        class="hidden"
+        @change="handleArdUpload"
+      />
     </div>
 
-
-
-    <!-- Boutons de statistiques, rafraîchissement et déconnexion -->
+    <!-- Boutons stats, refresh, logout -->
     <div class="flex items-center gap-4">
       <button
-        class="bg-green-500 text-white p-3 rounded-full hover:bg-green-600 transition flex items-center justify-center !border-none"
+        class="bg-green-500 text-white p-3 rounded-full hover:bg-green-600 transition"
         @click="handleStatistics"
       >
         <BarChart class="w-5 h-5" />
       </button>
       <button
-        class="bg-gray-500 text-white p-3 rounded-full hover:bg-gray-600 transition flex items-center justify-center !border-none"
+        class="bg-gray-500 text-white p-3 rounded-full hover:bg-gray-600 transition"
         @click="refresh"
       >
         <RefreshIcon class="w-5 h-5" />
       </button>
       <button
-        class="bg-red-500 text-white p-3 rounded-full hover:bg-red-600 transition flex items-center justify-center !border-none"
+        class="bg-red-500 text-white p-3 rounded-full hover:bg-red-600 transition"
         @click="logout"
       >
         <PowerIcon class="w-5 h-5" />
       </button>
     </div>
 
-    <!-- Intégration de la popup Statistiques -->
+    <!-- Popup statistiques -->
     <GanttStat v-if="showStatModal" @close="closeStatModal" />
   </header>
 </template>
 
 <script>
-import { PowerIcon, RefreshCwIcon as RefreshIcon, UserIcon, BarChart, CloudUpload } from "lucide-vue-next";
+import {
+  PowerIcon,
+  RefreshCwIcon as RefreshIcon,
+  UserIcon,
+  BarChart,
+  CloudUpload,
+} from "lucide-vue-next";
 import GanttStat from "./views/GanttStat.vue";
 
 export default {
@@ -90,108 +84,49 @@ export default {
     async fetchAccountName() {
       try {
         const accessToken = localStorage.getItem("access");
-        if (!accessToken) {
-          throw new Error("Token d'accès introuvable dans localStorage");
-        }
         const response = await fetch(`${import.meta.env.VITE_API_URL}/api/user/profile/`, {
-          method: "GET",
           headers: {
-            "Authorization": `Bearer ${accessToken}`,
+            Authorization: `Bearer ${accessToken}`,
             "Content-Type": "application/json",
-            "Accept": "application/json"
           },
         });
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error(`Erreur HTTP ${response.status}:`, errorText);
-          throw new Error(`Erreur HTTP: ${response.status}`);
-        }
         const data = await response.json();
         this.activeAccountName = data.name || "Utilisateur inconnu";
-      } catch (error) {
-        console.error("Erreur de récupération :", error);
+      } catch {
         this.activeAccountName = "Erreur de chargement";
       }
     },
-    async handleImport(event) {
-      const importType = event.target.value;
-      if (!importType) return;
-      let endpoint = "";
-      
-      if (importType === "ard2") {
-        endpoint = `${import.meta.env.VITE_API_URL}/api/import_ard2/`;
-      } else if (importType === "grdv") {
-        endpoint = `${import.meta.env.VITE_API_URL}/api/import_grdv/`;
-      } else if (importType === "sync_relancejj") {
-        endpoint = `${import.meta.env.VITE_API_URL}/api/sync_relancejj/`;
-      } else if (importType === "parametres") {
-        endpoint = `${import.meta.env.VITE_API_URL}/api/import_parametres/`;
-      } else if (importType === "gantt") {
-        const date = prompt("Entrez la date (YYYY-MM-DD) :");
-        if (!date) {
-          event.target.value = "";
-          return;
-        }
-        endpoint = `${import.meta.env.VITE_API_URL}/api/import_gantt/?date=${date}`;
-      }
-      
-      try {
-        const accessToken = localStorage.getItem("access");
-        if (!accessToken) {
-          throw new Error("Token d'accès introuvable pour l'import.");
-        }
-        const response = await fetch(endpoint, {
-          method: "POST",
-          headers: {
-            "Authorization": `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-            "Accept": "application/json"
-          },
-        });
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error(`Erreur HTTP ${response.status}:`, errorText);
-          throw new Error(`Erreur HTTP: ${response.status}`);
-        }
-        await response.json();
-        alert(`Import ${importType.toUpperCase()} terminé.`);
-      } catch (error) {
-        console.error(`Erreur lors de l'import ${importType.toUpperCase()} :`, error);
-        alert(`Erreur lors de l'import ${importType.toUpperCase()}.`);
-      } finally {
-        event.target.value = "";
-      }
+    triggerFileUpload() {
+      this.$refs.fileInput.click();
     },
-    async launchGrdvBot() {
+    async handleArdUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const formData = new FormData();
+      formData.append("file", file);
+
       try {
         const accessToken = localStorage.getItem("access");
-        if (!accessToken) {
-          alert("Token d'accès introuvable");
-          return;
-        }
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/import_grdv/`, {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/import_ard/`, {
           method: "POST",
           headers: {
-            "Authorization": `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-            "Accept": "application/json"
+            Authorization: `Bearer ${accessToken}`,
           },
+          body: formData,
         });
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error(`Erreur HTTP ${response.status}:`, errorText);
-          alert("Erreur lors du lancement du bot GRDV");
-          return;
-        }
-        const data = await response.json();
-        alert(`Bot GRDV lancé avec succès:\n${data.message}`);
+
+        if (!response.ok) throw new Error("Erreur d'import ARD");
+
+        alert("Fichier ARD importé avec succès !");
       } catch (error) {
-        console.error("Erreur lors du lancement du bot GRDV :", error);
-        alert("Erreur lors du lancement du bot GRDV");
+        console.error("Erreur import ARD :", error);
+        alert("Erreur lors de l'import ARD.");
+      } finally {
+        this.$refs.fileInput.value = "";
       }
     },
     refresh() {
-      console.log("Rafraîchissement en cours...");
       this.fetchAccountName();
     },
     logout() {
@@ -204,13 +139,11 @@ export default {
     },
     closeStatModal() {
       this.showStatModal = false;
-    }
+    },
   },
 };
 </script>
 
 <style scoped>
-
-
-/* Ajoutez ici vos styles personnalisés */
+/* Aucun style spécial requis, Tailwind prend en charge l’esthétique */
 </style>

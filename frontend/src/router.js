@@ -17,17 +17,17 @@ import ARD2 from "./components/views/Ard2Table.vue";
 import AgentHeader from "./components/Agent-header.vue";
 import AgentControlPhoto from "./components/views-agent/Agent-ControlPhoto.vue";
 import AgentControlFroid from "./components/views-agent/Agent-ControlFroid.vue";
-
-// Ajout explicite du composant ImportARD2
 import ImportARD2 from "./components/ImportARD2.vue";
+
+import axios from "axios";
 
 const routes = [
   { path: "/", component: Login },
-  { 
+  {
     path: "/agent-dashboard",
     components: {
-      default: AgentDashboard,  // contenu principal
-      sidebar: AgentSidebar,    // barre latérale
+      default: AgentDashboard,
+      sidebar: AgentSidebar,
       header: AgentHeader,
     },
     children: [
@@ -36,7 +36,8 @@ const routes = [
       { path: "debrief/sav", component: DebriefSAV },
       { path: "AgentControlPhoto", component: AgentControlPhoto },
       { path: "AgentControlFroid", component: AgentControlFroid },
-    ]
+    ],
+    meta: { requiresAuth: true },
   },
   {
     path: "/dashboard",
@@ -53,16 +54,55 @@ const routes = [
       { path: "interventions/racc", component: InterventionsRACC },
       { path: "parametres", component: Parametres },
       { path: "ARD2", component: ARD2 },
-
-      // Route explicitement ajoutée pour ImportARD2
       { path: "import-ard2", name: "ImportARD2", component: ImportARD2 },
     ],
+    meta: { requiresAuth: true },
   },
 ];
 
 const router = createRouter({
   history: createWebHistory(),
   routes,
+});
+
+router.beforeEach(async (to, from, next) => {
+  const authRequired = to.matched.some(record => record.meta.requiresAuth);
+  const accessToken = localStorage.getItem("access");
+  const refreshToken = localStorage.getItem("refresh");
+
+  // Si une authentification est requise
+  if (authRequired) {
+    if (!accessToken) {
+      return next("/");
+    }
+
+    // Vérifie si le token est expiré en faisant un appel test
+    try {
+      await axios.get(`${import.meta.env.VITE_API_URL}/api/user/profile/`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      return next();
+    } catch (error) {
+      if (error.response?.status === 401 && refreshToken) {
+        try {
+          // Tente un refresh
+          const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/token/refresh/`, {
+            refresh: refreshToken,
+          });
+          localStorage.setItem("access", res.data.access);
+          return next();
+        } catch (refreshError) {
+          console.error("Refresh token expiré ou invalide.");
+          localStorage.removeItem("access");
+          localStorage.removeItem("refresh");
+          return next("/");
+        }
+      } else {
+        return next("/");
+      }
+    }
+  }
+  next();
 });
 
 export default router;

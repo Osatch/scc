@@ -171,3 +171,13 @@ CORS_ALLOW_METHODS = [
     'DELETE',
 ]
 
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),  # Tu peux augmenter à 60 ou plus
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=30),    # La session reste vivante 30 jours
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
+    "AUTH_HEADER_TYPES": ("Bearer",),
+    "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
+}

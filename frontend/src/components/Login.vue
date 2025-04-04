@@ -31,9 +31,9 @@
       <!-- Message d'erreur -->
       <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
 
-      <!-- Texte supplémentaire -->
+      <!-- Message d'information -->
       <p class="additional-text">
-        Bienvenue sur TECHNO SMART. Connectez-vous pour accéder à votre espace.
+        Bienvenue sur <strong>TECHNO SMART</strong>. Connectez-vous pour accéder à votre espace sécurisé.
       </p>
     </div>
   </div>
@@ -43,46 +43,43 @@
 import axios from 'axios';
 
 export default {
+  name: 'Login',
   data() {
     return {
       email: '',
       password: '',
-      errorMessage: '',
+      errorMessage: ''
     };
   },
   methods: {
     async login() {
       try {
         const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/login/`, {
-          email: this.email, 
+          email: this.email,
           password: this.password,
         });
 
-        // Stockage des tokens dans le localStorage
-        localStorage.setItem('access', response.data.access);
-        localStorage.setItem('refresh', response.data.refresh);
+        const { access, refresh, role } = response.data;
 
-        // Récupérer le rôle renvoyé par l'API
-        const userRole = response.data.role;
-        console.log("Rôle de l'utilisateur :", userRole);
+        localStorage.setItem('access', access);
+        localStorage.setItem('refresh', refresh);
+        localStorage.setItem('role', role);
 
         // Redirection selon le rôle
-        if (userRole === 'admin') {
-          this.$router.push('/Admin-dashboard');
-        } else if (userRole === 'agent') {
-          this.$router.push('/Agent-dashboard');
-        } else if (userRole === 'manager') {
+        if (role === 'admin' || role === 'manager') {
           this.$router.push('/dashboard');
+        } else if (role === 'agent') {
+          this.$router.push('/agent-dashboard');
         } else {
-          // Redirection par défaut si le rôle n'est pas reconnu
-          this.$router.push('/dashboard');
+          this.$router.push('/');
         }
+
       } catch (error) {
-        console.error("Erreur lors de la connexion :", error.response?.data || error.message);
-        this.errorMessage = error.response?.data?.error || "Identifiants incorrects";
+        console.error("Erreur de connexion :", error.response?.data || error.message);
+        this.errorMessage = error.response?.data?.error || "Identifiants invalides";
       }
-    },
-  },
+    }
+  }
 };
 </script>
 

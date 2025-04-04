@@ -1,45 +1,11 @@
 <template>
   <header class="bg-white shadow-md p-4 flex justify-between items-center ml-4 relative">
-    <!-- Affichage du nom du compte actif avec icône utilisateur -->
     <div class="flex items-center gap-2">
       <UserIcon class="w-6 h-6 text-gray-700" />
       <span class="text-lg font-semibold">{{ activeAccountName }}</span>
     </div>
 
-    <!-- Liste déroulante pour lancer divers imports -->
-    <div class="relative">
-      <select
-        @change="handleImport($event)"
-        class="bg-gray-200 text-gray-700 p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-      >
-        <option value="">Importer données...</option>
-        <option value="ard2">Importer ARD2</option>
-        <option value="grdv">Importer GRDV (via dropdown)</option>
-        <option value="sync_relancejj">Sync Relancejj</option>
-        <option value="parametres">Importer Paramètres</option>
-        <option value="gantt">Importer Gantt</option>
-      </select>
-    </div>
-
-    <!-- Bouton dédié pour lancer le bot GRDV (import GRDV) -->
-    <div class="flex flex-col items-center">
-      <button
-        class="flex items-center justify-center w-10 h-10 bg-blue-500 text-white rounded-full shadow-md hover:bg-blue-600 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-300"
-        @click="launchGrdvBot"
-      >
-        <CloudUpload class="w-6 h-6" />
-      </button>
-      <span class="IT">GRDV</span>
-    </div>
-
-    <!-- Boutons de statistiques, rafraîchissement et déconnexion -->
     <div class="flex items-center gap-4">
-      <button
-        class="bg-green-500 text-white p-3 rounded-full hover:bg-green-600 transition flex items-center justify-center !border-none"
-        @click="handleStatistics"
-      >
-        <BarChart class="w-5 h-5" />
-      </button>
       <button
         class="bg-gray-500 text-white p-3 rounded-full hover:bg-gray-600 transition flex items-center justify-center !border-none"
         @click="refresh"
@@ -54,7 +20,6 @@
       </button>
     </div>
 
-    <!-- Intégration de la popup Statistiques -->
     <GanttStat v-if="showStatModal" @close="closeStatModal" />
   </header>
 </template>
@@ -83,39 +48,78 @@ export default {
     this.fetchAccountName();
   },
   methods: {
+    async refreshToken() {
+      const refresh = localStorage.getItem("refresh");
+      if (!refresh) return false;
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/token/refresh/`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ refresh }),
+        });
+        if (!response.ok) {
+          localStorage.removeItem("access");
+          localStorage.removeItem("refresh");
+          return false;
+        }
+        const data = await response.json();
+        localStorage.setItem("access", data.access);
+        return true;
+      } catch (err) {
+        console.error("Erreur de rafraîchissement :", err);
+        return false;
+      }
+    },
+
     async fetchAccountName() {
       try {
-        const accessToken = localStorage.getItem("access");
-        if (!accessToken) {
-          throw new Error("Token d'accès introuvable dans localStorage");
-        }
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/user/profile/`, {
+        let accessToken = localStorage.getItem("access");
+        if (!accessToken) throw new Error("Token d'accès introuvable");
+
+        let response = await fetch(`${import.meta.env.VITE_API_URL}/api/user/profile/`, {
           method: "GET",
           headers: {
-            "Authorization": `Bearer ${accessToken}`,
+            Authorization: `Bearer ${accessToken}`,
             "Content-Type": "application/json",
-            "Accept": "application/json"
+            Accept: "application/json"
           },
         });
+
+        if (response.status === 401) {
+          const refreshed = await this.refreshToken();
+          if (refreshed) {
+            accessToken = localStorage.getItem("access");
+            response = await fetch(`${import.meta.env.VITE_API_URL}/api/user/profile/`, {
+              method: "GET",
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+                "Content-Type": "application/json",
+                Accept: "application/json"
+              },
+            });
+          }
+        }
+
         if (!response.ok) {
           const errorText = await response.text();
           console.error(`Erreur HTTP ${response.status}:`, errorText);
           throw new Error(`Erreur HTTP: ${response.status}`);
         }
+
         const data = await response.json();
         this.activeAccountName = data.name || "Utilisateur inconnu";
-        // Stocker le nom de l'agent dans le localStorage pour le récupérer ailleurs
         localStorage.setItem("activeAccountName", this.activeAccountName);
       } catch (error) {
         console.error("Erreur de récupération :", error);
         this.activeAccountName = "Erreur de chargement";
       }
     },
+
     async handleImport(event) {
       const importType = event.target.value;
       if (!importType) return;
       let endpoint = "";
-      
+
       if (importType === "ard2") {
         endpoint = "http://127.0.0.1:8000/api/import_ard2/";
       } else if (importType === "grdv") {
@@ -132,25 +136,41 @@ export default {
         }
         endpoint = `http://127.0.0.1:8000/api/import_gantt/?date=${date}`;
       }
-      
+
       try {
-        const accessToken = localStorage.getItem("access");
-        if (!accessToken) {
-          throw new Error("Token d'accès introuvable pour l'import.");
-        }
-        const response = await fetch(endpoint, {
+        let accessToken = localStorage.getItem("access");
+        if (!accessToken) throw new Error("Token d'accès manquant");
+
+        let response = await fetch(endpoint, {
           method: "POST",
           headers: {
-            "Authorization": `Bearer ${accessToken}`,
+            Authorization: `Bearer ${accessToken}`,
             "Content-Type": "application/json",
-            "Accept": "application/json"
+            Accept: "application/json"
           },
         });
+
+        if (response.status === 401) {
+          const refreshed = await this.refreshToken();
+          if (refreshed) {
+            accessToken = localStorage.getItem("access");
+            response = await fetch(endpoint, {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+                "Content-Type": "application/json",
+                Accept: "application/json"
+              },
+            });
+          }
+        }
+
         if (!response.ok) {
           const errorText = await response.text();
           console.error(`Erreur HTTP ${response.status}:`, errorText);
           throw new Error(`Erreur HTTP: ${response.status}`);
         }
+
         await response.json();
         alert(`Import ${importType.toUpperCase()} terminé.`);
       } catch (error) {
@@ -160,27 +180,46 @@ export default {
         event.target.value = "";
       }
     },
+
     async launchGrdvBot() {
       try {
-        const accessToken = localStorage.getItem("access");
+        let accessToken = localStorage.getItem("access");
         if (!accessToken) {
           alert("Token d'accès introuvable");
           return;
         }
-        const response = await fetch("http://127.0.0.1:8000/api/import_grdv/", {
+
+        let response = await fetch("http://127.0.0.1:8000/api/import_grdv/", {
           method: "POST",
           headers: {
-            "Authorization": `Bearer ${accessToken}`,
+            Authorization: `Bearer ${accessToken}`,
             "Content-Type": "application/json",
-            "Accept": "application/json"
+            Accept: "application/json"
           },
         });
+
+        if (response.status === 401) {
+          const refreshed = await this.refreshToken();
+          if (refreshed) {
+            accessToken = localStorage.getItem("access");
+            response = await fetch("http://127.0.0.1:8000/api/import_grdv/", {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+                "Content-Type": "application/json",
+                Accept: "application/json"
+              },
+            });
+          }
+        }
+
         if (!response.ok) {
           const errorText = await response.text();
           console.error(`Erreur HTTP ${response.status}:`, errorText);
           alert("Erreur lors du lancement du bot GRDV");
           return;
         }
+
         const data = await response.json();
         alert(`Bot GRDV lancé avec succès:\n${data.message}`);
       } catch (error) {
@@ -188,18 +227,21 @@ export default {
         alert("Erreur lors du lancement du bot GRDV");
       }
     },
+
     refresh() {
-      console.log("Rafraîchissement en cours...");
       this.fetchAccountName();
     },
+
     logout() {
       localStorage.removeItem("access");
       localStorage.removeItem("refresh");
       this.$router.push("/");
     },
+
     handleStatistics() {
       this.showStatModal = true;
     },
+
     closeStatModal() {
       this.showStatModal = false;
     }

@@ -2,6 +2,95 @@
   <div class="main-content">
     <h2>Liste des Contrôles Photo</h2>
     
+    <!-- Filtres -->
+    <div class="filters">
+      <!-- Bouton toggle pour filtres supplémentaires -->
+      <div class="toggle-extra-filters">
+        <button @click="toggleExtraFilters">
+          {{ showExtraFilters ? '-' : '+' }}
+        </button>
+      </div>
+      
+      <!-- Filtres de base -->
+      <div class="filter-grid">
+        <!-- Filtre Statut -->
+        <div class="filter-group">
+          <label for="filter-statut">Statut</label>
+          <select id="filter-statut" v-model="selectedStatut">
+            <option value="">Tous</option>
+            <option value="Cloturée">Clôturée</option>
+            <option value="Taguée">Taguée</option>
+          </select>
+        </div>
+        <!-- Filtre Date -->
+        <div class="filter-group">
+          <label for="filter-date">Date</label>
+          <input type="date" id="filter-date" v-model="selectedDate" />
+        </div>
+        <!-- Filtre Technicien -->
+        <div class="filter-group">
+          <label for="filter-technicien">Technicien</label>
+          <input type="text" id="filter-technicien" v-model="selectedTechnicien" placeholder="Filtrer par technicien" />
+        </div>
+        <!-- Filtre Secteur -->
+        <div class="filter-group">
+          <label for="filter-secteur">Secteur</label>
+          <input type="text" id="filter-secteur" v-model="selectedSecteur" placeholder="Filtrer par secteur" />
+        </div>
+      </div>
+      
+      <!-- Filtres supplémentaires (affichés/masqués) -->
+      <div v-if="showExtraFilters" class="extra-filters">
+        <!-- Filtre Jeton -->
+        <div class="filter-group">
+          <label for="filter-jeton">Jeton</label>
+          <input type="text" id="filter-jeton" v-model="selectedJeton" placeholder="Filtrer par jeton" />
+        </div>
+        <!-- Filtre Statut PTO -->
+        <div class="filter-group">
+          <label for="filter-statut-pto">Statut PTO</label>
+          <select id="filter-statut-pto" v-model="selectedStatutPto">
+            <option value="">Tous</option>
+            <option value="Remise en conformité">Remise en conformité</option>
+            <option value="NE">NE</option>
+            <option value="PTO et CAB presents">PTO et CAB présents</option>
+            <option value="conformes a remplacer">Conformes à remplacer</option>
+            <option value="PTO a remettre en conformité et CAB conforme">PTO à remettre en conformité et CAB conforme</option>
+            <option value="PTO present et CAB non conforme a remplacer">PTO présent et CAB non conforme à remplacer</option>
+            <option value="PTO mal positionné a déplacer et nouveau CAB a poser">PTO mal positionné à déplacer et nouveau CAB à poser</option>
+            <option value="PTO et CAB absent">PTO et CAB absent</option>
+            <option value="PTO a deplacer par confort et nouveau CAB a poser">PTO à déplacer par confort et nouveau CAB à poser</option>
+          </select>
+        </div>
+        <!-- Filtre Statut Appel -->
+        <div class="filter-group">
+          <label for="filter-statut-appel">Statut d'Appel</label>
+          <select id="filter-statut-appel" v-model="selectedStatutAppel">
+            <option value="">Tous</option>
+            <option value="Appel à chaud">Appel à chaud</option>
+            <option value="Appel à froid">Appel à froid</option>
+            <option value="Pas d'appel">Pas d'appel</option>
+          </select>
+        </div>
+        <!-- Filtre Agent -->
+        <div class="filter-group">
+          <label for="filter-agent">Agent</label>
+          <input type="text" id="filter-agent" v-model="selectedAgent" placeholder="Filtrer par agent" />
+        </div>
+      </div>
+      
+      <div class="filter-actions">
+        <button @click="clearFilters">Effacer</button>
+      </div>
+    </div>
+    
+    <!-- Pagination -->
+    <div class="pagination">
+      <button @click="prevPage" :disabled="currentPage === 1">Précédent</button>
+      <span>Page {{ currentPage }} sur {{ totalPages }}</span>
+      <button @click="nextPage" :disabled="currentPage === totalPages">Suivant</button>
+    </div>
+    
     <!-- Tableau des contrôles photo -->
     <table>
       <thead>
@@ -123,8 +212,20 @@ export default {
   data() {
     return {
       controlphotos: [],
+      // Filtres
+      selectedStatut: "",
+      selectedDate: "",
+      selectedTechnicien: "",
+      selectedSecteur: "",
+      selectedJeton: "",
+      selectedStatutPto: "",
+      selectedStatutAppel: "",
+      selectedAgent: "",
+      showExtraFilters: false,
+      // Pagination
       currentPage: 1,
       perPage: 10,
+      // Popup
       showPopup: false,
       selectedPhoto: null,
       statutPto: "",
@@ -134,7 +235,25 @@ export default {
   },
   computed: {
     filteredControlPhotos() {
-      return this.controlphotos;
+      return this.controlphotos.filter(photo => {
+        const statutMatch = !this.selectedStatut || photo.statut === this.selectedStatut;
+        const dateMatch = !this.selectedDate || photo.date === this.selectedDate;
+        const technicienMatch = !this.selectedTechnicien || 
+          (photo.tech && photo.tech.toLowerCase().includes(this.selectedTechnicien.toLowerCase()));
+        const secteurMatch = !this.selectedSecteur || 
+          (photo.secteur && photo.secteur.toLowerCase().includes(this.selectedSecteur.toLowerCase()));
+        const jetonMatch = !this.selectedJeton || 
+          (photo.jeton && photo.jeton.toLowerCase().includes(this.selectedJeton.toLowerCase()));
+        const statutPtoMatch = !this.selectedStatutPto || 
+          (photo.statut_pto && photo.statut_pto === this.selectedStatutPto);
+        const statutAppelMatch = !this.selectedStatutAppel || 
+          (photo.statut_appel && photo.statut_appel === this.selectedStatutAppel);
+        const agentMatch = !this.selectedAgent || 
+          (photo.agent && photo.agent.toLowerCase().includes(this.selectedAgent.toLowerCase()));
+        
+        return statutMatch && dateMatch && technicienMatch && secteurMatch && 
+               jetonMatch && statutPtoMatch && statutAppelMatch && agentMatch;
+      });
     },
     totalPages() {
       return Math.ceil(this.filteredControlPhotos.length / this.perPage);
@@ -155,6 +274,20 @@ export default {
       } catch (error) {
         console.error("Erreur lors de la récupération des contrôles photo :", error);
       }
+    },
+    toggleExtraFilters() {
+      this.showExtraFilters = !this.showExtraFilters;
+    },
+    clearFilters() {
+      this.selectedStatut = "";
+      this.selectedDate = "";
+      this.selectedTechnicien = "";
+      this.selectedSecteur = "";
+      this.selectedJeton = "";
+      this.selectedStatutPto = "";
+      this.selectedStatutAppel = "";
+      this.selectedAgent = "";
+      this.currentPage = 1;
     },
     openPopup(photo) {
       this.selectedPhoto = { ...photo };
@@ -196,7 +329,7 @@ export default {
 
       try {
         await axios.put(
-          `http://127.0.0.1:8000/api/controlphoto/${this.selectedPhoto.id}/`,
+          `${import.meta.env.VITE_API_URL}/api/controlphoto/${this.selectedPhoto.id}/`,
           updatedData
         );
         this.reason = "Mise à jour réussie.";
@@ -205,6 +338,16 @@ export default {
       } catch (error) {
         console.error("Erreur lors de la sauvegarde :", error);
         this.reason = JSON.stringify(error.response?.data) || "Erreur inconnue lors de la sauvegarde.";
+      }
+    },
+    nextPage() {
+      if (this.currentPage < this.totalPages) {
+        this.currentPage++;
+      }
+    },
+    prevPage() {
+      if (this.currentPage > 1) {
+        this.currentPage--;
       }
     }
   }
@@ -224,6 +367,95 @@ export default {
   box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
 }
 
+/* Bouton toggle pour filtres supplémentaires */
+.toggle-extra-filters {
+  margin-bottom: 10px;
+}
+.toggle-extra-filters button {
+  padding: 5px 10px;
+  font-size: 16px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.toggle-extra-filters button:hover {
+  background-color: #0056b3;
+}
+
+/* Filtres */
+.filters {
+  width: 65%;
+  margin-bottom: 20px;
+  padding: 10px;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+.filter-grid,
+.extra-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+}
+.filter-group {
+  display: flex;
+  flex-direction: column;
+}
+.filter-group label {
+  margin-bottom: 5px;
+  font-weight: bold;
+  font-size: 14px;
+}
+.filter-group input,
+.filter-group select {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+.filter-actions {
+  margin-top: 10px;
+  display: flex;
+  gap: 10px;
+}
+.filter-actions button {
+  padding: 8px 16px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.filter-actions button:hover {
+  background-color: #0056b3;
+}
+
+/* Pagination */
+.pagination {
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.pagination button {
+  padding: 8px 16px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.pagination button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+.pagination span {
+  font-size: 14px;
+  color: #333;
+}
+
+/* Tableau */
 table {
   width: 95%;
   border-collapse: collapse;
@@ -234,63 +466,56 @@ table {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   font-size: 13px;
 }
-
 th, td {
   border: 1px solid #ddd;
   padding: 10px;
   text-align: left;
 }
-
 th {
   background-color: #000;
   color: #fff;
   text-transform: uppercase;
   font-weight: bold;
 }
-
 td {
   color: #333;
 }
-
 tbody tr:nth-child(odd) {
   background-color: #f9f9f9;
 }
-
 tbody tr:nth-child(even) {
   background-color: #ffffff;
 }
-
 tbody tr:hover {
   background-color: #e3f2fd;
   transition: background-color 0.3s ease-in-out;
+  cursor: pointer;
 }
 
+/* Classes pour les statuts */
 .ok-cell {
   background-color: #c8e6c9;
 }
-
 .nok-cell {
   background-color: #ffcc80;
 }
-
 .appel-chaud {
   background-color: #c8e6c9;
   color: #1b5e20;
   font-weight: bold;
 }
-
 .appel-froid {
   background-color: #fff9c4;
   color: #f57f17;
   font-weight: bold;
 }
-
 .appel-none {
   background-color: #ffcdd2;
   color: #b71c1c;
   font-weight: bold;
 }
 
+/* Popup */
 .popup {
   position: fixed;
   top: 0;
@@ -301,8 +526,8 @@ tbody tr:hover {
   display: flex;
   justify-content: center;
   align-items: center;
+  z-index: 1000;
 }
-
 .popup-content {
   background: #fff;
   padding: 20px;
@@ -310,20 +535,16 @@ tbody tr:hover {
   width: 400px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
-
 .popup-content h3 {
   margin-bottom: 20px;
 }
-
 .popup-content div {
   margin-bottom: 15px;
 }
-
 .popup-content label {
   display: block;
   margin-bottom: 5px;
 }
-
 .popup-content input,
 .popup-content select {
   width: 100%;
@@ -331,7 +552,6 @@ tbody tr:hover {
   border: 1px solid #ddd;
   border-radius: 4px;
 }
-
 .popup-content button {
   padding: 8px 16px;
   margin-right: 10px;
@@ -341,11 +561,9 @@ tbody tr:hover {
   border-radius: 4px;
   cursor: pointer;
 }
-
 .popup-content button:hover {
   background-color: #0056b3;
 }
-
 .reason-message {
   margin-top: 15px;
   padding: 10px;
@@ -353,5 +571,28 @@ tbody tr:hover {
   border: 1px solid #ff5c5c;
   border-radius: 4px;
   color: #a70000;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0;
+    width: 100%;
+  }
+  table {
+    font-size: 12px;
+    width: 100%;
+    margin-left: 0;
+  }
+  th, td {
+    padding: 8px;
+  }
+  .filter-grid,
+  .extra-filters {
+    grid-template-columns: 1fr;
+  }
+  .popup-content {
+    width: 90%;
+  }
 }
 </style>

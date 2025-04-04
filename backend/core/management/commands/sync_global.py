@@ -44,7 +44,7 @@ class Command(BaseCommand):
         
         # 5. Synchronisation Gantt
         self.stdout.write(self.style.NOTICE("Début de la synchronisation Gantt..."))
-        self.sync_gantt(options.get('date'))
+        self.sync_gantt()
         
         # 6. Synchronisation ControlPhoto
         self.stdout.write(self.style.NOTICE("Début de la synchronisation ControlPhoto..."))
