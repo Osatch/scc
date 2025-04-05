@@ -24,6 +24,8 @@ from .serializers import (
     CommentaireSerializer, ParametresSerializer
 )
 from .forms import ParametresForm
+from django.conf import settings
+import os
 
 # ======================= VUES POUR INTERVENTIONS RACC =======================
 @api_view(['GET', 'POST'])
@@ -528,5 +530,28 @@ def import_gantt(request):
         output = io.StringIO()
         call_command('import_gantt', date=date, stdout=output)
         return JsonResponse({'status': 'success', 'message': output.getvalue()})
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+@csrf_exempt
+@require_POST
+def upload_ard_file(request):
+    """
+    Reçoit un fichier CSV depuis le frontend et le sauvegarde dans backend/Bot/ard2/
+    """
+    uploaded_file = request.FILES.get('file')
+    if not uploaded_file:
+        return JsonResponse({'status': 'error', 'message': 'Aucun fichier fourni.'}, status=400)
+
+    try:
+        save_dir = os.path.join(settings.BASE_DIR, 'Bot', 'ard2')
+        os.makedirs(save_dir, exist_ok=True)
+
+        save_path = os.path.join(save_dir, uploaded_file.name)
+
+        with open(save_path, 'wb+') as destination:
+            for chunk in uploaded_file.chunks():
+                destination.write(chunk)
+
+        return JsonResponse({'status': 'success', 'message': f'Fichier sauvegardé dans {save_path}'})
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)

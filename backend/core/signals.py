@@ -1,53 +1,73 @@
 import unicodedata
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from .models import GRDV, ARD2, RelanceJJ
+from .models import GRDV, ARD2, RelanceJJ, Parametres
+
 
 @receiver(post_save, sender=GRDV)
 def create_or_update_relancejj_from_grdv(sender, instance, created, **kwargs):
-    """
-    Lorsqu'un GRDV est créé ou mis à jour, on normalise GRDV.ref_commande
-    (les 10 premiers caractères, insensible à la casse) pour chercher un ARD2
-    correspondant (ARD2.jeton_commande) et on crée ou met à jour l'instance RelanceJJ.
-    """
-    if instance.ref_commande:
-        ref_norm = unicodedata.normalize("NFKC", instance.ref_commande.strip())[:10]
-    else:
-        ref_norm = ""
-    
-    try:
-        # Utiliser __iexact pour être insensible à la casse
-        ard2_instance = ARD2.objects.get(jeton_commande__iexact=ref_norm)
-    except ARD2.DoesNotExist:
-        ard2_instance = None
+    if not instance.ref_commande:
+        return
 
-    if ard2_instance:
-        relance, created = RelanceJJ.objects.get_or_create(
-            grdv=instance,
-            jeton=ard2_instance
-        )
+    ref_norm = unicodedata.normalize("NFKC", instance.ref_commande.strip())[:10]
+    ard2_instance = ARD2.objects.filter(jeton_commande__iexact=ref_norm).first()
+    if not ard2_instance:
+        return
+
+    date_rdv = instance.date_rdv.date() if instance.date_rdv else None
+    if not date_rdv:
+        return
+
+    relance, _ = RelanceJJ.objects.update_or_create(
+        jeton_commande=ard2_instance.jeton_commande,
+        date_rdv=date_rdv,
+        defaults={
+            "grdv": instance,
+            "heure_debut": ard2_instance.debut_intervention.time() if ard2_instance.debut_intervention else None,
+            "heure_fin": ard2_instance.fin_intervention.time() if ard2_instance.fin_intervention else None,
+            "departement": ard2_instance.departement,
+            "techniciens": ard2_instance.technicien,
+        }
+    )
+
+    # Enrichir depuis Parametres
+    param = Parametres.objects.filter(
+        nom_tech__iexact=relance.techniciens,
+        departement__iexact=relance.departement
+    ).first()
+    if param:
+        relance.numero = param.numero_technicien
+        relance.societe = param.societe
         relance.save()
-    else:
-        # Optionnel : loguer ou afficher un message de debug
-        print(f"[DEBUG] GRDV id {instance.id} avec ref_norm '{ref_norm}' n'a pas trouvé d'ARD2.")
+
 
 @receiver(post_save, sender=ARD2)
 def create_or_update_relancejj_from_ard2(sender, instance, created, **kwargs):
-    """
-    Lorsqu'un ARD2 est créé ou mis à jour, on recherche un GRDV dont ref_commande
-    correspond (insensible à la casse) à ARD2.jeton_commande et on crée ou met à jour RelanceJJ.
-    """
-    try:
-        grdv_instance = GRDV.objects.get(ref_commande__iexact=instance.jeton_commande)
-    except GRDV.DoesNotExist:
-        grdv_instance = None
+    grdv_instance = GRDV.objects.filter(ref_commande__iexact=instance.jeton_commande).first()
+    if not grdv_instance:
+        return
 
-    if grdv_instance:
-        relance, created = RelanceJJ.objects.get_or_create(
-            grdv=grdv_instance,
-            jeton=instance
-        )
+    date_rdv = grdv_instance.date_rdv.date() if grdv_instance.date_rdv else None
+    if not date_rdv:
+        return
+
+    relance, _ = RelanceJJ.objects.update_or_create(
+        jeton_commande=instance.jeton_commande,
+        date_rdv=date_rdv,
+        defaults={
+            "grdv": grdv_instance,
+            "heure_debut": instance.debut_intervention.time() if instance.debut_intervention else None,
+            "heure_fin": instance.fin_intervention.time() if instance.fin_intervention else None,
+            "departement": instance.departement,
+            "techniciens": instance.technicien,
+        }
+    )
+
+    param = Parametres.objects.filter(
+        nom_tech__iexact=relance.techniciens,
+        departement__iexact=relance.departement
+    ).first()
+    if param:
+        relance.numero = param.numero_technicien
+        relance.societe = param.societe
         relance.save()
-    else:
-        # Optionnel : log de debug
-        print(f"[DEBUG] ARD2 id {instance.id} avec jeton_commande '{instance.jeton_commande}' n'a pas trouvé de GRDV.")

@@ -47,90 +47,97 @@
       <span>Page {{ currentPage }} sur {{ totalPages }}</span>
       <button @click="nextPage" :disabled="currentPage === totalPages">Suivant</button>
     </div>
-
     <table>
-      <thead>
-        <tr>
-          <th>Jeton</th>
-          <th>Date</th>
-          <th>Heure</th>
-          <th>Technicien</th>
-          <th>Groupe Tech</th>
-          <th>Actif Depuis</th>
-          <th>Zone Manager</th>
-          <th>Statut</th>
-          <th>Secteur</th>
-          <th>Statut PTO</th>
-          <th>Synchro</th>
-          <th>Statut d'Appel</th>
-          <th>Agent</th>
-          <th>Résultats Vérification</th>
-          <th>Commentaire</th>
-          <th>Société</th>
-          <th>Numéro</th>
-          <th>Nouvelle Colonne</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr
-          v-for="photo in paginatedControlPhotos"
-          :key="photo.id"
-          @click="openPopup(photo)"
-        >
-          <td>{{ photo.jeton }}</td>
-          <td>{{ photo.date }}</td>
-          <td>{{ photo.heure }}</td>
-          <td>{{ photo.tech }}</td>
-          <td>{{ photo.groupe_tech }}</td>
-          <td>{{ photo.actif_depuis }}</td>
-          <td>{{ photo.zone_manager }}</td>
-          <td :class="{ 'ok-cell': photo.statut === 'Cloturée', 'nok-cell': photo.statut === 'Taguée' }">
-            {{ photo.statut }}
-          </td>
-          <td>{{ photo.secteur }}</td>
-          <td>{{ photo.statut_pto }}</td>
-          <td>{{ photo.synchro }}</td>
-          <td :class="getAppelClass(photo.statut_appel)">{{ photo.statut_appel }}</td>
-          <td>{{ photo.agent }}</td>
-          <td :class="getVerificationClass(photo.resultats_verification)">{{ photo.resultats_verification }}</td>
-          <td>{{ photo.commentaire }}</td>
-          <td>{{ photo.societe }}</td>
-          <td>{{ photo.numero }}</td>
-          <td>{{ photo.nouvelle_colonne }}</td>
-        </tr>
-      </tbody>
-    </table>
+    <thead>
+      <tr>
+        <th>Jeton</th>
+        <th>Date</th>
+        <th>Heure</th>
+        <th>Technicien</th>
+        <th>Groupe Tech</th>
+        <th>Actif Depuis</th>
+        <th>Zone Manager</th>
+        <th>Statut</th>
+        <th>Secteur</th>
+        <th>Statut PTO</th>
+        <th>Synchro</th>
+        <th>Statut d'Appel</th>
+        <th>Agent</th>
+        <th>Agent 2</th> <!-- AJOUT -->
+        <th>Résultats Vérification</th>
+        <th>Résultats Vérification 2</th> <!-- AJOUT -->
+        <th>Commentaire</th>
+        <th>Société</th>
+        <th>Numéro</th>
+        <th>Nouvelle Colonne</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr
+        v-for="photo in paginatedControlPhotos"
+        :key="photo.id"
+        @click="openPopup(photo)"
+      >
+        <td>{{ photo.jeton }}</td>
+        <td>{{ photo.date }}</td>
+        <td>{{ photo.heure }}</td>
+        <td>{{ photo.tech }}</td>
+        <td>{{ photo.groupe_tech }}</td>
+        <td>{{ photo.actif_depuis }}</td>
+        <td>{{ photo.zone_manager }}</td>
+        <td :class="{ 'ok-cell': photo.statut === 'Cloturée', 'nok-cell': photo.statut === 'Taguée' }">
+          {{ photo.statut }}
+        </td>
+        <td>{{ photo.secteur }}</td>
+        <td>{{ photo.statut_pto }}</td>
+        <td>{{ photo.synchro }}</td>
+        <td :class="getAppelClass(photo.statut_appel)">{{ photo.statut_appel }}</td>
+        <td>{{ photo.agent }}</td>
+        <td>{{ photo.agent2 }}</td> <!-- AJOUT -->
+        <td :class="getVerificationClass(photo.resultats_verification)">{{ photo.resultats_verification }}</td>
+        <td :class="getVerificationClass(photo.resultats_verification2)">{{ photo.resultats_verification2 }}</td> <!-- AJOUT -->
+        <td>{{ photo.commentaire }}</td>
+        <td>{{ photo.societe }}</td>
+        <td>{{ photo.numero }}</td>
+        <td>{{ photo.nouvelle_colonne }}</td>
+      </tr>
+    </tbody>
+  </table>
 
-    <!-- Popup -->
-    <div v-if="showPopup" class="popup">
-      <div class="popup-content">
-        <h3>Détails du Contrôle Photo</h3>
-        <p><strong>Jeton :</strong> {{ selectedPhoto.jeton }}</p>
-        <p><strong>Technicien :</strong> {{ selectedPhoto.tech }}</p>
 
-        <div>
-          <label for="resultats">Résultats Vérification</label>
-          <select id="resultats" v-model="selectedPhoto.resultats_verification" required>
-            <option value="">-- Sélectionner --</option>
-            <option value="Validé">Validé</option>
-            <option value="Débrief modifié">Débrief modifié</option>
-            <option value="Non validé">Non validé</option>
-          </select>
-        </div>
+   <!-- Popup -->
+  <div v-if="showPopup" class="popup">
+    <div class="popup-content">
+      <h3>Détails du Contrôle Photo</h3>
 
-        <div>
-          <label for="commentaire">Commentaire (optionnel)</label>
-          <textarea id="commentaire" v-model="selectedPhoto.commentaire"></textarea>
-        </div>
+      <p><strong>Jeton :</strong> {{ selectedPhoto.jeton }}</p>
+      <p><strong>Technicien :</strong> {{ selectedPhoto.tech }}</p>
+      <p><strong>Agent :</strong> {{ selectedPhoto.agent2 }}</p>
 
-        <button @click="saveChanges">Enregistrer</button>
-        <button @click="closePopup">Fermer</button>
+      <div>
+        <label for="resultats">Résultats Vérification</label>
+        <select id="resultats" v-model="selectedPhoto.resultats_verification2" required>
+          <option value="">-- Sélectionner --</option>
+          <option value="Validé">Validé</option>
+          <option value="Débrief modifié">Débrief modifié</option>
+          <option value="Non validé">Non validé</option>
+        </select>
+      </div>
 
-        <div v-if="reason" class="reason-message">
-          <p>{{ reason }}</p>
-        </div>
+      <div>
+        <label for="commentaire">Commentaire (optionnel)</label>
+        <textarea id="commentaire" v-model="selectedPhoto.commentaire"></textarea>
+      </div>
+
+      <button @click="saveChanges">Enregistrer</button>
+      <button @click="closePopup">Fermer</button>
+
+      <div v-if="reason" class="reason-message">
+        <p>{{ reason }}</p>
       </div>
     </div>
+</div>
+
   </div>
 </template>
 
@@ -151,13 +158,23 @@ export default {
       selectedStatut: "",
       selectedJeton: "",
       selectedDate: "",
-      selectedCreneau: ""
+      selectedCreneau: "",
+      selectedStatutPTO: "" // 🆕 filtre PTO exact
     };
   },
   computed: {
     filteredControlPhotos() {
+      // Définir les valeurs exactes pour statut_pto
+      const validPtoStatuses = [
+        "PTO mal positionné à déplacer et nouveau CAB à poser",
+        "PTO et CAB absent",
+        "PTO à déplacer par confort et nouveau CAB à poser",
+        "PTO mal positionné à déplacer et nouveau CAB à poser"
+      ];
+
       return this.controlphotos.filter(photo => {
         if (!photo.agent || !photo.statut_appel) return false;
+
         const agentMatch = !this.selectedAgent || photo.agent.toLowerCase().includes(this.selectedAgent.toLowerCase());
         const statutMatch = !this.selectedStatut || photo.statut === this.selectedStatut;
         const jetonMatch = !this.selectedJeton || (photo.jeton && photo.jeton.toLowerCase().includes(this.selectedJeton.toLowerCase()));
@@ -173,7 +190,10 @@ export default {
           creneauMatch = false;
         }
 
-        return agentMatch && statutMatch && jetonMatch && dateMatch && creneauMatch;
+        // Vérifier que statut_pto correspond à l'une des valeurs exactes
+        const ptoMatch = validPtoStatuses.includes(photo.statut_pto);
+
+        return agentMatch && statutMatch && jetonMatch && dateMatch && creneauMatch && ptoMatch;
       });
     },
     paginatedControlPhotos() {
@@ -202,6 +222,7 @@ export default {
       this.selectedJeton = "";
       this.selectedDate = "";
       this.selectedCreneau = "";
+      this.selectedStatutPTO = ""; // 🧼 reset PTO
       this.currentPage = 1;
     },
     nextPage() {
@@ -212,8 +233,15 @@ export default {
     },
     openPopup(photo) {
       this.selectedPhoto = { ...photo };
-      this.showPopup = true;
+
+      // Définir agent2 automatiquement depuis localStorage
+      const storedAgent = localStorage.getItem("activeAccountName");
+      if (storedAgent) {
+        this.selectedPhoto.agent2 = storedAgent;
+      }
+
       this.reason = "";
+      this.showPopup = true;
     },
     closePopup() {
       this.showPopup = false;
@@ -232,9 +260,17 @@ export default {
       return '';
     },
     async saveChanges() {
-      const updatedData = { ...this.selectedPhoto };
+      const updatedData = {
+        ...this.selectedPhoto,
+        resultats_verification2: this.selectedPhoto.resultats_verification2,
+        agent2: this.selectedPhoto.agent2
+      };
+
       try {
-        await axios.put(`${import.meta.env.VITE_API_URL}/api/controlphoto/${this.selectedPhoto.id}/`, updatedData);
+        await axios.put(
+          `${import.meta.env.VITE_API_URL}/api/controlphoto/${this.selectedPhoto.id}/`,
+          updatedData
+        );
         this.reason = "Mise à jour réussie.";
         await this.fetchControlPhotos();
         this.closePopup();
@@ -246,7 +282,6 @@ export default {
   }
 };
 </script>
-
 
 <style scoped>
 /* Styles généraux */
@@ -477,5 +512,71 @@ tbody tr:hover {
   border: 1px solid #ff5c5c;
   border-radius: 4px;
   color: #a70000;
+}
+
+/* Responsive styles */
+@media (max-width: 1024px) {
+  .main-content {
+    margin-left: 0;
+    width: 100%;
+    padding: 15px;
+  }
+
+  .filters {
+    width: 95%; /* Réduit la largeur des filtres pour les tablettes */
+  }
+
+  table {
+    width: 100%; /* Ajuste la largeur du tableau */
+  }
+
+  .pagination {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0;
+    width: 100%;
+    padding: 15px;
+  }
+
+  .filters {
+    width: 100%;
+  }
+
+  table {
+    font-size: 12px; /* Réduit la taille de la police du tableau */
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  th, td {
+    padding: 8px;
+  }
+
+  .pagination {
+    font-size: 12px;
+    gap: 5px;
+  }
+
+  .popup-content {
+    width: 80%;
+  }
+}
+
+@media (max-width: 480px) {
+  .filters {
+    width: 100%;
+  }
+
+  table {
+    font-size: 11px; /* Réduit davantage la taille de la police du tableau */
+  }
+
+  .popup-content {
+    width: 90%;
+  }
 }
 </style>

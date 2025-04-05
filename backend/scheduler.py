@@ -1,7 +1,7 @@
 import os
 import django
-import schedule
 import time
+import schedule
 import subprocess
 from django.core.management import call_command
 
@@ -9,33 +9,39 @@ from django.core.management import call_command
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
 django.setup()
 
-def run_sync_global():
-    """Exécute la commande globale de synchronisation."""
-    print("Lancement de la commande 'sync_global'...")
-    call_command('sync_global')
-    print("Commande 'sync_global' exécutée avec succès.")
+def run_all_sync_commands():
+    print("\n===== DÉMARRAGE DE LA SYNCHRONISATION =====\n")
+    try:
+        call_command('import_grdv')
+        call_command('import_ard2')
+        call_command('sync_relancejj')
+        call_command('sync_gantt')
+        call_command('sync_controlphoto')
+        call_command('sync_racc')
+        call_command('sync_sav')
+    except Exception as e:
+        print(f"⚠️ Erreur lors de la synchronisation : {e}")
+    print("\n===== SYNCHRONISATION TERMINÉE =====\n")
 
 def run_grdv_bot():
-    """Lance le script grdv.py avec Python."""
-    print("Lancement du bot GRDV (Selenium)...")
+    print("\n🤖 Lancement du bot GRDV (Selenium)...")
     try:
-        subprocess.run(
-            ["python", "backend/Bot/grdv.py"],
-            check=True
-        )
-        print("Bot GRDV exécuté avec succès.")
+        subprocess.run(["python", "backend/Bot/grdv.py"], check=True)
+        print("✅ Bot GRDV exécuté avec succès.")
     except subprocess.CalledProcessError as e:
-        print(f"Erreur lors de l'exécution de grdv.py : {e}")
+        print(f"❌ Erreur GRDV bot : {e}")
 
-# Planifications
-schedule.every(5).minutes.do(run_sync_global)            # Toutes les 5 minutes
-schedule.every().day.at("06:00").do(run_grdv_bot)        # Tous les jours à 06h00
+# Planification du bot GRDV à 06:00 chaque jour
+schedule.every().day.at("06:00").do(run_grdv_bot)
 
-print("Scheduler démarré :")
-print(" - 'sync_global' toutes les 5 minutes")
-print(" - 'grdv.py' tous les jours à 06h00")
+print("🕒 Scheduler initialisé.")
+print(" - 📅 Bot GRDV programmé tous les jours à 06:00.")
+print(" - 🔁 Synchronisation complète toutes les 10 minutes.")
 
-# Boucle principale
-while True:
-    schedule.run_pending()
-    time.sleep(60)
+# Boucle principale : exécute run_all_sync_commands toutes les 10 minutes, + scheduler
+if __name__ == "__main__":
+    while True:
+        run_all_sync_commands()        # Lancement immédiat des commandes Django
+        for _ in range(10):            # Attente de 10 minutes, vérifie toutes les minutes le planificateur
+            schedule.run_pending()     # Lance le bot GRDV si l’heure correspond
+            time.sleep(60)

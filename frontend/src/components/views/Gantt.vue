@@ -81,8 +81,8 @@
             <td :class="getCellClass(entry.heure_16)">{{ entry.heure_16 }}</td>
             <td :class="getCellClass(entry.heure_17)">{{ entry.heure_17 }}</td>
             <td :class="getCellClass(entry.heure_18)">{{ entry.heure_18 }}</td>
-            <td>{{ formatPercentage(entry.taux_transfo) }}</td>
-            <td>{{ formatPercentage(entry.taux_remplissage) }}</td>
+            <td>{{ entry.taux_transfo }}</td>
+            <td>{{ entry.taux_remplissage }}</td>
           </tr>
         </tbody>
       </table>
@@ -192,11 +192,6 @@ export default {
       this.selectedTechnicien = "";
       this.selectedDate = new Date().toISOString().split("T")[0];
       this.currentPage = 1;
-    },
-    formatPercentage(value) {
-      const number = parseFloat(value);
-      if (isNaN(number)) return value;
-      return Math.round(number) + "%";
     },
   },
 };

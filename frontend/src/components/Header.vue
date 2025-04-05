@@ -107,18 +107,18 @@ export default {
       formData.append("file", file);
 
       try {
-        const accessToken = localStorage.getItem("access");
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/import_ard/`, {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/upload_ard_file/`, {
           method: "POST",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
           body: formData,
         });
 
-        if (!response.ok) throw new Error("Erreur d'import ARD");
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error("Erreur réponse serveur :", errorText);
+          throw new Error("Erreur lors de l'envoi du fichier.");
+        }
 
-        alert("Fichier ARD importé avec succès !");
+        alert("Fichier ARD reçu et sauvegardé dans le dossier !");
       } catch (error) {
         console.error("Erreur import ARD :", error);
         alert("Erreur lors de l'import ARD.");

@@ -151,22 +151,12 @@
     <div v-if="showPopup" class="popup">
       <div class="popup-content">
         <h3>Détails du Contrôle Photo</h3>
+
         <p><strong>Jeton :</strong> {{ selectedPhoto.jeton }}</p>
         <p><strong>Technicien :</strong> {{ selectedPhoto.tech }}</p>
         <p><strong>Numéro du Technicien :</strong> {{ selectedPhoto.numero }}</p>
-
-        <div>
-          <label for="statut">Statut</label>
-          <select id="statut" v-model="selectedPhoto.statut">
-            <option value="Cloturée">Clôturée</option>
-            <option value="Taguée">Taguée</option>
-          </select>
-        </div>
-
-        <div>
-          <label for="agent">Agent</label>
-          <input type="text" id="agent" v-model="selectedPhoto.agent" placeholder="Agent" />
-        </div>
+        <p><strong>Statut :</strong> {{ selectedPhoto.statut }}</p>
+        <p><strong>Agent :</strong> {{ selectedPhoto.agent }}</p>
 
         <div>
           <label for="statut-pto">Statut PTO</label>
@@ -193,6 +183,21 @@
           </select>
         </div>
 
+        <div>
+          <label for="resultats">Résultats Vérification</label>
+          <select id="resultats" v-model="selectedPhoto.resultats_verification" required>
+            <option value="">-- Sélectionner --</option>
+            <option value="Validé">Validé</option>
+            <option value="Débrief modifié">Débrief modifié</option>
+            <option value="Non validé">Non validé</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="commentaire">Commentaire (optionnel)</label>
+          <textarea id="commentaire" v-model="selectedPhoto.commentaire" rows="3"></textarea>
+        </div>
+
         <button @click="saveChanges">Enregistrer</button>
         <button @click="closePopup">Fermer</button>
 
@@ -200,19 +205,19 @@
           <p>{{ reason }}</p>
         </div>
       </div>
-    </div>
+</div>
+
   </div>
 </template>
 
 <script>
-import axios from "axios";
+import axios from 'axios';
 
 export default {
   name: "ControlPhoto",
   data() {
     return {
       controlphotos: [],
-      // Filtres
       selectedStatut: "",
       selectedDate: "",
       selectedTechnicien: "",
@@ -222,10 +227,8 @@ export default {
       selectedStatutAppel: "",
       selectedAgent: "",
       showExtraFilters: false,
-      // Pagination
       currentPage: 1,
       perPage: 10,
-      // Popup
       showPopup: false,
       selectedPhoto: null,
       statutPto: "",
@@ -236,23 +239,14 @@ export default {
   computed: {
     filteredControlPhotos() {
       return this.controlphotos.filter(photo => {
-        const statutMatch = !this.selectedStatut || photo.statut === this.selectedStatut;
-        const dateMatch = !this.selectedDate || photo.date === this.selectedDate;
-        const technicienMatch = !this.selectedTechnicien || 
-          (photo.tech && photo.tech.toLowerCase().includes(this.selectedTechnicien.toLowerCase()));
-        const secteurMatch = !this.selectedSecteur || 
-          (photo.secteur && photo.secteur.toLowerCase().includes(this.selectedSecteur.toLowerCase()));
-        const jetonMatch = !this.selectedJeton || 
-          (photo.jeton && photo.jeton.toLowerCase().includes(this.selectedJeton.toLowerCase()));
-        const statutPtoMatch = !this.selectedStatutPto || 
-          (photo.statut_pto && photo.statut_pto === this.selectedStatutPto);
-        const statutAppelMatch = !this.selectedStatutAppel || 
-          (photo.statut_appel && photo.statut_appel === this.selectedStatutAppel);
-        const agentMatch = !this.selectedAgent || 
-          (photo.agent && photo.agent.toLowerCase().includes(this.selectedAgent.toLowerCase()));
-        
-        return statutMatch && dateMatch && technicienMatch && secteurMatch && 
-               jetonMatch && statutPtoMatch && statutAppelMatch && agentMatch;
+        return (!this.selectedStatut || photo.statut === this.selectedStatut)
+          && (!this.selectedDate || photo.date === this.selectedDate)
+          && (!this.selectedTechnicien || (photo.tech && photo.tech.toLowerCase().includes(this.selectedTechnicien.toLowerCase())))
+          && (!this.selectedSecteur || (photo.secteur && photo.secteur.toLowerCase().includes(this.selectedSecteur.toLowerCase())))
+          && (!this.selectedJeton || (photo.jeton && photo.jeton.toLowerCase().includes(this.selectedJeton.toLowerCase())))
+          && (!this.selectedStatutPto || photo.statut_pto === this.selectedStatutPto)
+          && (!this.selectedStatutAppel || photo.statut_appel === this.selectedStatutAppel)
+          && (!this.selectedAgent || (photo.agent && photo.agent.toLowerCase().includes(this.selectedAgent.toLowerCase())));
       });
     },
     totalPages() {
@@ -272,7 +266,7 @@ export default {
         const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/controlphoto/`);
         this.controlphotos = response.data;
       } catch (error) {
-        console.error("Erreur lors de la récupération des contrôles photo :", error);
+        console.error("Erreur de chargement :", error);
       }
     },
     toggleExtraFilters() {
@@ -291,14 +285,22 @@ export default {
     },
     openPopup(photo) {
       this.selectedPhoto = { ...photo };
+
+      // Définir statut automatiquement si besoin
+      if (!this.selectedPhoto.statut) {
+        this.selectedPhoto.statut = "Cloturée";
+      }
+
+      // Affectation automatique de l'agent depuis localStorage
       const storedAgent = localStorage.getItem("activeAccountName");
       if (storedAgent) {
         this.selectedPhoto.agent = storedAgent;
       }
+
       this.statutPto = photo.statut_pto || "";
       this.statutAppel = photo.statut_appel || "";
-      this.showPopup = true;
       this.reason = "";
+      this.showPopup = true;
     },
     closePopup() {
       this.showPopup = false;
@@ -314,17 +316,16 @@ export default {
         groupe_tech: this.selectedPhoto.groupe_tech,
         actif_depuis: this.selectedPhoto.actif_depuis,
         zone_manager: this.selectedPhoto.zone_manager,
-        statut: this.selectedPhoto.statut,
+        statut: this.selectedPhoto.statut, // fixé automatiquement
         secteur: this.selectedPhoto.secteur,
         statut_pto: this.statutPto,
         synchro: this.selectedPhoto.synchro,
-        agent: this.selectedPhoto.agent,
+        agent: this.selectedPhoto.agent, // mis depuis localStorage
         resultats_verification: this.selectedPhoto.resultats_verification,
         commentaire: this.selectedPhoto.commentaire,
         societe: this.selectedPhoto.societe,
         numero: this.selectedPhoto.numero,
         statut_appel: this.statutAppel,
-        nouvelle_colonne: this.selectedPhoto.nouvelle_colonne,
       };
 
       try {
@@ -336,19 +337,15 @@ export default {
         await this.fetchControlPhotos();
         this.closePopup();
       } catch (error) {
-        console.error("Erreur lors de la sauvegarde :", error);
-        this.reason = JSON.stringify(error.response?.data) || "Erreur inconnue lors de la sauvegarde.";
+        console.error("Erreur :", error);
+        this.reason = "Erreur lors de la mise à jour.";
       }
     },
     nextPage() {
-      if (this.currentPage < this.totalPages) {
-        this.currentPage++;
-      }
+      if (this.currentPage < this.totalPages) this.currentPage++;
     },
     prevPage() {
-      if (this.currentPage > 1) {
-        this.currentPage--;
-      }
+      if (this.currentPage > 1) this.currentPage--;
     }
   }
 };

@@ -583,7 +583,6 @@ class ControlPhoto(models.Model):
     STATUT_PTO_CHOICES = [
         ('//', '//'),
         ('PTO et CAB absents', 'PTO et CAB absents'),
-    
         ("Remise en conformité", "Remise en conformité"),
         ("NE", "NE"),
         ("PTO et CAB presents", "PTO et CAB presents"),
@@ -595,6 +594,7 @@ class ControlPhoto(models.Model):
         ("première pose nécessaire", "première pose nécessaire"),
         ("PTO a deplacer par confort et nouveau CAB a poser", "PTO a deplacer par confort et nouveau CAB a poser"),
     ]
+
     SYNCHRO_CHOICES = [
         ('OK', 'OK'),
         ('NOK', 'NOK'),
@@ -606,14 +606,12 @@ class ControlPhoto(models.Model):
         ('Non validé', 'Non validé'),
     ]
 
-    # Le champ jeton est maintenant un champ normal de type CharField sans relation
     jeton = models.CharField(max_length=255)
-    
-    date = models.DateField()  # Date d'intervention
-    heure = models.TimeField()  # Heure d'intervention
-    tech = models.CharField(max_length=255)  # Nom du technicien
+    date = models.DateField()
+    heure = models.TimeField()
+    tech = models.CharField(max_length=255)
     groupe_tech = models.CharField(max_length=2, choices=GROUPE_TECH_CHOICES)
-    actif_depuis = models.DateField()  # Date du début d'activité de l'agent
+    actif_depuis = models.DateField()
     zone_manager = models.CharField(max_length=10, choices=ZONE_MANAGER_CHOICES, null=True, blank=True)
     statut = models.CharField(max_length=20, choices=STATUT_CHOICES)
     secteur = models.CharField(max_length=255)
@@ -624,16 +622,18 @@ class ControlPhoto(models.Model):
     resultats_verification = models.CharField(max_length=50, choices=RESULTATS_VERIFICATION_CHOICES, null=True, blank=True)
     commentaire = models.TextField(null=True, blank=True)
 
-    # Nouvelles colonnes ajoutées
     societe = models.CharField(max_length=255, null=True, blank=True)
     numero = models.CharField(max_length=50, null=True, blank=True)
     statut_appel = models.CharField(max_length=50, null=True, blank=True)
+
+    # Champs ajoutés
+    resultats_verification2 = models.CharField(max_length=50, choices=RESULTATS_VERIFICATION_CHOICES, null=True, blank=True)
+    agent2 = models.CharField(max_length=255, null=True, blank=True)
 
     def __str__(self):
         return f"{self.jeton} - {self.date} - {self.tech}"
 
     def save(self, *args, **kwargs):
-        # Vous pouvez ajouter ici des logiques supplémentaires si nécessaire
         super().save(*args, **kwargs)
 
 

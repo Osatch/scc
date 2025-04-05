@@ -314,6 +314,7 @@ export default {
   color: #333;
   border-radius: 8px;
   box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease-in-out;
 }
 
 /* Bouton toggle pour filtres supplémentaires */
@@ -322,7 +323,7 @@ export default {
 }
 .toggle-extra-filters button {
   padding: 5px 10px;
-  font-size: 16px;
+  font-size: 1rem;
   background-color: #007bff;
   color: #fff;
   border: none;
@@ -335,7 +336,7 @@ export default {
 
 /* Filtres */
 .filters {
-  width: 90%;
+  width: 100%;
   margin-bottom: 20px;
   padding: 10px;
   background-color: #fff;
@@ -355,7 +356,7 @@ export default {
 .filter-group label {
   margin-bottom: 5px;
   font-weight: bold;
-  font-size: 14px;
+  font-size: 1rem;
 }
 .filter-group input,
 .filter-group select {
@@ -400,20 +401,20 @@ export default {
   cursor: not-allowed;
 }
 .pagination span {
-  font-size: 14px;
+  font-size: 1rem;
   color: #333;
 }
 
 /* Tableau */
 table {
-  width: 95%;
+  width: 100%;
   border-collapse: collapse;
   margin: 20px auto 0 20px;
   background-color: #ffffff;
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  font-size: 13px;
+  font-size: 1rem;
 }
 th, td {
   border: 1px solid #ddd;
@@ -497,14 +498,71 @@ tbody tr:hover {
 }
 
 /* Responsive adjustments */
+@media (max-width: 1024px) {
+  .main-content {
+    margin-left: 0;
+    width: 100%;
+  }
+}
+
 @media (max-width: 768px) {
+  .main-content {
+    margin-top: 60px;
+  }
+
   table {
     font-size: 12px;
-    width: 90%;
-    margin-left: 10px;
+    width: 100%;
+    margin-left: 0;
   }
+
   th, td {
     padding: 8px;
+  }
+
+  .filter-grid,
+  .extra-filters {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  }
+
+  .pagination button {
+    padding: 6px 12px;
+  }
+
+  .pagination span {
+    font-size: 0.875rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .main-content {
+    padding: 15px;
+  }
+
+  .toggle-extra-filters button {
+    font-size: 14px;
+  }
+
+  .filter-group label {
+    font-size: 12px;
+  }
+
+  table {
+    font-size: 11px;
+  }
+
+  .filter-group input,
+  .filter-group select {
+    padding: 6px;
+  }
+
+  .pagination button {
+    padding: 5px 10px;
+  }
+
+  .popup-content {
+    max-width: 90%;
+    width: 100%;
   }
 }
 </style>

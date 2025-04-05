@@ -17,7 +17,7 @@ import ARD2 from "./components/views/Ard2Table.vue";
 import AgentHeader from "./components/Agent-header.vue";
 import AgentControlPhoto from "./components/views-agent/Agent-ControlPhoto.vue";
 import AgentControlFroid from "./components/views-agent/Agent-ControlFroid.vue";
-import ImportARD2 from "./components/ImportARD2.vue";
+
 
 import axios from "axios";
 
@@ -54,7 +54,7 @@ const routes = [
       { path: "interventions/racc", component: InterventionsRACC },
       { path: "parametres", component: Parametres },
       { path: "ARD2", component: ARD2 },
-      { path: "import-ard2", name: "ImportARD2", component: ImportARD2 },
+      
     ],
     meta: { requiresAuth: true },
   },

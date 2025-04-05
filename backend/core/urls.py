@@ -21,6 +21,7 @@ from .views import (
     import_ard2, import_grdv, sync_relancejj, import_parametres, import_gantt, protected_view,  # Vues pour lancer les imports et la protection
     commentaire_list,
     commentaire_detail,  # Vues de commentaire 
+    upload_ard_file,
 )
 
 urlpatterns = [
@@ -90,4 +91,7 @@ urlpatterns = [
     # Commentaire
     path('commentaires/', commentaire_list, name='commentaire_list'),
     path('commentaires/<int:pk>/', commentaire_detail, name='commentaire_detail'),
+
+    #import ard2 file le csv
+    path('upload_ard_file/', upload_ard_file),
 ]

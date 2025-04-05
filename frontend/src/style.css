@@ -32,12 +32,11 @@ body, html {
   margin: 0;
   padding: 0;
   background-color: white; /* Fond blanc pour le contenu principal */
+  font-size: 1rem; /* Taille de police de base */
 }
 
-
-
 h1 {
-  font-size: 3.2em;
+  font-size: clamp(2rem, 5vw, 3.2rem); /* La taille de la police change en fonction de la largeur de l'écran */
   line-height: 1.1;
 }
 
@@ -45,13 +44,13 @@ button:not(.header-button) {
   border-radius: 8px;
   border: 1px solid transparent;
   padding: 0.3em 0.6em;
-  font-size: 1em;
+  font-size: 1rem;
   font-weight: 500;
   font-family: inherit;
   background-color: #1a1a1a;
   cursor: pointer;
   transition: border-color 0.25s;
-  margin-right: 10PX;
+  margin-right: 10px;
 }
 button:hover {
   border-color: #646cff;
@@ -83,7 +82,9 @@ button:focus-visible {
   box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
   overflow-y: auto;
   z-index: 1000;
+  transition: all 0.3s ease; /* Pour l'animation de la sidebar */
 }
+
 .sidebar .logo img {
   width: 100%;
   height: 40px;
@@ -159,10 +160,9 @@ header {
 
 /* Styles pour le nom du compte actif dans le header */
 header .account-name {
-  font-size: 1.2rem;
+  font-size: clamp(1rem, 3vw, 1.2rem); /* La taille du texte du nom du compte devient fluide */
   font-weight: 600;
   margin-left: 1rem;
-  
 }
 
 /* Styles pour les boutons dans le header */
@@ -185,6 +185,7 @@ header .header-button:hover {
   padding: 1rem;
   overflow-y: auto; /* Permet le défilement vertical si nécessaire */
   overflow-x: hidden; /* Désactive le défilement horizontal global */
+  font-size: 1rem; /* Taille de police du contenu */
 }
 
 /* Styles pour le mode clair */
@@ -200,10 +201,86 @@ header .header-button:hover {
     background-color: #f9f9f9;
   }
 }
+
 /* Conteneur pour la barre de défilement horizontale */
 .table-container {
   width: 100%; /* Prend toute la largeur disponible */
   overflow-x: auto; /* Active la barre de défilement horizontale */
   border-radius: 8px; /* Coins arrondis pour correspondre au design */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Ombre pour le conteneur */
+}
+
+/* Responsivité */
+@media (max-width: 1024px) {
+  .sidebar {
+    width: 200px; /* Réduit la largeur de la sidebar sur les tablettes et plus petits écrans */
+  }
+
+  header {
+    left: 200px; /* Ajuste la largeur du header */
+    width: calc(100% - 200px);
+  }
+
+  .main-content {
+    margin-left: 200px; /* Ajuste le contenu pour la sidebar */
+    width: calc(100% - 200px); /* Largeur en tenant compte de la sidebar */
+  }
+
+  h1 {
+    font-size: clamp(1.8rem, 4vw, 2.8rem); /* La taille du titre s'ajuste à l'écran */
+  }
+
+  .account-name {
+    font-size: clamp(0.9rem, 3vw, 1.1rem); /* Le texte du nom de compte s'adapte également */
+  }
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    width: 100%;
+    position: relative;
+    height: auto;
+    box-shadow: none; /* Enlève l'ombre pour un design plus léger sur mobile */
+  }
+
+  header {
+    left: 0;
+    width: 100%;
+    padding: 0.5rem;
+  }
+
+  .main-content {
+    margin-top: 60px; /* Ajuste la marge supérieure */
+    margin-left: 0;
+    width: 100%; /* Adapte la largeur */
+  }
+
+  h1 {
+    font-size: clamp(1.6rem, 4vw, 2.2rem); /* Réduit la taille du titre pour les petits écrans */
+  }
+}
+
+@media (max-width: 480px) {
+  h1 {
+    font-size: clamp(1.4rem, 5vw, 1.8rem); /* Taille du titre encore plus petite sur mobile */
+  }
+
+  .sidebar {
+    width: 100%; /* Sidebar devient pleine largeur */
+    position: absolute;
+    top: 0;
+    z-index: 100;
+  }
+
+  header {
+    left: 0;
+    width: 100%;
+    padding: 0.5rem;
+  }
+
+  .main-content {
+    margin-left: 0;
+    width: 100%;
+    padding: 0.5rem;
+  }
 }

@@ -2,6 +2,7 @@ import csv
 import os
 import glob
 from datetime import datetime
+from django.utils.timezone import make_aware
 from django.core.management.base import BaseCommand
 from django.db.models.signals import post_save
 from core.models import GRDV, ARD2
@@ -40,9 +41,10 @@ class Command(BaseCommand):
                         continue
 
                     try:
-                        date_rdv = datetime.strptime(row['date_rdv'], date_format) if row.get('date_rdv') else None
-                        debut = datetime.strptime(row['debut'], date_format) if row.get('debut') else None
-                        fin = datetime.strptime(row['fin'], date_format) if row.get('fin') else None
+                        # Conversion avec timezone
+                        date_rdv = make_aware(datetime.strptime(row['date_rdv'], date_format)) if row.get('date_rdv') else None
+                        debut = make_aware(datetime.strptime(row['debut'], date_format)) if row.get('debut') else None
+                        fin = make_aware(datetime.strptime(row['fin'], date_format)) if row.get('fin') else None
 
                         secteur = row.get('secteur', '')
                         infra = row.get('infra', '')
@@ -93,9 +95,9 @@ class Command(BaseCommand):
                         self.stdout.write(self.style.ERROR(str(row_error)))
                         continue
 
-            self.stdout.write(self.style.SUCCESS("Importation du CSV terminée avec succès."))
+            self.stdout.write(self.style.SUCCESS("✅ Importation du CSV GRDV terminée avec succès."))
         except Exception as e:
-            self.stdout.write(self.style.ERROR("Une erreur est survenue lors de l'importation du CSV."))
+            self.stdout.write(self.style.ERROR("❌ Une erreur est survenue lors de l'importation du CSV."))
             self.stdout.write(self.style.ERROR(str(e)))
         finally:
             # Reconnexion des signaux après l'import
