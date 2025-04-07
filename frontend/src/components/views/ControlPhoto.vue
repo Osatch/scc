@@ -353,7 +353,7 @@ export default {
 
 <style scoped>
 .main-content {
-  margin-left: 250px;
+  margin-left: 200px;
   margin-top: 80px;
   padding: 20px;
   width: calc(100% - 250px);
@@ -454,6 +454,7 @@ export default {
 
 /* Tableau */
 table {
+  font-size: 9px;
   width: 95%;
   border-collapse: collapse;
   margin: 20px auto 0 20px;
@@ -464,17 +465,20 @@ table {
   font-size: 13px;
 }
 th, td {
+  font-size: 9px;
   border: 1px solid #ddd;
   padding: 10px;
   text-align: left;
 }
 th {
+  font-size: 9px;
   background-color: #000;
   color: #fff;
   text-transform: uppercase;
   font-weight: bold;
 }
 td {
+  font-size: 9px;
   color: #333;
 }
 tbody tr:nth-child(odd) {

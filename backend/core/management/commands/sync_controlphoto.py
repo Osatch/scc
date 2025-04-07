@@ -1,58 +1,64 @@
-import unicodedata
 from django.core.management.base import BaseCommand
-from core.models import RelanceJJ, ControlPhoto, ARD2  # Assurez-vous que ARD2 est importé
+from django.utils import timezone
+from core.models import RelanceJJ, ControlPhoto, ARD2
+
 
 class Command(BaseCommand):
     help = (
-        "Synchronise les données de RelanceJJ dans ControlPhoto. "
-        "Mapping : date = date_rdv, heure = heure_prevue, tech = techniciens, "
-        "numero = numero, groupe_tech = 'G1' par défaut, actif_depuis = date_rdv, "
-        "zone_manager = '#N/A', statut = statut, secteur = departement, "
-        "societe = societe, synchro = etat_intervention d'ARD2 (si instance trouvée), "
-        "jeton = jeton_commande de RelanceJJ."
+        "Synchronise uniquement les données de RelanceJJ dont l'activité est RACC et la date est aujourd'hui.\n"
+        "Si une entrée existe déjà pour le même jeton et la même date, elle est mise à jour.\n"
+        "Sinon, une nouvelle est créée."
     )
 
     def handle(self, *args, **kwargs):
-        relances = RelanceJJ.objects.all()
-        self.stdout.write(self.style.NOTICE(f"Nombre total de RelanceJJ : {relances.count()}"))
+        today = timezone.localdate()
+        relances = RelanceJJ.objects.filter(activite="RACC", date_rdv=today)
+
+        self.stdout.write(self.style.NOTICE(
+            f"Nombre de RelanceJJ pour aujourd'hui ({today}) avec activité RACC : {relances.count()}"
+        ))
+
+        # Pré-charger les ARD2 pour accès rapide
+        ard2_map = {a.jeton_commande: a for a in ARD2.objects.all()}
+
+        created, updated = 0, 0
 
         for relance in relances:
-            # Préparation des valeurs à mettre à jour/créer dans ControlPhoto
+            jeton = relance.jeton_commande
+            date_rdv = relance.date_rdv
+
+            if not jeton or not date_rdv:
+                self.stdout.write(self.style.WARNING(f"RelanceJJ {relance.id} ignorée (jeton ou date manquant)."))
+                continue
+
+            ard = ard2_map.get(jeton)
+
             defaults = {
-                "jeton": relance.jeton_commande,  # Ajout direct du champ jeton
-                "date": relance.date_rdv,
                 "heure": relance.heure_prevue,
                 "tech": relance.techniciens,
                 "numero": relance.numero,
-                "groupe_tech": "G1",              # Valeur par défaut (ajustez si nécessaire)
-                "actif_depuis": relance.date_rdv,   # Utilise date_rdv comme date d'activité par défaut
-                "zone_manager": "#N/A",           # Valeur par défaut
+                "groupe_tech": "G1",
+                "actif_depuis": date_rdv,
+                "zone_manager": "#N/A",
                 "statut": relance.statut,
                 "secteur": relance.departement,
                 "societe": relance.societe,
+                "synchro": ard.etat_intervention if ard else None,
             }
 
-            # Récupération de l'instance ARD2 liée via jeton_commande
-            ard_instance = ARD2.objects.filter(jeton_commande=relance.jeton_commande).first()
-            if ard_instance:
-                defaults["synchro"] = ard_instance.etat_intervention
-            else:
-                defaults["synchro"] = None  # ou définir une valeur par défaut
+            cp_instance = ControlPhoto.objects.filter(jeton=jeton, date=date_rdv).first()
 
-            # Recherche d'une instance ControlPhoto liée à ce RelanceJJ via jeton
-            control_photo_instance = ControlPhoto.objects.filter(jeton=relance.jeton_commande).first()
-
-            if control_photo_instance:
-                # Mise à jour de l'instance existante
-                for key, value in defaults.items():
-                    setattr(control_photo_instance, key, value)
-                control_photo_instance.save()
+            if cp_instance:
+                for field, value in defaults.items():
+                    setattr(cp_instance, field, value)
+                cp_instance.save()
+                updated += 1
                 action = "Mis à jour"
             else:
-                # Création d'une nouvelle instance avec les valeurs par défaut
-                control_photo_instance = ControlPhoto.objects.create(**defaults)
+                ControlPhoto.objects.create(jeton=jeton, date=date_rdv, **defaults)
+                created += 1
                 action = "Créé"
 
-            self.stdout.write(self.style.SUCCESS(
-                f"{action} ControlPhoto pour RelanceJJ avec jeton {relance.jeton_commande}"
-            ))
+            self.stdout.write(self.style.SUCCESS(f"{action} ControlPhoto pour jeton {jeton}, date {date_rdv}"))
+
+        self.stdout.write(self.style.NOTICE(f"Terminé : {created} créés, {updated} mis à jour."))

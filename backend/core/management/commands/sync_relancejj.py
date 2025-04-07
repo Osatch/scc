@@ -1,16 +1,20 @@
 import unicodedata
 from django.core.management.base import BaseCommand
+from django.utils import timezone
 from core.models import GRDV, ARD2, RelanceJJ, Parametres
+
 
 class Command(BaseCommand):
     help = (
-        "Synchronise les données GRDV + ARD2 dans RelanceJJ.\n"
+        "Synchronise les données GRDV + ARD2 dans RelanceJJ pour la journée actuelle.\n"
         "- Si une ligne existe avec même jeton_commande + date_rdv => mise à jour.\n"
         "- Sinon => création.\n"
         "- Met ensuite à jour le numéro technicien + société à partir de Parametres."
     )
 
     def handle(self, *args, **kwargs):
+        today = timezone.localdate()
+
         ard2_values = list(ARD2.objects.values_list('jeton_commande', flat=True))
         self.stdout.write(self.style.NOTICE(f"🔍 ARD2 présents : {len(ard2_values)}"))
         self.stdout.write(self.style.NOTICE(f"Exemples : {ard2_values[:5]}"))
@@ -18,16 +22,20 @@ class Command(BaseCommand):
         count_created = 0
         count_updated = 0
 
-        for grdv in GRDV.objects.all():
+        # 🔄 On ne traite que les GRDV dont la date_rdv est aujourd'hui
+        grdv_qs = GRDV.objects.filter(date_rdv__date=today)
+
+        self.stdout.write(self.style.NOTICE(f"🗓️ Nombre de GRDV à la date {today} : {grdv_qs.count()}"))
+
+        for grdv in grdv_qs:
             if not grdv.ref_commande:
                 self.stdout.write(self.style.WARNING(f"⚠️ GRDV {grdv.id} sans ref_commande. Ignoré."))
                 continue
 
-            # Normalisation du jeton (10 premiers caractères, sans casse)
+            # Normalisation du jeton
             ref_norm = unicodedata.normalize("NFKC", grdv.ref_commande.strip())[:10]
             self.stdout.write(f"\n🔗 GRDV {grdv.id} → ref_commande normalisé : {ref_norm}")
 
-            # Cherche ARD2 correspondant
             ard2 = ARD2.objects.filter(jeton_commande__iexact=ref_norm).first()
             if not ard2:
                 self.stdout.write(self.style.WARNING(f"❌ Aucun ARD2 trouvé pour ref '{ref_norm}'"))
@@ -41,6 +49,7 @@ class Command(BaseCommand):
                 "heure_fin": ard2.fin_intervention.time() if ard2.fin_intervention else None,
                 "departement": ard2.departement or '',
                 "techniciens": ard2.technicien or '',
+                "synchro": ard2.etat_intervention or '',  # ⬅️ Ici on ajoute le champ synchro
             }
 
             relance_qs = RelanceJJ.objects.filter(

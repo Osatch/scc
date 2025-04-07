@@ -163,15 +163,24 @@ export default {
         });
     },
     getCellClass(value) {
-      if (
-        value === "OK SAV" ||
-        value === "OK RACC" ||
-        value === "OK RACC; OK RACC" ||
-        value === "OK RACC;"
-      ) {
-        return "ok-cell";
-      } else if (value === "NOK SAV" || value === "NOK RACC") {
+      if (!value) return "";
+      
+      // Vérifier d'abord les statuts NOK
+      if (value.includes("NOK SAV") || value.includes("NOK RACC")) {
         return "nok-cell";
+      }
+      // Puis les autres statuts
+      else if (value.includes("OK SAV") || value.includes("OK RACC")) {
+        return "ok-cell";
+      }
+      else if (value.includes("EN COURS SAV") || value.includes("EN COURS RACC")) {
+        return "inprogress-cell";
+      }
+      else if (value.includes("ALERTE SAV") || value.includes("ALERTE RACC")) {
+        return "alert-cell";
+      }
+      else if (value.includes("PLANIFIÉE SAV") || value.includes("PLANIFIÉE RACC")) {
+        return "planned-cell";
       }
       return "";
     },
@@ -209,7 +218,7 @@ export default {
 
 /* Filtres */
 .filters {
-  width: 65%;
+  width: 70%;
   margin-bottom: 20px;
   padding: 10px;
   background-color: #fff;
@@ -251,7 +260,7 @@ export default {
 }
 
 .header-container {
-  width: 65%;
+  width: 70%;
   overflow-x: auto;
   border-radius: 8px 8px 0 0;
   max-width: 100vw;
@@ -268,7 +277,7 @@ export default {
 }
 
 .table-container {
-  width: 65%;
+  width: 70%;
   overflow-x: auto;
   border-radius: 0 0 8px 8px;
   max-width: 100vw;
@@ -277,6 +286,7 @@ export default {
 }
 
 table {
+  font-size: 9px;
   width: 100%;
   border-collapse: collapse;
   font-size: 13px;
@@ -286,6 +296,7 @@ table {
 
 th,
 td {
+  font-size: 9px;
   border: 1px solid #ddd;
   padding: 10px;
   text-align: left;
@@ -294,6 +305,7 @@ td {
 }
 
 th {
+  font-size: 9px;
   background-color: #000000;
   color: white;
   text-transform: uppercase;
@@ -301,6 +313,7 @@ th {
 }
 
 td {
+  font-size: 9px;
   color: #333;
 }
 
@@ -317,12 +330,31 @@ tbody tr:hover {
   transition: background-color 0.3s ease-in-out;
 }
 
+/* Classes de couleur pour les différents statuts */
 .ok-cell {
-  background-color: #c8e6c9;
+  background-color: #c8e6c9; /* Vert clair */
+  color: #2e7d32; /* Vert foncé */
 }
 
 .nok-cell {
-  background-color: #ffcc80;
+  background-color: #ffebee; /* Rouge clair */
+  color: #b71c1c; /* Rouge foncé */
+  font-weight: bold;
+}
+
+.inprogress-cell {
+  background-color: #fff9c4; /* Jaune clair */
+  color: #f9a825; /* Jaune foncé */
+}
+
+.alert-cell {
+  background-color: #ffe0b2; /* Orange clair */
+  color: #ef6c00; /* Orange foncé */
+}
+
+.planned-cell {
+  background-color: #bbdefb; /* Bleu clair */
+  color: #1565c0; /* Bleu foncé */
 }
 
 @media (max-width: 768px) {

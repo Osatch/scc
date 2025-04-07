@@ -90,7 +90,7 @@
           <th>Date Intervention</th>
           <th>Activité</th>
           <th>Techniciens</th>
-          <th>Numéro</th>
+         
           <th>Département</th>
           <th>Société</th>
           <th>PEC</th>
@@ -101,12 +101,12 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="relance in paginatedRelances" :key="relance.id">
+        <tr v-for="relance in paginatedRelances" :key="relance.id" :class="{ 'late-intervention': isLateIntervention(relance) }">
           <td @click="openPopup(relance)" class="clickable">{{ relance.jeton_commande }}</td>
           <td>{{ relance.date_rdv }}</td>
           <td>{{ relance.activite }}</td>
           <td>{{ relance.techniciens }}</td>
-          <td>{{ relance.numero }}</td>
+          
           <td>{{ relance.departement }}</td>
           <td>{{ relance.societe }}</td>
           <td>{{ relance.pec }}</td>
@@ -121,7 +121,7 @@
     <!-- Popup Modal -->
     <div v-if="showPopup" class="popup-overlay" @click="closePopup">
       <div class="popup-content" @click.stop>
-        <h3>Détails de la Relance</h3>
+        <h3>Détails du Jeton</h3>
         <p><strong>Jeton:</strong> {{ selectedRelance.jeton_commande }}</p>
         <p><strong>Date Intervention:</strong> {{ selectedRelance.date_rdv }}</p>
         <p><strong>Activité:</strong> {{ selectedRelance.activite }}</p>
@@ -158,11 +158,28 @@ import axios from "axios";
 
 export default {
   data() {
+    const today = new Date();
+    const formattedDate = today.toISOString().split('T')[0];
+    
+    // Déterminer le créneau horaire actuel
+    const currentHour = today.getHours();
+    let currentTimeSlot = '';
+    
+    if (currentHour >= 8 && currentHour < 12) {
+      currentTimeSlot = '08:00-12:00';
+    } else if (currentHour >= 12 && currentHour < 14) {
+      currentTimeSlot = '12:00-14:00';
+    } else if (currentHour >= 14 && currentHour < 18) {
+      currentTimeSlot = '14:00-18:00';
+    } else if (currentHour >= 18) {
+      currentTimeSlot = '18:00-';
+    }
+    
     return {
       relances: [],
       selectedStatut: "",
-      selectedDate: "",
-      selectedCreneau: "",
+      selectedDate: formattedDate, // Date du jour par défaut
+      selectedCreneau: currentTimeSlot, // Créneau actuel par défaut
       selectedDepartement: "",
       // Filtres supplémentaires
       selectedJeton: "",
@@ -178,7 +195,8 @@ export default {
       comments: [],
       // Pagination
       currentPage: 1,
-      perPage: 10 // Nombre d'éléments par page
+      perPage: 50, // Nombre d'éléments par page
+      currentTime: new Date() // Heure actuelle
     };
   },
   computed: {
@@ -233,6 +251,13 @@ export default {
   },
   mounted() {
     this.fetchRelances();
+    // Mettre à jour l'heure actuelle toutes les minutes
+    this.timeUpdateInterval = setInterval(() => {
+      this.currentTime = new Date();
+    }, 60000);
+  },
+  beforeUnmount() {
+    clearInterval(this.timeUpdateInterval);
   },
   methods: {
     async fetchRelances() {
@@ -248,8 +273,22 @@ export default {
     },
     clearFilters() {
       this.selectedStatut = "";
-      this.selectedDate = "";
-      this.selectedCreneau = "";
+      this.selectedDate = new Date().toISOString().split('T')[0];
+      
+      // Réinitialiser le créneau horaire en fonction de l'heure actuelle
+      const currentHour = this.currentTime.getHours();
+      if (currentHour >= 8 && currentHour < 12) {
+        this.selectedCreneau = '08:00-12:00';
+      } else if (currentHour >= 12 && currentHour < 14) {
+        this.selectedCreneau = '12:00-14:00';
+      } else if (currentHour >= 14 && currentHour < 18) {
+        this.selectedCreneau = '14:00-18:00';
+      } else if (currentHour >= 18) {
+        this.selectedCreneau = '18:00-';
+      } else {
+        this.selectedCreneau = '';
+      }
+      
       this.selectedDepartement = "";
       this.selectedJeton = "";
       this.selectedTechnicien = "";
@@ -261,6 +300,24 @@ export default {
       if (statut === "Cloturée") return "status-cloturee";
       if (statut === "Taguée") return "status-taguee";
       return "";
+    },
+    isLateIntervention(relance) {
+      if (!relance.heure_prevue || relance.heure_debut || relance.heure_fin) {
+        return false;
+      }
+      
+      const today = new Date(this.currentTime);
+      const todayDate = today.toISOString().split('T')[0];
+      
+      if (relance.date_rdv !== todayDate) {
+        return false;
+      }
+      
+      const [hours, minutes] = relance.heure_prevue.split(':').map(Number);
+      const interventionTime = new Date(today);
+      interventionTime.setHours(hours, minutes, 0, 0);
+      
+      return today > interventionTime;
     },
     openPopup(relance) {
       this.selectedRelance = relance;
@@ -305,16 +362,17 @@ export default {
 <style scoped>
 /* Votre CSS existant */
 .main-content {
-  margin-left: 250px;
+  width: 97%;
   margin-top: 80px;
   padding: 20px;
-  width: calc(100% - 250px);
+  width: calc(100% - 200px);
   min-height: calc(100vh - 80px);
   background-color: #f8f9fa;
   color: #333;
   border-radius: 8px;
   box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease-in-out;
+  
 }
 
 /* Bouton toggle pour filtres supplémentaires */
@@ -407,6 +465,7 @@ export default {
 
 /* Tableau */
 table {
+  font-size: 9px;
   width: 100%;
   border-collapse: collapse;
   margin: 20px auto 0 20px;
@@ -417,17 +476,20 @@ table {
   font-size: 1rem;
 }
 th, td {
+  font-size: 9px;
   border: 1px solid #ddd;
   padding: 10px;
   text-align: left;
 }
 th {
+  font-size: 9px;
   background-color: #000;
   color: #fff;
   text-transform: uppercase;
   font-weight: bold;
 }
 td {
+  font-size: 9px;
   color: #333;
 }
 tbody tr:nth-child(odd) {
@@ -449,6 +511,19 @@ tbody tr:hover {
 .status-taguee {
   background-color: #fff3cd;
   color: #856404;
+}
+
+/* Interventions en retard */
+.late-intervention {
+  background-color: #f8d7da !important;
+  color: #721c24;
+  animation: blink 1.5s infinite;
+}
+
+@keyframes blink {
+  0% { opacity: 1; }
+  50% { opacity: 0.7; }
+  100% { opacity: 1; }
 }
 
 /* Rendre le jeton cliquable */

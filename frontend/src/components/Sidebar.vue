@@ -52,7 +52,7 @@ export default {
       },
       { label: "Contrôle Photo (à chaud)", path: "/control-photo" },
       { label: "Contrôle à Froid", path: "/control-froid" },
-      { label: "Nok sans appel CA", path: "/nok" },
+     
       {
         label: "Interventions Sécurisées",
         subItems: [

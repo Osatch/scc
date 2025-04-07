@@ -6,6 +6,8 @@
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
+  font-size: 12px;
+  
 
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
@@ -72,7 +74,7 @@ button:focus-visible {
 
 /* Styles pour la sidebar */
 .sidebar {
-  width: 250px;
+  width: 200px;
   position: fixed;
   top: 0;
   left: 0;
@@ -146,8 +148,8 @@ button:focus-visible {
 header {
   position: fixed;
   top: 0;
-  left: 250px; /* Décalage pour laisser la place à la sidebar */
-  width: calc(99% - 250px); /* Largeur du header en tenant compte de la sidebar */
+  left: 200px; /* Décalage pour laisser la place à la sidebar */
+  width: calc(99% - 200px); /* Largeur du header en tenant compte de la sidebar */
   background-color: #ffffff; /* Fond clair */
   color: #000000; /* Texte sombre */
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
@@ -180,7 +182,7 @@ header .header-button:hover {
 /* Styles pour le contenu principal */
 .main-content {
   margin-top: 80px; /* Ajustez cette valeur en fonction de la hauteur du header */
-  margin-left: 250px; /* Décalage pour la sidebar */
+  margin-left: 200px; /* Décalage pour la sidebar */
   width: calc(100% - 250px); /* Largeur en tenant compte de la sidebar */
   padding: 1rem;
   overflow-y: auto; /* Permet le défilement vertical si nécessaire */

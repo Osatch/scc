@@ -46,6 +46,13 @@
       </div>
     </div>
 
+    <!-- Pagination (au-dessus du tableau) -->
+    <div class="pagination">
+      <button @click="prevPage" :disabled="currentPage === 1">Précédent</button>
+      <span>Page {{ currentPage }} sur {{ totalPages }}</span>
+      <button @click="nextPage" :disabled="currentPage === totalPages">Suivant</button>
+    </div>
+
     <!-- Conteneur du tableau -->
     <div class="table-container">
       <!-- En-tête synchronisé (scrollbar masquée) -->
@@ -77,142 +84,35 @@
       <div class="body-container" ref="tableContainer" @scroll="syncScroll">
         <table class="body-table">
           <tbody>
-            <tr v-for="param in filteredParametres" :key="param.id">
+            <tr v-for="param in paginatedParametres" :key="param.id">
               <!-- Colonne ID avec menu de modification/suppression -->
               <td class="id-cell">
-                <!-- Mode non édition -->
-                <div v-if="editingRowId !== param.id">
-                  <span>{{ param.id_tech }}</span>
-                  <button class="menu-button" @click.stop="toggleMenu(param.id)">⋮</button>
-                  <div v-if="menuRowId === param.id" class="dropdown-menu">
-                    <div class="menu-item" @click="startEditing(param)">
-                      Modifier <span class="icon">✎</span>
-                    </div>
-                    <div class="menu-item" @click="deleteRow(param)">
-                      Supprimer <span class="icon">🗑</span>
-                    </div>
+                <span>{{ param.id_tech }}</span>
+                <button class="menu-button" @click.stop="toggleMenu(param.id)">⋮</button>
+                <div v-if="menuRowId === param.id" class="dropdown-menu">
+                  <div class="menu-item" @click="startEditing(param)">
+                    Modifier <span class="icon">✎</span>
                   </div>
-                </div>
-                <!-- Mode édition inline -->
-                <div v-else>
-                  <input type="text" class="inline-edit-input" v-model="editingRowData.id_tech" disabled />
-                  <button class="validate-button" @click="validateEdit(param.id)">Valider</button>
-                  <button class="cancel-button" @click="cancelEdit">Annuler</button>
+                  <div class="menu-item" @click="deleteRow(param)">
+                    Supprimer <span class="icon">🗑</span>
+                  </div>
                 </div>
               </td>
               <!-- Autres colonnes -->
-              <td>
-                <template v-if="editingRowId !== param.id">
-                  {{ param.nom_tech }}
-                </template>
-                <template v-else>
-                  <input type="text" class="inline-edit-input" v-model="editingRowData.nom_tech" />
-                </template>
-              </td>
-              <td>
-                <template v-if="editingRowId !== param.id">
-                  {{ param.departement }}
-                </template>
-                <template v-else>
-                  <input type="text" class="inline-edit-input" v-model="editingRowData.departement" />
-                </template>
-              </td>
-              <td>
-                <template v-if="editingRowId !== param.id">
-                  {{ param.log_free }}
-                </template>
-                <template v-else>
-                  <input type="text" class="inline-edit-input" v-model="editingRowData.log_free" />
-                </template>
-              </td>
-              <td>
-                <template v-if="editingRowId !== param.id">
-                  {{ param.competence }}
-                </template>
-                <template v-else>
-                  <input type="text" class="inline-edit-input" v-model="editingRowData.competence" />
-                </template>
-              </td>
-              <td>
-                <template v-if="editingRowId !== param.id">
-                  {{ param.actif_depuis }}
-                </template>
-                <template v-else>
-                  <input type="date" class="inline-edit-input" v-model="editingRowData.actif_depuis" />
-                </template>
-              </td>
-              <td>
-                <template v-if="editingRowId !== param.id">
-                  {{ param.controle_photo }}
-                </template>
-                <template v-else>
-                  <input type="text" class="inline-edit-input" v-model="editingRowData.controle_photo" />
-                </template>
-              </td>
-              <td>
-                <template v-if="editingRowId !== param.id">
-                  {{ param.manager }}
-                </template>
-                <template v-else>
-                  <input type="text" class="inline-edit-input" v-model="editingRowData.manager" />
-                </template>
-              </td>
-              <td>
-                <template v-if="editingRowId !== param.id">
-                  {{ param.zone }}
-                </template>
-                <template v-else>
-                  <input type="text" class="inline-edit-input" v-model="editingRowData.zone" />
-                </template>
-              </td>
-              <td>
-                <template v-if="editingRowId !== param.id">
-                  {{ param.grille_actif }}
-                </template>
-                <template v-else>
-                  <input type="text" class="inline-edit-input" v-model="editingRowData.grille_actif" />
-                </template>
-              </td>
-              <td>
-                <template v-if="editingRowId !== param.id">
-                  {{ param.log_technicien }}
-                </template>
-                <template v-else>
-                  <input type="text" class="inline-edit-input" v-model="editingRowData.log_technicien" />
-                </template>
-              </td>
-              <td>
-                <template v-if="editingRowId !== param.id">
-                  {{ param.numero_technicien }}
-                </template>
-                <template v-else>
-                  <input type="text" class="inline-edit-input" v-model="editingRowData.numero_technicien" />
-                </template>
-              </td>
-              <td>
-                <template v-if="editingRowId !== param.id">
-                  {{ param.societe }}
-                </template>
-                <template v-else>
-                  <input type="text" class="inline-edit-input" v-model="editingRowData.societe" />
-                </template>
-              </td>
-              <td>
-                <template v-if="editingRowId !== param.id">
-                  {{ param.nom_prenom_grdv }}
-                </template>
-                <template v-else>
-                  <input type="text" class="inline-edit-input" v-model="editingRowData.nom_prenom_grdv" />
-                </template>
-              </td>
-              <td>
-                <template v-if="editingRowId !== param.id">
-                  {{ param.id_grdv }}
-                </template>
-                <template v-else>
-                  <input type="text" class="inline-edit-input" v-model="editingRowData.id_grdv" />
-                </template>
-              </td>
+              <td>{{ param.nom_tech }}</td>
+              <td>{{ param.departement }}</td>
+              <td>{{ param.log_free }}</td>
+              <td>{{ param.competence }}</td>
+              <td>{{ param.actif_depuis }}</td>
+              <td>{{ param.controle_photo }}</td>
+              <td>{{ param.manager }}</td>
+              <td>{{ param.zone }}</td>
+              <td>{{ param.grille_actif }}</td>
+              <td>{{ param.log_technicien }}</td>
+              <td>{{ param.numero_technicien }}</td>
+              <td>{{ param.societe }}</td>
+              <td>{{ param.nom_prenom_grdv }}</td>
+              <td>{{ param.id_grdv }}</td>
             </tr>
           </tbody>
         </table>
@@ -222,7 +122,24 @@
     <!-- Modal pour le formulaire d'ajout -->
     <div v-if="globalEditMode" class="modal-overlay">
       <div class="modal">
-        <formulaire-parametre @cancel="toggleGlobalEditMode" @submit="handleSubmit" />
+        <formulaire-parametre 
+          @cancel="toggleGlobalEditMode" 
+          @submit="handleSubmit" 
+          :initialData="{}"
+          mode="create"
+        />
+      </div>
+    </div>
+
+    <!-- Modal pour le formulaire d'édition -->
+    <div v-if="editingRowData" class="modal-overlay">
+      <div class="modal">
+        <formulaire-parametre 
+          @cancel="cancelEdit" 
+          @submit="validateEdit" 
+          :initialData="editingRowData"
+          mode="edit"
+        />
       </div>
     </div>
   </div>
@@ -247,9 +164,9 @@ export default {
       },
       departements: Array.from({ length: 95 }, (_, i) => (i + 1).toString()),
       menuRowId: null,
-      // Pour l'édition inline, on utilise la clé primaire "id"
-      editingRowId: null,
-      editingRowData: {}
+      editingRowData: null,
+      currentPage: 1,
+      itemsPerPage: 10
     };
   },
   computed: {
@@ -262,6 +179,14 @@ export default {
         const matchGrille = this.filters.grille_actif ? param.grille_actif === this.filters.grille_actif : true;
         return matchDepartement && matchSociete && matchManager && matchZone && matchGrille;
       });
+    },
+    totalPages() {
+      return Math.ceil(this.filteredParametres.length / this.itemsPerPage);
+    },
+    paginatedParametres() {
+      const start = (this.currentPage - 1) * this.itemsPerPage;
+      const end = start + this.itemsPerPage;
+      return this.filteredParametres.slice(start, end);
     }
   },
   mounted() {
@@ -315,6 +240,7 @@ export default {
         });
     },
     applyFilters() {
+      this.currentPage = 1; // Reset à la première page lors de l'application des filtres
       this.fetchParametres();
     },
     clearFilters() {
@@ -325,6 +251,7 @@ export default {
         zone: "",
         grille_actif: ""
       };
+      this.currentPage = 1; // Reset à la première page lors du nettoyage des filtres
       this.fetchParametres();
     },
     toggleMenu(rowId) {
@@ -339,30 +266,28 @@ export default {
         this.menuRowId = null;
       }
     },
-    // Passage en mode édition (édition inline) avec la clé primaire "id"
+    // Passage en mode édition avec ouverture de la popup
     startEditing(param) {
-      this.editingRowId = param.id;
       this.editingRowData = { ...param };
       this.menuRowId = null;
     },
-    // PUT : Mise à jour d'un paramètre via l'édition inline
-    validateEdit(rowId) {
-      const index = this.parametres.findIndex(p => p.id === rowId);
-      if (index !== -1) {
-        axios.put(`${import.meta.env.VITE_API_URL}/api/parametres/${rowId}/`, this.editingRowData)
-          .then(response => {
+    // PUT : Mise à jour d'un paramètre via la popup d'édition
+    validateEdit(updatedData) {
+      axios.put(`${import.meta.env.VITE_API_URL}/api/parametres/${updatedData.id}/`, updatedData)
+        .then(response => {
+          const index = this.parametres.findIndex(p => p.id === updatedData.id);
+          if (index !== -1) {
             this.parametres[index] = response.data;
-            this.editingRowId = null;
-            this.editingRowData = {};
-          })
-          .catch(error => {
-            console.error("Erreur lors de la mise à jour :", error);
-          });
-      }
+          }
+          this.cancelEdit();
+        })
+        .catch(error => {
+          console.error("Erreur lors de la mise à jour :", error);
+          console.log("Données envoyées :", JSON.stringify(updatedData, null, 2));
+        });
     },
     cancelEdit() {
-      this.editingRowId = null;
-      this.editingRowData = {};
+      this.editingRowData = null;
     },
     // DELETE : Suppression d'un paramètre en utilisant l'identifiant primaire "id"
     deleteRow(param) {
@@ -381,6 +306,17 @@ export default {
           });
       }
       this.menuRowId = null;
+    },
+    // Pagination methods
+    nextPage() {
+      if (this.currentPage < this.totalPages) {
+        this.currentPage++;
+      }
+    },
+    prevPage() {
+      if (this.currentPage > 1) {
+        this.currentPage--;
+      }
     }
   }
 };
@@ -442,9 +378,40 @@ export default {
   background-color: #0056b3;
 }
 
+/* Pagination */
+.pagination {
+  display: flex;
+
+  gap: 15px;
+  margin-bottom: 15px;
+  padding: 10px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+.pagination button {
+  padding: 6px 12px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.pagination button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+.pagination button:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+.pagination span {
+  font-weight: bold;
+}
+
 /* Conteneur du tableau */
 .table-container {
-  width: 42%;
+  font-size: 9px;
+  width: 100%;
   background-color: #ffffff;
   border-radius: 0 0 8px 8px;
   overflow: hidden;
@@ -464,6 +431,7 @@ export default {
   table-layout: fixed;
 }
 .header-table th {
+  font-size: 9px;
   border: 1px solid #ddd;
   padding: 10px;
   text-align: left;
@@ -536,39 +504,6 @@ export default {
 .menu-item:hover {
   background-color: #f0f0f0;
 }
-.validate-button {
-  margin-left: 8px;
-  padding: 4px 8px;
-  background-color: #28a745;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-.validate-button:hover {
-  background-color: #218838;
-}
-.cancel-button {
-  margin-left: 4px;
-  padding: 4px 8px;
-  background-color: #dc3545;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-.cancel-button:hover {
-  background-color: #c82333;
-}
-
-/* Styles pour les champs d'édition inline */
-.inline-edit-input {
-  padding: 6px 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  width: 100%;
-  box-sizing: border-box;
-}
 
 /* Modal Styles */
 .modal-overlay {
@@ -590,6 +525,8 @@ export default {
   max-width: 800px;
   width: 100%;
   position: relative;
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
 /* Responsive */

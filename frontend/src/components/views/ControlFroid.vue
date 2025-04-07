@@ -286,7 +286,7 @@ export default {
 <style scoped>
 /* Styles généraux */
 .main-content {
-  margin-left: 250px;
+  margin-left: 200px;
   margin-top: 80px;
   padding: 20px;
   width: calc(100% - 250px);
@@ -299,7 +299,7 @@ export default {
 
 /* Filtres */
 .filters {
-  width: 90%;
+  width: 100%;
   margin: 20px auto;
   padding: 10px;
   background-color: #fff;
@@ -344,8 +344,7 @@ export default {
 /* Pagination */
 .pagination {
   display: flex;
-  justify-content: center;
-  align-items: center;
+  
   gap: 10px;
   margin-bottom: 15px;
 }
@@ -366,6 +365,7 @@ export default {
 }
 
 table {
+  font-size: 9px;
   width: 95%;
   border-collapse: collapse;
   margin: 20px auto 0 20px;
@@ -377,12 +377,14 @@ table {
 }
 
 th, td {
+  font-size: 9px;
   border: 1px solid #ddd;
   padding: 10px;
   text-align: left;
 }
 
 th {
+  font-size: 9px;
   background-color: #000;
   color: #fff;
   text-transform: uppercase;
@@ -390,6 +392,7 @@ th {
 }
 
 td {
+  font-size: 9px;
   color: #333;
 }
 
@@ -517,6 +520,7 @@ tbody tr:hover {
 /* Responsive styles */
 @media (max-width: 1024px) {
   .main-content {
+
     margin-left: 0;
     width: 100%;
     padding: 15px;
@@ -527,6 +531,7 @@ tbody tr:hover {
   }
 
   table {
+    font-size: 9px;
     width: 100%; /* Ajuste la largeur du tableau */
   }
 
@@ -547,12 +552,14 @@ tbody tr:hover {
   }
 
   table {
+    font-size: 9px;
     font-size: 12px; /* Réduit la taille de la police du tableau */
     margin-left: 0;
     margin-right: 0;
   }
 
   th, td {
+    font-size: 9px;
     padding: 8px;
   }
 
@@ -572,6 +579,7 @@ tbody tr:hover {
   }
 
   table {
+    font-size: 9px;
     font-size: 11px; /* Réduit davantage la taille de la police du tableau */
   }
 

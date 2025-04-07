@@ -198,7 +198,7 @@ export default {
 <style scoped>
 /* style conservé */
 .main-content {
-  margin-left: 250px;
+  margin-left: 200px;
   margin-top: 80px;
   padding: 20px;
   width: calc(100% - 250px);
@@ -240,6 +240,7 @@ export default {
 }
 
 table {
+  font-size: 8px;
   width: 100%;
   border-collapse: collapse;
   margin-top: 20px;
@@ -251,6 +252,7 @@ table {
 }
 
 th, td {
+  font-size: 8px;
   border: 1px solid #ddd;
   padding: 10px;
   text-align: left;
@@ -258,6 +260,7 @@ th, td {
 }
 
 th {
+  font-size: 8px;
   background-color: #000;
   color: #fff;
   text-transform: uppercase;

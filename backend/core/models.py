@@ -335,7 +335,8 @@ class ARD2(models.Model):
 
 
   
-  #Relance jj =====================================================================================
+
+# Relance jj =====================================================================================
 import unicodedata
 from django.db import models
 
@@ -357,85 +358,26 @@ class RelanceJJ(models.Model):
         blank=True,
         verbose_name="GRDV associé"
     )
-    date_rdv = models.DateField(
-        null=True,
-        blank=True,
-        verbose_name="Date RDV (provenant de GRDV.date_rdv)"
-    )
-    activite = models.CharField(
-        max_length=4,
-        choices=ACTIVITE_CHOICES,
-        blank=True,
-        verbose_name="Activité (calculée à partir de GRDV.activite)"
-    )
-    heure_prevue = models.TimeField(
-        null=True,
-        blank=True,
-        verbose_name="Heure prévue (provenant de GRDV.debut)"
-    )
-    jeton_commande = models.CharField(
-        max_length=10,
-        verbose_name="Jeton commande",
-        blank=True
-    )
-    techniciens = models.CharField(
-        max_length=255,
-        blank=True,
-        verbose_name="Techniciens (provenant de ARD2.technicien)"
-    )
-    numero = models.CharField(
-        max_length=50,
-        verbose_name="Numéro (récupéré via les paramètres)",
-        blank=True
-    )
-    departement = models.CharField(
-        max_length=255,
-        blank=True,
-        verbose_name="Département (provenant de ARD2.departement)"
-    )
-    societe = models.CharField(
-        max_length=255,
-        blank=True,
-        verbose_name="Société"
-    )
-    pec = models.CharField(
-        max_length=255,
-        verbose_name="PEC (saisi manuellement)",
-        blank=True
-    )
-    statut = models.CharField(
-        max_length=20,
-        choices=STATUT_CHOICES,
-        blank=True,
-        verbose_name="Statut (calculé automatiquement)"
-    )
-    commentaire_demarrage = models.TextField(
-        null=True,
-        blank=True,
-        verbose_name="Commentaire démarrage"
-    )
-    commentaire_cloture = models.TextField(
-        null=True,
-        blank=True,
-        verbose_name="Commentaire clôture"
-    )
-    heure_debut = models.TimeField(
-        null=True,
-        blank=True,
-        verbose_name="Heure début (provenant de ARD2.debut_intervention)"
-    )
-    heure_fin = models.TimeField(
-        null=True,
-        blank=True,
-        verbose_name="Heure fin (provenant de ARD2.fin_intervention)"
-    )
+    date_rdv = models.DateField(null=True, blank=True, verbose_name="Date RDV (provenant de GRDV.date_rdv)")
+    activite = models.CharField(max_length=4, choices=ACTIVITE_CHOICES, blank=True, verbose_name="Activité")
+    heure_prevue = models.TimeField(null=True, blank=True, verbose_name="Heure prévue")
+    jeton_commande = models.CharField(max_length=10, verbose_name="Jeton commande", blank=True)
+    techniciens = models.CharField(max_length=255, blank=True, verbose_name="Techniciens")
+    numero = models.CharField(max_length=50, verbose_name="Numéro", blank=True)
+    departement = models.CharField(max_length=255, blank=True, verbose_name="Département")
+    societe = models.CharField(max_length=255, blank=True, verbose_name="Société")
+    pec = models.CharField(max_length=255, verbose_name="PEC", blank=True)
+    statut = models.CharField(max_length=20, choices=STATUT_CHOICES, blank=True, verbose_name="Statut")
+    synchro = models.CharField(max_length=10, blank=True, verbose_name="Statut de synchronisation (provenant de ARD2.etat_intervention)")
+    commentaire_demarrage = models.TextField(null=True, blank=True, verbose_name="Commentaire démarrage")
+    commentaire_cloture = models.TextField(null=True, blank=True, verbose_name="Commentaire clôture")
+    heure_debut = models.TimeField(null=True, blank=True, verbose_name="Heure début")
+    heure_fin = models.TimeField(null=True, blank=True, verbose_name="Heure fin")
 
     def save(self, *args, **kwargs):
-        # Synchronisation depuis GRDV
         if self.grdv:
             self.date_rdv = self.grdv.date_rdv.date() if self.grdv.date_rdv else None
 
-            # Mapping de l'activité selon GRDV.activite
             if self.grdv.activite == "RDV-Sav":
                 self.activite = "SAV"
             elif self.grdv.activite == "":
@@ -446,13 +388,11 @@ class RelanceJJ(models.Model):
                 self.activite = "RACC"
             self.heure_prevue = self.grdv.debut.time() if self.grdv.debut else None
 
-            # Normalisation de GRDV.ref_commande pour obtenir le jeton_commande (10 premiers caractères)
             if self.grdv.ref_commande:
                 self.jeton_commande = unicodedata.normalize("NFKC", self.grdv.ref_commande.strip())[:10]
             else:
                 self.jeton_commande = ""
 
-        # Mise à jour automatique du statut
         if self.heure_debut and self.heure_fin:
             self.statut = "Cloturée"
         elif self.heure_debut and not self.heure_fin:
@@ -484,8 +424,8 @@ class Parametres(models.Model):
     ]
 
     GRILLE_ACTIF_CHOICES = [
-        ('OUI', 'OUI'),
-        ('NON', 'NON'),
+        ('Oui', 'Oui'),
+        ('Non', 'Non'),
     ]
 
     ZONE_CHOICES = [
