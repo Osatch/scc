@@ -43,13 +43,19 @@ class Command(BaseCommand):
 
             date_rdv = grdv.date_rdv.date() if grdv.date_rdv else None
 
+            # Synchronisation logique : on ne prend "NOK" comme réel que si début ET fin sont présents
+            etat_intervention = ard2.etat_intervention or ''
+            if etat_intervention.upper() == "NOK":
+                if not (ard2.debut_intervention and ard2.fin_intervention):
+                    etat_intervention = ""  # On ignore les NOK fantômes
+
             relance_data = {
                 "grdv": grdv,
                 "heure_debut": ard2.debut_intervention.time() if ard2.debut_intervention else None,
                 "heure_fin": ard2.fin_intervention.time() if ard2.fin_intervention else None,
                 "departement": ard2.departement or '',
                 "techniciens": ard2.technicien or '',
-                "synchro": ard2.etat_intervention or '',  # ⬅️ Ici on ajoute le champ synchro
+                "synchro": etat_intervention,  # ⬅️ état nettoyé selon ta logique
             }
 
             relance_qs = RelanceJJ.objects.filter(

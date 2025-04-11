@@ -15,10 +15,10 @@ def run_all_sync_commands():
         call_command('import_grdv')
         call_command('import_ard2')
         call_command('sync_relancejj')
-        call_command('sync_gantt')
+        call_command('import_gantt')
         call_command('sync_controlphoto')
-        call_command('sync_racc')
-        call_command('sync_sav')
+        call_command('sync_dr')
+        call_command('sync_ds')
     except Exception as e:
         print(f"⚠️ Erreur lors de la synchronisation : {e}")
     print("\n===== SYNCHRONISATION TERMINÉE =====\n")
@@ -36,12 +36,12 @@ schedule.every().day.at("06:00").do(run_grdv_bot)
 
 print("🕒 Scheduler initialisé.")
 print(" - 📅 Bot GRDV programmé tous les jours à 06:00.")
-print(" - 🔁 Synchronisation complète toutes les 10 minutes.")
+print(" - 🔁 Synchronisation complète toutes les 1 minutes.")
 
 # Boucle principale : exécute run_all_sync_commands toutes les 10 minutes, + scheduler
 if __name__ == "__main__":
     while True:
         run_all_sync_commands()        # Lancement immédiat des commandes Django
-        for _ in range(10):            # Attente de 10 minutes, vérifie toutes les minutes le planificateur
+        for _ in range(1):            # Attente de 1 minutes, vérifie toutes les minutes le planificateur
             schedule.run_pending()     # Lance le bot GRDV si l’heure correspond
             time.sleep(60)

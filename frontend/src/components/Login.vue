@@ -67,9 +67,9 @@ export default {
 
         // Redirection selon le rôle
         if (role === 'admin' || role === 'manager') {
-          this.$router.push('/dashboard');
+          this.$router.push('/dashboard/gantt');
         } else if (role === 'agent') {
-          this.$router.push('/agent-dashboard');
+          this.$router.push('/agent-dashboard/relancejj');
         } else {
           this.$router.push('/');
         }

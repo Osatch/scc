@@ -4,10 +4,14 @@ cd scc
 cd backend
 python -m venv venv
 venv\Scripts\activate
-python manage.py runserver
+
 
 python manage.py runserver 0.0.0.0:8000
 
+
+
+
+python manage.py runserver
 
 cd .. 
 cd ..
@@ -73,7 +77,6 @@ stucture du code
     │   ├── Agent-sidebar.vue
     ├── App.vue
     └── main.js
-/backend/
 
 
 
@@ -87,9 +90,9 @@ github
 
 git init
 git add .
-git commit -m "05-04 / 19h00"
+git commit -m "08-04  +render+db"
 git remote add origin https://github.com/Osatch/scc.git
-git push -u origin main
+git push -u origin main --force
 
 
 
@@ -159,16 +162,16 @@ Agent :
 
 
 
-
-python manage.py import_ard2
+python bot/grdv.py
 python manage.py import_grdv
+python manage.py import_ard2
 python manage.py import_parametres
 python manage.py sync_relancejj
-python manage.py import_gantt --date 2025-04-07
+python manage.py import_gantt
 python manage.py sync_controlphoto
 python manage.py sync_dr
 python manage.py sync_ds
-
+python scheduler.py
 
 
 TRUNCATE TABLE `core_ard2`;

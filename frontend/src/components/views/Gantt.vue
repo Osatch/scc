@@ -34,14 +34,14 @@
       </div>
     </div>
 
-    <!-- Conteneur pour l'en-tête avec barre de défilement -->
-    <div class="header-container" ref="headerContainer">
-      <table class="header-table">
+    <!-- Tableau principal -->
+    <div class="table-wrapper">
+      <table>
         <thead>
           <tr>
             <th>Date Intervention</th>
-            <th>Nom Intervenant</th>
-            <th>Département</th>
+            <th>Dép</th>
+            <th class="thi">Intervenant</th>
             <th>Société</th>
             <th>08:00</th>
             <th>09:00</th>
@@ -53,39 +53,78 @@
             <th>15:00</th>
             <th>16:00</th>
             <th>17:00</th>
-            <th>18:00</th>
-            <th>Taux Transformation</th>
-            <th>Taux Remplissage</th>
+            <th>% Transfo</th>
+            <th>% Remp</th>
           </tr>
         </thead>
-      </table>
-    </div>
-
-    <!-- Conteneur pour le corps du tableau -->
-    <div class="table-container" ref="tableContainer">
-      <table>
         <tbody>
           <tr v-for="entry in paginatedParametres" :key="entry.id">
-            <td>{{ entry.date_intervention }}</td>
-            <td>{{ entry.nom_intervenant }}</td>
+            <td class="thi">{{ formatDate(entry.date_intervention) }}</td>
             <td>{{ entry.departement }}</td>
+            <td>{{ entry.nom_intervenant }}</td>
             <td>{{ entry.societe }}</td>
-            <td :class="getCellClass(entry.heure_08)">{{ entry.heure_08 }}</td>
-            <td :class="getCellClass(entry.heure_09)">{{ entry.heure_09 }}</td>
-            <td :class="getCellClass(entry.heure_10)">{{ entry.heure_10 }}</td>
-            <td :class="getCellClass(entry.heure_11)">{{ entry.heure_11 }}</td>
-            <td :class="getCellClass(entry.heure_12)">{{ entry.heure_12 }}</td>
-            <td :class="getCellClass(entry.heure_13)">{{ entry.heure_13 }}</td>
-            <td :class="getCellClass(entry.heure_14)">{{ entry.heure_14 }}</td>
-            <td :class="getCellClass(entry.heure_15)">{{ entry.heure_15 }}</td>
-            <td :class="getCellClass(entry.heure_16)">{{ entry.heure_16 }}</td>
-            <td :class="getCellClass(entry.heure_17)">{{ entry.heure_17 }}</td>
-            <td :class="getCellClass(entry.heure_18)">{{ entry.heure_18 }}</td>
-            <td>{{ entry.taux_transfo }}</td>
-            <td>{{ entry.taux_remplissage }}</td>
+            <td 
+              :class="getCellClass(entry.heure_08)" 
+              @click="showDetails(entry, '08')"
+            >{{ entry.heure_08 }}</td>
+            <td 
+              :class="getCellClass(entry.heure_09)" 
+              @click="showDetails(entry, '09')"
+            >{{ entry.heure_09 }}</td>
+            <td 
+              :class="getCellClass(entry.heure_10)" 
+              @click="showDetails(entry, '10')"
+            >{{ entry.heure_10 }}</td>
+            <td 
+              :class="getCellClass(entry.heure_11)" 
+              @click="showDetails(entry, '11')"
+            >{{ entry.heure_11 }}</td>
+            <td 
+              :class="getCellClass(entry.heure_12)" 
+              @click="showDetails(entry, '12')"
+            >{{ entry.heure_12 }}</td>
+            <td 
+              :class="getCellClass(entry.heure_13)" 
+              @click="showDetails(entry, '13')"
+            >{{ entry.heure_13 }}</td>
+            <td 
+              :class="getCellClass(entry.heure_14)" 
+              @click="showDetails(entry, '14')"
+            >{{ entry.heure_14 }}</td>
+            <td 
+              :class="getCellClass(entry.heure_15)" 
+              @click="showDetails(entry, '15')"
+            >{{ entry.heure_15 }}</td>
+            <td 
+              :class="getCellClass(entry.heure_16)" 
+              @click="showDetails(entry, '16')"
+            >{{ entry.heure_16 }}</td>
+            <td 
+              :class="getCellClass(entry.heure_17)" 
+              @click="showDetails(entry, '17')"
+            >{{ entry.heure_17 }}</td>
+            <td>{{ formatPercentage(entry.taux_transfo) }}</td>
+            <td>{{ formatPercentage(entry.taux_remplissage) }}</td>
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <!-- Popup de détails -->
+    <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Détails de l'intervention</h3>
+          <span class="close-btn" @click="closeModal">&times;</span>
+        </div>
+        <div class="modal-body">
+          <p><strong>Technicien:</strong> {{ modalData.nom_intervenant }}</p>
+          <p><strong>Date:</strong> {{ formatDate(modalData.date_intervention) }}</p>
+          <p><strong>Créneau:</strong> {{ modalHour }}h</p>
+          <p><strong>Statut:</strong> {{ modalStatus }}</p>
+          <p><strong>Jeton:</strong> {{ modalJeton || 'Non disponible' }}</p>
+        </div>
+      </div>
     </div>
 
     <!-- Pagination -->
@@ -105,13 +144,17 @@ export default {
   data() {
     return {
       parametres: [],
-      // Filtres
       selectedDepartement: "",
       selectedTechnicien: "",
       selectedDate: "",
-      // Pagination
       currentPage: 1,
-      itemsPerPage: 15,
+      itemsPerPage: 50,
+      // Données pour le modal
+      showModal: false,
+      modalData: {},
+      modalHour: '',
+      modalStatus: '',
+      modalJeton: ''
     };
   },
   computed: {
@@ -119,18 +162,14 @@ export default {
       return this.parametres.filter((entry) => {
         let matches = true;
         if (this.selectedDepartement) {
-          matches =
-            matches &&
-            entry.departement
-              .toLowerCase()
-              .includes(this.selectedDepartement.toLowerCase());
+          matches = matches && entry.departement
+            .toLowerCase()
+            .includes(this.selectedDepartement.toLowerCase());
         }
         if (this.selectedTechnicien) {
-          matches =
-            matches &&
-            entry.nom_intervenant
-              .toLowerCase()
-              .includes(this.selectedTechnicien.toLowerCase());
+          matches = matches && entry.nom_intervenant
+            .toLowerCase()
+            .includes(this.selectedTechnicien.toLowerCase());
         }
         if (this.selectedDate) {
           matches = matches && entry.date_intervention === this.selectedDate;
@@ -149,7 +188,6 @@ export default {
   mounted() {
     this.selectedDate = new Date().toISOString().split("T")[0];
     this.loadData();
-    this.syncScroll();
   },
   methods: {
     loadData() {
@@ -164,12 +202,9 @@ export default {
     },
     getCellClass(value) {
       if (!value) return "";
-      
-      // Vérifier d'abord les statuts NOK
       if (value.includes("NOK SAV") || value.includes("NOK RACC")) {
         return "nok-cell";
       }
-      // Puis les autres statuts
       else if (value.includes("OK SAV") || value.includes("OK RACC")) {
         return "ok-cell";
       }
@@ -184,17 +219,14 @@ export default {
       }
       return "";
     },
-    syncScroll() {
-      const headerContainer = this.$refs.headerContainer;
-      const tableContainer = this.$refs.tableContainer;
-
-      headerContainer.addEventListener("scroll", () => {
-        tableContainer.scrollLeft = headerContainer.scrollLeft;
-      });
-
-      tableContainer.addEventListener("scroll", () => {
-        headerContainer.scrollLeft = tableContainer.scrollLeft;
-      });
+    formatPercentage(value) {
+      if (value === null || value === undefined) return '';
+      return `${Math.round(Number(value))}%`;
+    },
+    formatDate(dateString) {
+      if (!dateString) return '';
+      const date = new Date(dateString);
+      return date.toLocaleDateString('fr-FR');
     },
     clearFilters() {
       this.selectedDepartement = "";
@@ -202,6 +234,21 @@ export default {
       this.selectedDate = new Date().toISOString().split("T")[0];
       this.currentPage = 1;
     },
+    showDetails(entry, hour) {
+      const statusField = `heure_${hour}`;
+      const jetonField = `jeton_${hour}`;
+      
+      if (!entry[statusField]) return;
+      
+      this.modalData = entry;
+      this.modalHour = hour;
+      this.modalStatus = entry[statusField];
+      this.modalJeton = entry[jetonField];
+      this.showModal = true;
+    },
+    closeModal() {
+      this.showModal = false;
+    }
   },
 };
 </script>
@@ -209,16 +256,16 @@ export default {
 <style scoped>
 .main-content {
   width: 95%;
-  padding: 20px;
+  padding: 10px;
   background-color: #f8f9fa;
   color: #333;
   border-radius: 8px;
   box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
 }
 
-/* Filtres */
 .filters {
-  width: 70%;
+  width: 80%;
   margin-bottom: 20px;
   padding: 10px;
   background-color: #fff;
@@ -259,62 +306,39 @@ export default {
   background-color: #0056b3;
 }
 
-.header-container {
-  width: 70%;
-  overflow-x: auto;
-  border-radius: 8px 8px 0 0;
-  max-width: 100vw;
-  white-space: nowrap;
+.table-wrapper {
+  width: 85%;
+  overflow: hidden;
+  border-radius: 8px;
   background-color: #ffffff;
-}
-
-.header-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-  min-width: 1200px;
-  table-layout: fixed;
-}
-
-.table-container {
-  width: 70%;
-  overflow-x: auto;
-  border-radius: 0 0 8px 8px;
-  max-width: 100vw;
-  white-space: nowrap;
-  background-color: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 table {
-  font-size: 9px;
   width: 100%;
   border-collapse: collapse;
-  font-size: 13px;
-  min-width: 1200px;
   table-layout: fixed;
 }
 
-th,
-td {
-  font-size: 9px;
+th, td {
   border: 1px solid #ddd;
-  padding: 10px;
-  text-align: left;
+  padding: 5px;
+  text-align: center;
+  font-size: 9px;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
+}
+.thi{
   width: 120px;
 }
-
 th {
-  font-size: 9px;
   background-color: #000000;
   color: white;
   text-transform: uppercase;
   font-weight: bold;
-}
-
-td {
-  font-size: 9px;
-  color: #333;
+  top: 0;
+  z-index: 10;
 }
 
 tbody tr:nth-child(odd) {
@@ -330,48 +354,30 @@ tbody tr:hover {
   transition: background-color 0.3s ease-in-out;
 }
 
-/* Classes de couleur pour les différents statuts */
 .ok-cell {
-  background-color: #c8e6c9; /* Vert clair */
-  color: #2e7d32; /* Vert foncé */
+  background-color: #c8e6c9;
+  color: #2e7d32;
 }
 
 .nok-cell {
-  background-color: #ffebee; /* Rouge clair */
-  color: #b71c1c; /* Rouge foncé */
+  background-color: #ffebee;
+  color: #b71c1c;
   font-weight: bold;
 }
 
 .inprogress-cell {
-  background-color: #fff9c4; /* Jaune clair */
-  color: #f9a825; /* Jaune foncé */
+  background-color: #fff9c4;
+  color: #f9a825;
 }
 
 .alert-cell {
-  background-color: #ffe0b2; /* Orange clair */
-  color: #ef6c00; /* Orange foncé */
+  background-color: #ffe0b2;
+  color: #ef6c00;
 }
 
 .planned-cell {
-  background-color: #bbdefb; /* Bleu clair */
-  color: #1565c0; /* Bleu foncé */
-}
-
-@media (max-width: 768px) {
-  .header-container,
-  .table-container,
-  .filters {
-    width: 90%;
-    margin-left: 10px;
-  }
-  table {
-    font-size: 12px;
-  }
-  th,
-  td {
-    padding: 8px;
-    width: 100px;
-  }
+  background-color: #bbdefb;
+  color: #1565c0;
 }
 
 .pagination {
@@ -379,7 +385,7 @@ tbody tr:hover {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 14px;
+  font-size: 12px;
 }
 
 .pagination button {
@@ -394,5 +400,99 @@ tbody tr:hover {
 .pagination button:disabled {
   background-color: #ccc;
   cursor: not-allowed;
+}
+
+/* Styles pour le modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: white;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+  padding: 15px 20px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h3 {
+  margin: 0;
+  color: #333;
+}
+
+.close-btn {
+  font-size: 24px;
+  cursor: pointer;
+  color: #aaa;
+}
+
+.close-btn:hover {
+  color: #333;
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+.modal-body p {
+  margin: 10px 0;
+  line-height: 1.6;
+}
+
+/* Rendre les cellules cliquables */
+td[class*="-cell"] {
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+td[class*="-cell"]:hover {
+  filter: brightness(90%);
+  transform: scale(1.02);
+  box-shadow: 0 0 5px rgba(0,0,0,0.1);
+  z-index: 1;
+  position: relative;
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    width: 100%;
+    padding: 5px;
+  }
+  
+  .filters {
+    width: 95%;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .filter-group {
+    flex: 1 1 auto;
+  }
+  
+  th, td {
+    padding: 4px;
+    font-size: 8px;
+  }
+  
+  .modal-content {
+    width: 95%;
+  }
 }
 </style>

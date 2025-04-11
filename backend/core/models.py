@@ -126,12 +126,6 @@ class GRDV(models.Model):
 from django.db import models
 
 class Gantt(models.Model):
-    date_intervention = models.DateField()  # Champ pour distinguer les interventions par jour
-    secteur = models.IntegerField()  # Vous pouvez conserver ce champ si vous en avez besoin
-    departement = models.CharField(max_length=255, null=True, blank=True)  # Nouveau champ pour le département (récupéré depuis ARD2)
-    nom_intervenant = models.CharField(max_length=255)
-    societe = models.CharField(max_length=255, null=True, blank=True)  # Nouveau champ pour la société, laissé vide par défaut
-
     INTERVENTION_CHOICES = [
         ('OK SAV', 'OK SAV'),
         ('OK RACC', 'OK RACC'),
@@ -145,97 +139,54 @@ class Gantt(models.Model):
         ('Planifiée RACC', 'Planifiée RACC'),
     ]
 
-    type_intervention = models.CharField(
-        max_length=50,
-        choices=INTERVENTION_CHOICES,
-        null=True,
-        blank=True
-    )
-    heure_08 = models.CharField(
-        max_length=50,
-        choices=INTERVENTION_CHOICES,
-        null=True,
-        blank=True
-    )
-    heure_09 = models.CharField(
-        max_length=50,
-        choices=INTERVENTION_CHOICES,
-        null=True,
-        blank=True
-    )
-    heure_10 = models.CharField(
-        max_length=50,
-        choices=INTERVENTION_CHOICES,
-        null=True,
-        blank=True
-    )
-    heure_11 = models.CharField(
-        max_length=50,
-        choices=INTERVENTION_CHOICES,
-        null=True,
-        blank=True
-    )
-    heure_12 = models.CharField(
-        max_length=50,
-        choices=INTERVENTION_CHOICES,
-        null=True,
-        blank=True
-    )
-    heure_13 = models.CharField(
-        max_length=50,
-        choices=INTERVENTION_CHOICES,
-        null=True,
-        blank=True
-    )
-    heure_14 = models.CharField(
-        max_length=50,
-        choices=INTERVENTION_CHOICES,
-        null=True,
-        blank=True
-    )
-    heure_15 = models.CharField(
-        max_length=50,
-        choices=INTERVENTION_CHOICES,
-        null=True,
-        blank=True
-    )
-    heure_16 = models.CharField(
-        max_length=50,
-        choices=INTERVENTION_CHOICES,
-        null=True,
-        blank=True
-    )
-    heure_17 = models.CharField(
-        max_length=50,
-        choices=INTERVENTION_CHOICES,
-        null=True,
-        blank=True
-    )
-    heure_18 = models.CharField(
-        max_length=50,
-        choices=INTERVENTION_CHOICES,
-        null=True,
-        blank=True
-    )
-    taux_transfo = models.DecimalField(
-        max_digits=5,
-        decimal_places=2,
-        null=True,
-        blank=True
-    )
-    taux_remplissage = models.DecimalField(
-        max_digits=5,
-        decimal_places=2,
-        null=True,
-        blank=True
-    )
-    date_mise_a_jour = models.DateTimeField(
-        auto_now=True,
-        verbose_name="Date de mise à jour"
-    )
+    # Champs existants inchangés
+    date_intervention = models.DateField()
+    secteur = models.IntegerField()
+    departement = models.CharField(max_length=255, null=True, blank=True)
+    nom_intervenant = models.CharField(max_length=255)
+    societe = models.CharField(max_length=255, null=True, blank=True)
+    
+    # Champs horaires existants (statuts)
+    heure_08 = models.CharField(max_length=50, choices=INTERVENTION_CHOICES, null=True, blank=True)
+    heure_09 = models.CharField(max_length=50, choices=INTERVENTION_CHOICES, null=True, blank=True)
+    heure_10 = models.CharField(max_length=50, choices=INTERVENTION_CHOICES, null=True, blank=True)
+    heure_11 = models.CharField(max_length=50, choices=INTERVENTION_CHOICES, null=True, blank=True)
+    heure_12 = models.CharField(max_length=50, choices=INTERVENTION_CHOICES, null=True, blank=True)
+    heure_13 = models.CharField(max_length=50, choices=INTERVENTION_CHOICES, null=True, blank=True)
+    heure_14 = models.CharField(max_length=50, choices=INTERVENTION_CHOICES, null=True, blank=True)
+    heure_15 = models.CharField(max_length=50, choices=INTERVENTION_CHOICES, null=True, blank=True)
+    heure_16 = models.CharField(max_length=50, choices=INTERVENTION_CHOICES, null=True, blank=True)
+    heure_17 = models.CharField(max_length=50, choices=INTERVENTION_CHOICES, null=True, blank=True)
+    heure_18 = models.CharField(max_length=50, choices=INTERVENTION_CHOICES, null=True, blank=True)
+    
+    # Nouveaux champs pour les jetons (un par créneau)
+    jeton_08 = models.CharField(max_length=10, blank=True, null=True)
+    jeton_09 = models.CharField(max_length=10, blank=True, null=True)
+    jeton_10 = models.CharField(max_length=10, blank=True, null=True)
+    jeton_11 = models.CharField(max_length=10, blank=True, null=True)
+    jeton_12 = models.CharField(max_length=10, blank=True, null=True)
+    jeton_13 = models.CharField(max_length=10, blank=True, null=True)
+    jeton_14 = models.CharField(max_length=10, blank=True, null=True)
+    jeton_15 = models.CharField(max_length=10, blank=True, null=True)
+    jeton_16 = models.CharField(max_length=10, blank=True, null=True)
+    jeton_17 = models.CharField(max_length=10, blank=True, null=True)
+    jeton_18 = models.CharField(max_length=10, blank=True, null=True)
+    
+    # Champs existants (stats et métadonnées)
+    taux_transfo = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    taux_remplissage = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    date_mise_a_jour = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"{self.nom_intervenant} - {self.date_intervention}"
+
+    # Méthode utilitaire pour accéder aux paires (statut, jeton)
+    def get_creneau(self, heure):
+        """Retourne (statut, jeton) pour un créneau donné"""
+        return {
+            'statut': getattr(self, f'heure_{heure}'),
+            'jeton': getattr(self, f'jeton_{heure}')
+        }
 
 
 

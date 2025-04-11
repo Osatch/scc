@@ -53,70 +53,53 @@
       <button @click="nextPage" :disabled="currentPage === totalPages">Suivant</button>
     </div>
 
-    <!-- Conteneur du tableau -->
-    <div class="table-container">
-      <!-- En-tête synchronisé (scrollbar masquée) -->
-      <div class="header-container" ref="headerContainer">
-        <table class="header-table">
-          <thead>
-            <tr>
-              <th>ID Technicien</th>
-              <th>Nom</th>
-              <th>Département</th>
-              <th>Log Free</th>
-              <th>Compétence</th>
-              <th>Actif Depuis</th>
-              <th>Contrôle Photo</th>
-              <th>Manager</th>
-              <th>Zone</th>
-              <th>Grille Actif</th>
-              <th>Log Technicien</th>
-              <th>Numéro du Technicien</th>
-              <th>Société</th>
-              <th>Nom prénom Grdv</th>
-              <th>ID Grdv</th>
-            </tr>
-          </thead>
-        </table>
-      </div>
-
-      <!-- Corps du tableau scrollable -->
-      <div class="body-container" ref="tableContainer" @scroll="syncScroll">
-        <table class="body-table">
-          <tbody>
-            <tr v-for="param in paginatedParametres" :key="param.id">
-              <!-- Colonne ID avec menu de modification/suppression -->
-              <td class="id-cell">
-                <span>{{ param.id_tech }}</span>
-                <button class="menu-button" @click.stop="toggleMenu(param.id)">⋮</button>
-                <div v-if="menuRowId === param.id" class="dropdown-menu">
-                  <div class="menu-item" @click="startEditing(param)">
-                    Modifier <span class="icon">✎</span>
-                  </div>
-                  <div class="menu-item" @click="deleteRow(param)">
-                    Supprimer <span class="icon">🗑</span>
-                  </div>
-                </div>
-              </td>
-              <!-- Autres colonnes -->
-              <td>{{ param.nom_tech }}</td>
-              <td>{{ param.departement }}</td>
-              <td>{{ param.log_free }}</td>
-              <td>{{ param.competence }}</td>
-              <td>{{ param.actif_depuis }}</td>
-              <td>{{ param.controle_photo }}</td>
-              <td>{{ param.manager }}</td>
-              <td>{{ param.zone }}</td>
-              <td>{{ param.grille_actif }}</td>
-              <td>{{ param.log_technicien }}</td>
-              <td>{{ param.numero_technicien }}</td>
-              <td>{{ param.societe }}</td>
-              <td>{{ param.nom_prenom_grdv }}</td>
-              <td>{{ param.id_grdv }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+    <!-- Tableau principal -->
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>ID Tech</th>
+            <th class="thi">Nom</th>
+            <th>Département</th>
+            <th>Log Free</th>
+            <th>Compétence</th>
+            <th>Actif Depuis</th>
+            <th>Contrôle Photo</th>
+            <th>Manager</th>
+            <th>Zone</th>
+            <th>Grille Actif</th>
+            <th>Log Technicien</th>
+            <th>Numéro Tech</th>
+            <th>Société</th>
+            <th>Nom Prénom Grdv</th>
+            <th>ID Grdv</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="param in paginatedParametres" :key="param.id">
+            <td>{{ param.id_tech }}</td>
+            <td class="thi">{{ param.nom_tech }}</td>
+            <td>{{ param.departement }}</td>
+            <td>{{ param.log_free }}</td>
+            <td>{{ param.competence }}</td>
+            <td>{{ param.actif_depuis }}</td>
+            <td>{{ param.controle_photo }}</td>
+            <td>{{ param.manager }}</td>
+            <td>{{ param.zone }}</td>
+            <td>{{ param.grille_actif }}</td>
+            <td>{{ param.log_technicien }}</td>
+            <td>{{ param.numero_technicien }}</td>
+            <td>{{ param.societe }}</td>
+            <td>{{ param.nom_prenom_grdv }}</td>
+            <td>{{ param.id_grdv }}</td>
+            <td class="actions-cell">
+              <button @click="startEditing(param)" class="edit-btn">✎</button>
+              <button @click="deleteRow(param)" class="delete-btn">🗑</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
 
     <!-- Modal pour le formulaire d'ajout -->
@@ -163,10 +146,9 @@ export default {
         grille_actif: ""
       },
       departements: Array.from({ length: 95 }, (_, i) => (i + 1).toString()),
-      menuRowId: null,
       editingRowData: null,
       currentPage: 1,
-      itemsPerPage: 10
+      itemsPerPage: 50
     };
   },
   computed: {
@@ -191,44 +173,20 @@ export default {
   },
   mounted() {
     this.fetchParametres();
-    this.$nextTick(() => { this.updateDummyWidth(); });
-    window.addEventListener("resize", this.updateDummyWidth);
-    document.addEventListener("click", this.handleClickOutside);
-  },
-  beforeDestroy() {
-    window.removeEventListener("resize", this.updateDummyWidth);
-    document.removeEventListener("click", this.handleClickOutside);
   },
   methods: {
-    // GET : Récupération de la liste des paramètres
     fetchParametres() {
       axios.get(`${import.meta.env.VITE_API_URL}/api/parametres/`)
         .then(response => {
           this.parametres = response.data;
-          this.$nextTick(() => { this.updateDummyWidth(); });
         })
         .catch(error => {
           console.error("Erreur lors de la récupération des paramètres :", error);
         });
     },
-    updateDummyWidth() {
-      if (this.$refs.tableContainer && this.$refs.headerContainer) {
-        this.$refs.headerContainer.firstElementChild.style.minWidth =
-          this.$refs.tableContainer.firstElementChild.offsetWidth + 'px';
-      }
-    },
-    // Synchronisation du scroll horizontal du corps vers l'en-tête
-    syncScroll() {
-      const scrollLeft = this.$refs.tableContainer.scrollLeft;
-      if (this.$refs.headerContainer) {
-        this.$refs.headerContainer.scrollLeft = scrollLeft;
-      }
-    },
-    // Ouvre/ferme la modal
     toggleGlobalEditMode() {
       this.globalEditMode = !this.globalEditMode;
     },
-    // POST : Ajout d'un nouveau paramètre via le formulaire
     handleSubmit(newData) {
       axios.post(`${import.meta.env.VITE_API_URL}/api/parametres/`, newData)
         .then(response => {
@@ -240,7 +198,7 @@ export default {
         });
     },
     applyFilters() {
-      this.currentPage = 1; // Reset à la première page lors de l'application des filtres
+      this.currentPage = 1;
       this.fetchParametres();
     },
     clearFilters() {
@@ -251,27 +209,12 @@ export default {
         zone: "",
         grille_actif: ""
       };
-      this.currentPage = 1; // Reset à la première page lors du nettoyage des filtres
+      this.currentPage = 1;
       this.fetchParametres();
     },
-    toggleMenu(rowId) {
-      this.menuRowId = this.menuRowId === rowId ? null : rowId;
-    },
-    handleClickOutside(event) {
-      if (
-        this.menuRowId &&
-        !event.target.closest(".dropdown-menu") &&
-        !event.target.closest(".menu-button")
-      ) {
-        this.menuRowId = null;
-      }
-    },
-    // Passage en mode édition avec ouverture de la popup
     startEditing(param) {
       this.editingRowData = { ...param };
-      this.menuRowId = null;
     },
-    // PUT : Mise à jour d'un paramètre via la popup d'édition
     validateEdit(updatedData) {
       axios.put(`${import.meta.env.VITE_API_URL}/api/parametres/${updatedData.id}/`, updatedData)
         .then(response => {
@@ -283,13 +226,11 @@ export default {
         })
         .catch(error => {
           console.error("Erreur lors de la mise à jour :", error);
-          console.log("Données envoyées :", JSON.stringify(updatedData, null, 2));
         });
     },
     cancelEdit() {
       this.editingRowData = null;
     },
-    // DELETE : Suppression d'un paramètre en utilisant l'identifiant primaire "id"
     deleteRow(param) {
       if (!param.id) {
         console.error("Identifiant primaire invalide pour la suppression :", param);
@@ -305,9 +246,7 @@ export default {
             console.error("Erreur lors de la suppression :", error);
           });
       }
-      this.menuRowId = null;
     },
-    // Pagination methods
     nextPage() {
       if (this.currentPage < this.totalPages) {
         this.currentPage++;
@@ -324,27 +263,31 @@ export default {
 
 <style scoped>
 .main-content {
-  width: 97%;
-  padding: 20px;
+  width: 95%;
+  padding: 10px;
   background-color: #f8f9fa;
   color: #333;
   border-radius: 8px;
-  box-shadow: 0px 2px 5px rgba(0,0,0,0.1);
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 /* Filtres */
 .filters {
-  width: 41%;
+  width: 80%;
   margin-bottom: 20px;
   padding: 10px;
   background-color: #fff;
   border: 1px solid #ddd;
   border-radius: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
 }
 .filter-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 15px;
+  width: 100%;
 }
 .filter-group {
   display: flex;
@@ -362,8 +305,8 @@ export default {
   border-radius: 4px;
 }
 .filter-actions {
-  margin-top: 10px;
   display: flex;
+  align-items: flex-end;
   gap: 10px;
 }
 .filter-actions button {
@@ -378,16 +321,90 @@ export default {
   background-color: #0056b3;
 }
 
+/* Tableau */
+.table-wrapper {
+  width: 85%;
+  overflow-x: auto;
+  border-radius: 8px;
+  background-color: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+th, td {
+  border: 1px solid #ddd;
+  padding: 5px;
+  text-align: center;
+  font-size: 9px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.thi {
+  width: 120px;
+}
+
+th {
+  background-color: #000000;
+  color: white;
+  text-transform: uppercase;
+  font-weight: bold;
+  
+  top: 0;
+  z-index: 10;
+}
+
+/* Styles alternés pour les lignes */
+tbody tr:nth-child(odd) {
+  background-color: #f9f9f9;
+}
+
+tbody tr:nth-child(even) {
+  background-color: #ffffff;
+}
+
+tbody tr:hover {
+  background-color: #e3f2fd;
+  transition: background-color 0.3s ease-in-out;
+}
+
+/* Cellule Actions */
+.actions-cell {
+  display: flex;
+  gap: 5px;
+  justify-content: center;
+}
+.actions-cell button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  padding: 2px 5px;
+}
+.edit-btn {
+  color: #007bff;
+}
+.delete-btn {
+  color: #dc3545;
+}
+
 /* Pagination */
 .pagination {
+  margin-top: 15px;
   display: flex;
-
+  align-items: center;
+  justify-content: center;
   gap: 15px;
-  margin-bottom: 15px;
   padding: 10px;
   background-color: #fff;
   border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 .pagination button {
   padding: 6px 12px;
@@ -408,103 +425,6 @@ export default {
   font-weight: bold;
 }
 
-/* Conteneur du tableau */
-.table-container {
-  font-size: 9px;
-  width: 100%;
-  background-color: #ffffff;
-  border-radius: 0 0 8px 8px;
-  overflow: hidden;
-}
-
-/* En-tête synchronisé (scrollbar masquée) */
-.header-container {
-  overflow-x: scroll;
-  scrollbar-width: none; /* Firefox */
-}
-.header-container::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera */
-}
-.header-table {
-  width: 100%;
-  border-collapse: collapse;
-  table-layout: fixed;
-}
-.header-table th {
-  font-size: 9px;
-  border: 1px solid #ddd;
-  padding: 10px;
-  text-align: left;
-  white-space: nowrap;
-  width: 120px;
-  background-color: #000;
-  color: #fff;
-  text-transform: uppercase;
-  font-weight: bold;
-}
-
-/* Corps scrollable (seule la scrollbar du corps est visible) */
-.body-container {
-  overflow-x: auto;
-}
-.body-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-  min-width: 1200px;
-  table-layout: fixed;
-}
-.body-table td {
-  border: 1px solid #ddd;
-  padding: 10px;
-  text-align: left;
-  white-space: nowrap;
-  width: 120px;
-  color: #333;
-}
-.body-table tbody tr:nth-child(odd) {
-  background-color: #f9f9f9;
-}
-.body-table tbody tr:nth-child(even) {
-  background-color: #fff;
-}
-.body-table tbody tr:hover {
-  background-color: #e3f2fd;
-  transition: background-color 0.3s ease-in-out;
-}
-
-/* Cellule ID avec menu */
-.id-cell {
-  position: relative;
-}
-.menu-button {
-  color: #000;
-  margin-left: 8px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 16px;
-}
-.dropdown-menu {
-  position: absolute;
-  top: 25px;
-  left: 0;
-  background-color: #fff;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  box-shadow: 0px 2px 5px rgba(0,0,0,0.1);
-  z-index: 100;
-  width: max-content;
-}
-.menu-item {
-  padding: 6px 12px;
-  cursor: pointer;
-  white-space: nowrap;
-}
-.menu-item:hover {
-  background-color: #f0f0f0;
-}
-
 /* Modal Styles */
 .modal-overlay {
   position: fixed;
@@ -512,7 +432,7 @@ export default {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0,0,0,0.4);
+  background-color: rgba(0, 0, 0, 0.4);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -531,15 +451,28 @@ export default {
 
 /* Responsive */
 @media (max-width: 768px) {
-  .table-container {
-    width: 90%;
+  .main-content {
+    width: 100%;
+    padding: 5px;
   }
-  .header-table, .body-table {
-    font-size: 12px;
+  
+  .filters {
+    width: 95%;
+    flex-direction: column;
+    gap: 10px;
   }
-  .header-table th, .body-table td {
-    padding: 8px;
-    width: 100px;
+  
+  .filter-group {
+    flex: 1 1 auto;
+  }
+  
+  .table-wrapper {
+    width: 100%;
+  }
+  
+  th, td {
+    padding: 4px;
+    font-size: 8px;
   }
 }
 </style>

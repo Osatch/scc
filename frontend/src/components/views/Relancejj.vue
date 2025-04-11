@@ -74,50 +74,50 @@
         <button @click="clearFilters">Effacer</button>
       </div>
     </div>
-    
-    <!-- Pagination (au-dessus du tableau) -->
+
+    <!-- Pagination -->
     <div class="pagination">
-      <button @click="prevPage" :disabled="currentPage === 1">Précédent</button>
-      <span>Page {{ currentPage }} sur {{ totalPages }}</span>
-      <button @click="nextPage" :disabled="currentPage === totalPages">Suivant</button>
+      <button :disabled="currentPage === 1" @click="currentPage--">Précédent</button>
+      <span>Page {{ currentPage }} / {{ totalPages }}</span>
+      <button :disabled="currentPage === totalPages" @click="currentPage++">Suivant</button>
     </div>
-    
-    <!-- Tableau des relances -->
-    <table>
-      <thead>
-        <tr>
-          <th>Jeton</th>
-          <th>Date Intervention</th>
-          <th>Activité</th>
-          <th>Techniciens</th>
-         
-          <th>Département</th>
-          <th>Société</th>
-          <th>PEC</th>
-          <th>Statut</th>
-          <th>Heure Prévue</th>
-          <th>Heure Début</th>
-          <th>Heure Fin</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="relance in paginatedRelances" :key="relance.id" :class="{ 'late-intervention': isLateIntervention(relance) }">
-          <td @click="openPopup(relance)" class="clickable">{{ relance.jeton_commande }}</td>
-          <td>{{ relance.date_rdv }}</td>
-          <td>{{ relance.activite }}</td>
-          <td>{{ relance.techniciens }}</td>
-          
-          <td>{{ relance.departement }}</td>
-          <td>{{ relance.societe }}</td>
-          <td>{{ relance.pec }}</td>
-          <td :class="getStatusClass(relance.statut)">{{ relance.statut }}</td>
-          <td>{{ relance.heure_prevue }}</td>
-          <td>{{ relance.heure_debut || '-' }}</td>
-          <td>{{ relance.heure_fin || '-' }}</td>
-        </tr>
-      </tbody>
-    </table>
-    
+
+    <!-- Tableau principal -->
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th class="thi">Jeton</th>
+            <th>Date Intervention</th>
+            <th>Activité</th>
+            <th>Dép</th>
+            <th>Techniciens</th>
+            <th>Société</th>
+            <th>PEC</th>
+            <th>Statut</th>
+            <th>Heure Prévue</th>
+            <th>Heure Début</th>
+            <th>Heure Fin</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="relance in paginatedRelances" :key="relance.id" :class="{ 'late-intervention': isLateIntervention(relance) }">
+            <td class="thi clickable" @click="openPopup(relance)">{{ relance.jeton_commande }}</td>
+            <td>{{ relance.date_rdv }}</td>
+            <td>{{ relance.activite }}</td>
+            <td>{{ relance.departement }}</td>
+            <td>{{ relance.techniciens }}</td>
+            <td>{{ relance.societe }}</td>
+            <td>{{ relance.pec }}</td>
+            <td :class="getStatusClass(relance.statut)">{{ relance.statut }}</td>
+            <td>{{ relance.heure_prevue }}</td>
+            <td>{{ relance.heure_debut || '-' }}</td>
+            <td>{{ relance.heure_fin || '-' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
     <!-- Popup Modal -->
     <div v-if="showPopup" class="popup-overlay" @click="closePopup">
       <div class="popup-content" @click.stop>
@@ -161,42 +161,24 @@ export default {
     const today = new Date();
     const formattedDate = today.toISOString().split('T')[0];
     
-    // Déterminer le créneau horaire actuel
-    const currentHour = today.getHours();
-    let currentTimeSlot = '';
-    
-    if (currentHour >= 8 && currentHour < 12) {
-      currentTimeSlot = '08:00-12:00';
-    } else if (currentHour >= 12 && currentHour < 14) {
-      currentTimeSlot = '12:00-14:00';
-    } else if (currentHour >= 14 && currentHour < 18) {
-      currentTimeSlot = '14:00-18:00';
-    } else if (currentHour >= 18) {
-      currentTimeSlot = '18:00-';
-    }
-    
     return {
       relances: [],
       selectedStatut: "",
-      selectedDate: formattedDate, // Date du jour par défaut
-      selectedCreneau: currentTimeSlot, // Créneau actuel par défaut
+      selectedDate: formattedDate,
+      selectedCreneau: "",
       selectedDepartement: "",
-      // Filtres supplémentaires
       selectedJeton: "",
       selectedTechnicien: "",
       selectedPec: "",
       selectedSociete: "",
       showExtraFilters: false,
-      // Pour la popup
       showPopup: false,
       selectedRelance: null,
-      // Pour l'historique des commentaires
       showComments: false,
       comments: [],
-      // Pagination
       currentPage: 1,
-      perPage: 50, // Nombre d'éléments par page
-      currentTime: new Date() // Heure actuelle
+      itemsPerPage: 50,
+      currentTime: new Date()
     };
   },
   computed: {
@@ -242,16 +224,15 @@ export default {
       });
     },
     totalPages() {
-      return Math.ceil(this.filteredRelances.length / this.perPage);
+      return Math.ceil(this.filteredRelances.length / this.itemsPerPage);
     },
     paginatedRelances() {
-      const start = (this.currentPage - 1) * this.perPage;
-      return this.filteredRelances.slice(start, start + this.perPage);
+      const start = (this.currentPage - 1) * this.itemsPerPage;
+      return this.filteredRelances.slice(start, start + this.itemsPerPage);
     }
   },
   mounted() {
     this.fetchRelances();
-    // Mettre à jour l'heure actuelle toutes les minutes
     this.timeUpdateInterval = setInterval(() => {
       this.currentTime = new Date();
     }, 60000);
@@ -274,27 +255,13 @@ export default {
     clearFilters() {
       this.selectedStatut = "";
       this.selectedDate = new Date().toISOString().split('T')[0];
-      
-      // Réinitialiser le créneau horaire en fonction de l'heure actuelle
-      const currentHour = this.currentTime.getHours();
-      if (currentHour >= 8 && currentHour < 12) {
-        this.selectedCreneau = '08:00-12:00';
-      } else if (currentHour >= 12 && currentHour < 14) {
-        this.selectedCreneau = '12:00-14:00';
-      } else if (currentHour >= 14 && currentHour < 18) {
-        this.selectedCreneau = '14:00-18:00';
-      } else if (currentHour >= 18) {
-        this.selectedCreneau = '18:00-';
-      } else {
-        this.selectedCreneau = '';
-      }
-      
+      this.selectedCreneau = "";
       this.selectedDepartement = "";
       this.selectedJeton = "";
       this.selectedTechnicien = "";
       this.selectedPec = "";
       this.selectedSociete = "";
-      this.currentPage = 1; // Réinitialiser la page à 1 lors de l'effacement des filtres
+      this.currentPage = 1;
     },
     getStatusClass(statut) {
       if (statut === "Cloturée") return "status-cloturee";
@@ -322,7 +289,6 @@ export default {
     openPopup(relance) {
       this.selectedRelance = relance;
       this.showPopup = true;
-      // Réinitialiser les commentaires lors de l'ouverture du popup
       this.comments = [];
       this.showComments = false;
     },
@@ -344,41 +310,82 @@ export default {
     hideComments() {
       this.showComments = false;
       this.comments = [];
-    },
-    nextPage() {
-      if (this.currentPage < this.totalPages) {
-        this.currentPage++;
-      }
-    },
-    prevPage() {
-      if (this.currentPage > 1) {
-        this.currentPage--;
-      }
     }
   }
 };
 </script>
 
 <style scoped>
-/* Votre CSS existant */
 .main-content {
-  width: 97%;
-  margin-top: 80px;
-  padding: 20px;
-  width: calc(100% - 200px);
-  min-height: calc(100vh - 80px);
+  width: 95%;
+  padding: 10px;
   background-color: #f8f9fa;
   color: #333;
   border-radius: 8px;
   box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease-in-out;
-  
 }
 
-/* Bouton toggle pour filtres supplémentaires */
+/* Filtres */
+.filters {
+  width: 80%;
+  margin-bottom: 20px;
+  padding: 10px;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.filter-grid,
+.extra-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+  width: 100%;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.filter-group label {
+  margin-bottom: 5px;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.filter-group input,
+.filter-group select {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.filter-actions {
+  display: flex;
+  align-items: flex-end;
+}
+
+.filter-actions button {
+  padding: 8px 16px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.filter-actions button:hover {
+  background-color: #0056b3;
+}
+
 .toggle-extra-filters {
   margin-bottom: 10px;
 }
+
 .toggle-extra-filters button {
   padding: 5px 10px;
   font-size: 1rem;
@@ -388,116 +395,59 @@ export default {
   border-radius: 4px;
   cursor: pointer;
 }
+
 .toggle-extra-filters button:hover {
   background-color: #0056b3;
 }
 
-/* Filtres */
-.filters {
-  width: 100%;
-  margin-bottom: 20px;
-  padding: 10px;
-  background-color: #fff;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-}
-.filter-grid,
-.extra-filters {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 15px;
-}
-.filter-group {
-  display: flex;
-  flex-direction: column;
-}
-.filter-group label {
-  margin-bottom: 5px;
-  font-weight: bold;
-  font-size: 1rem;
-}
-.filter-group input,
-.filter-group select {
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-}
-.filter-actions {
-  margin-top: 10px;
-  display: flex;
-  gap: 10px;
-}
-.filter-actions button {
-  padding: 8px 16px;
-  background-color: #007bff;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-.filter-actions button:hover {
-  background-color: #0056b3;
-}
-
-/* Pagination */
-.pagination {
-  margin-bottom: 20px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.pagination button {
-  padding: 8px 16px;
-  background-color: #007bff;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-.pagination button:disabled {
-  background-color: #cccccc;
-  cursor: not-allowed;
-}
-.pagination span {
-  font-size: 1rem;
-  color: #333;
-}
-
 /* Tableau */
+.table-wrapper {
+  width: 85%;
+  overflow-x: auto;
+  border-radius: 8px;
+  background-color: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
 table {
-  font-size: 9px;
   width: 100%;
   border-collapse: collapse;
-  margin: 20px auto 0 20px;
-  background-color: #ffffff;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  font-size: 1rem;
+  table-layout: fixed;
 }
+
 th, td {
-  font-size: 9px;
   border: 1px solid #ddd;
-  padding: 10px;
-  text-align: left;
-}
-th {
+  padding: 5px;
+  text-align: center;
   font-size: 9px;
-  background-color: #000;
-  color: #fff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.thi {
+  width: 120px;
+}
+
+th {
+  background-color: #000000;
+  color: white;
   text-transform: uppercase;
   font-weight: bold;
+  
+  top: 0;
+  z-index: 10;
 }
-td {
-  font-size: 9px;
-  color: #333;
-}
+
+/* Styles alternés pour les lignes */
 tbody tr:nth-child(odd) {
   background-color: #f9f9f9;
 }
+
 tbody tr:nth-child(even) {
   background-color: #ffffff;
 }
+
 tbody tr:hover {
   background-color: #e3f2fd;
   transition: background-color 0.3s ease-in-out;
@@ -508,6 +458,7 @@ tbody tr:hover {
   background-color: #d4edda;
   color: #155724;
 }
+
 .status-taguee {
   background-color: #fff3cd;
   color: #856404;
@@ -533,6 +484,41 @@ tbody tr:hover {
   color: #007bff;
 }
 
+/* Pagination */
+.pagination {
+  margin-top: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  padding: 10px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.pagination button {
+  padding: 6px 12px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.pagination button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.pagination button:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+.pagination span {
+  font-weight: bold;
+}
+
 /* Popup Modal */
 .popup-overlay {
   position: fixed;
@@ -546,6 +532,7 @@ tbody tr:hover {
   align-items: center;
   z-index: 1000;
 }
+
 .popup-content {
   background: #fff;
   padding: 20px;
@@ -555,6 +542,7 @@ tbody tr:hover {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   position: relative;
 }
+
 .history-button,
 .hide-history-button,
 .close-button {
@@ -566,78 +554,60 @@ tbody tr:hover {
   border-radius: 4px;
   cursor: pointer;
 }
+
 .history-button:hover,
 .hide-history-button:hover,
 .close-button:hover {
   background-color: #0056b3;
 }
 
-/* Responsive adjustments */
-@media (max-width: 1024px) {
-  .main-content {
-    margin-left: 0;
-    width: 100%;
-  }
+.comments-section {
+  margin-top: 15px;
+  padding: 10px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
 }
 
+.comments-section ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.comments-section li {
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #ddd;
+}
+
+.comments-section li:last-child {
+  border-bottom: none;
+}
+
+/* Responsive */
 @media (max-width: 768px) {
   .main-content {
-    margin-top: 60px;
-  }
-
-  table {
-    font-size: 12px;
     width: 100%;
-    margin-left: 0;
+    padding: 5px;
   }
-
+  
+  .filters {
+    width: 95%;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .filter-group {
+    flex: 1 1 auto;
+  }
+  
+  .table-wrapper {
+    width: 100%;
+  }
+  
   th, td {
-    padding: 8px;
-  }
-
-  .filter-grid,
-  .extra-filters {
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  }
-
-  .pagination button {
-    padding: 6px 12px;
-  }
-
-  .pagination span {
-    font-size: 0.875rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .main-content {
-    padding: 15px;
-  }
-
-  .toggle-extra-filters button {
-    font-size: 14px;
-  }
-
-  .filter-group label {
-    font-size: 12px;
-  }
-
-  table {
-    font-size: 11px;
-  }
-
-  .filter-group input,
-  .filter-group select {
-    padding: 6px;
-  }
-
-  .pagination button {
-    padding: 5px 10px;
-  }
-
-  .popup-content {
-    max-width: 90%;
-    width: 100%;
+    padding: 4px;
+    font-size: 8px;
   }
 }
 </style>

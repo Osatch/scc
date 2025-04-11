@@ -1,80 +1,85 @@
-<!-- Debrief RACC - Vue étendue avec tous les champs + Formulaire -->
 <template>
   <div class="main-content">
     <h2>Liste des Debrief RACC</h2>
 
     <!-- Filtres -->
     <div class="filters">
-      <input type="date" v-model="selectedDate" placeholder="Filtrer par date" />
-      <input type="text" v-model="selectedTech" placeholder="Filtrer par technicien" />
-      <input type="text" v-model="selectedJeton" placeholder="Filtrer par jeton" />
-      <input type="text" v-model="selectedSociete" placeholder="Filtrer par société" />
-      <button @click="clearFilters">Effacer</button>
+      <div class="filter-group">
+        <label for="filter-date">Date</label>
+        <input type="date" id="filter-date" v-model="selectedDate" placeholder="Filtrer par date" />
+      </div>
+      <div class="filter-group">
+        <label for="filter-tech">Technicien</label>
+        <input type="text" id="filter-tech" v-model="selectedTech" placeholder="Filtrer par technicien" />
+      </div>
+      <div class="filter-group">
+        <label for="filter-jeton">Jeton</label>
+        <input type="text" id="filter-jeton" v-model="selectedJeton" placeholder="Filtrer par jeton" />
+      </div>
+      <div class="filter-group">
+        <label for="filter-societe">Société</label>
+        <input type="text" id="filter-societe" v-model="selectedSociete" placeholder="Filtrer par société" />
+      </div>
+      <div class="filter-actions">
+        <button @click="clearFilters">Effacer</button>
+      </div>
     </div>
-
-    <!-- Tableau complet -->
-    <table>
-      <thead>
-        <tr>
-          <th>Jeton</th>
-          <th>Date</th>
-          <th>Tech</th>
-          <th>Numéro</th>
-          <th>Nouveaux Tech</th>
-          <th>Zone Manager</th>
-          <th>Clôture Tech</th>
-          <th>Réf PM</th>
-          <th>Appel Tech</th>
-          <th>Synchro</th>
-          <th>Secteur</th>
-          <th>Type Échec</th>
-          <th>PEC par</th>
-          <th>Résultat</th>
-          <th>Diagnostic</th>
-          <th>Action</th>
-          <th>Manager</th>
-          <th>Société</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="item in paginatedDebriefs" :key="item.id" @click="openPopup(item)" class="clickable">
-          <td>{{ item.jeton || '-' }}</td>
-          <td>{{ item.date || '-' }}</td>
-          <td>{{ item.tech || '-' }}</td>
-          <td>{{ item.numero_technicien || '-' }}</td>
-          <td>{{ item.nouveaux_tech || '-' }}</td>
-          <td>{{ item.zone_manager || '-' }}</td>
-          <td>{{ item.code_cloture_technicien || '-' }}</td>
-          <td>{{ item.reference_pm || '-' }}</td>
-          <td>{{ item.appel_tech || '-' }}</td>
-          <td :class="{
-            'synchro-echec': item.synchro === 'Echec',
-            'synchro-taguees': item.synchro === 'Taguées'
-          }">
-            {{ item.synchro || '-' }}
-          </td>
-          <td>{{ item.secteur || '-' }}</td>
-          <td>{{ item.type_echec || '-' }}</td>
-          <td>{{ item.pec_par || '-' }}</td>
-          <td>{{ item.resultat_controle || '-' }}</td>
-          <td>{{ item.diagnostic || '-' }}</td>
-          <td>{{ item.action || '-' }}</td>
-          <td>{{ item.manager || '-' }}</td>
-          <td>{{ item.societe || '-' }}</td>
-        </tr>
-      </tbody>
-    </table>
 
     <!-- Pagination -->
     <div class="pagination">
-      <button @click="prevPage" :disabled="currentPage === 1">Précédent</button>
-      <span>Page {{ currentPage }} sur {{ totalPages }}</span>
-      <button @click="nextPage" :disabled="currentPage === totalPages">Suivant</button>
+      <button :disabled="currentPage === 1" @click="currentPage--">Précédent</button>
+      <span>Page {{ currentPage }} / {{ totalPages }}</span>
+      <button :disabled="currentPage === totalPages" @click="currentPage++">Suivant</button>
+    </div>
+
+    <!-- Tableau principal -->
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th class="thi">Jeton</th>
+            <th>Date</th>
+            <th>Dep</th>
+            <th>Tech</th>
+            <th>Société</th>
+            <th>Clôture Tech</th>
+            <th>Appel Tech</th>
+            <th>Synchro</th>
+            <th>Type Échec</th>
+            <th>PEC par</th>
+            <th>Résultat</th>
+            <th>Diagnostic</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="item in paginatedDebriefs" :key="item.id">
+            <td class="thi clickable" @click="openPopup(item)">{{ item.jeton || '-' }}</td>
+            <td>{{ item.date || '-' }}</td>
+            <td>{{ item.secteur || '-' }}</td>
+            <td>{{ item.tech || '-' }}</td>
+            <td>{{ item.societe || '-' }}</td>
+            <td>{{ item.code_cloture_technicien || '-' }}</td>
+            <td>{{ item.appel_tech || '-' }}</td>
+            <td :class="{
+              'synchro-echec': item.synchro === 'Echec',
+              'synchro-taguees': item.synchro === 'Taguées'
+            }">
+              {{ item.synchro || '-' }}
+            </td>
+            <td>{{ item.type_echec || '-' }}</td>
+            <td>{{ item.pec_par || '-' }}</td>
+            <td>{{ item.resultat_controle || '-' }}</td>
+            <td>{{ item.diagnostic || '-' }}</td>
+            <td>{{ item.action || '-' }}</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
 
     <!-- Popup de modification -->
-    <div v-if="showPopup" class="popup">
-      <div class="popup-content">
+    <div v-if="showPopup" class="popup-overlay" @click="closePopup">
+      <div class="popup-content" @click.stop>
         <h3>Modifier le Debrief</h3>
         <p><strong>Jeton :</strong> {{ selectedItem.jeton }}</p>
 
@@ -116,7 +121,7 @@ export default {
       selectedJeton: '',
       selectedSociete: '',
       currentPage: 1,
-      perPage: 10,
+      itemsPerPage: 50,
       showPopup: false,
       selectedItem: null,
       reason: ''
@@ -133,11 +138,11 @@ export default {
       });
     },
     totalPages() {
-      return Math.ceil(this.filteredDebriefs.length / this.perPage);
+      return Math.ceil(this.filteredDebriefs.length / this.itemsPerPage);
     },
     paginatedDebriefs() {
-      const start = (this.currentPage - 1) * this.perPage;
-      return this.filteredDebriefs.slice(start, start + this.perPage);
+      const start = (this.currentPage - 1) * this.itemsPerPage;
+      return this.filteredDebriefs.slice(start, start + this.itemsPerPage);
     }
   },
   methods: {
@@ -176,17 +181,11 @@ export default {
         });
         this.reason = 'Mise à jour réussie.';
         this.fetchDebriefs();
-        this.closePopup();
+        setTimeout(() => this.closePopup(), 1000);
       } catch (err) {
         console.error('Erreur mise à jour debrief', err);
         this.reason = 'Erreur lors de la mise à jour.';
       }
-    },
-    nextPage() {
-      if (this.currentPage < this.totalPages) this.currentPage++;
-    },
-    prevPage() {
-      if (this.currentPage > 1) this.currentPage--;
     }
   },
   mounted() {
@@ -196,33 +195,53 @@ export default {
 </script>
 
 <style scoped>
-/* style conservé */
 .main-content {
-  margin-left: 200px;
-  margin-top: 80px;
-  padding: 20px;
-  width: calc(100% - 250px);
-  min-height: calc(100vh - 80px);
+  width: 95%;
+  padding: 10px;
   background-color: #f8f9fa;
   color: #333;
   border-radius: 8px;
   box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
 }
 
+/* Filtres */
 .filters {
-  margin-bottom: 15px;
+  width: 80%;
+  margin-bottom: 20px;
+  padding: 10px;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
   display: flex;
-  gap: 10px;
   flex-wrap: wrap;
+  gap: 15px;
 }
 
-.filters input {
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 200px;
+}
+
+.filter-group label {
+  margin-bottom: 5px;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.filter-group input,
+.filter-group select {
   padding: 8px;
-  border: 1px solid #ccc;
+  border: 1px solid #ddd;
   border-radius: 4px;
 }
 
-.filters button {
+.filter-actions {
+  display: flex;
+  align-items: flex-end;
+}
+
+.filter-actions button {
   padding: 8px 16px;
   background-color: #007bff;
   color: #fff;
@@ -231,42 +250,50 @@ export default {
   cursor: pointer;
 }
 
-.filters button:hover {
+.filter-actions button:hover {
   background-color: #0056b3;
 }
 
-.clickable {
-  cursor: pointer;
+/* Tableau */
+.table-wrapper {
+  width: 85%;
+  overflow-x: auto;
+  border-radius: 8px;
+  background-color: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 table {
-  font-size: 8px;
   width: 100%;
   border-collapse: collapse;
-  margin-top: 20px;
-  background-color: #ffffff;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  font-size: 13px;
+  table-layout: fixed;
 }
 
 th, td {
-  font-size: 8px;
   border: 1px solid #ddd;
-  padding: 10px;
-  text-align: left;
-  vertical-align: top;
+  padding: 5px;
+  text-align: center;
+  font-size: 9px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.thi {
+  width: 120px;
 }
 
 th {
-  font-size: 8px;
-  background-color: #000;
-  color: #fff;
+  background-color: #000000;
+  color: white;
   text-transform: uppercase;
   font-weight: bold;
+  
+  top: 0;
+  z-index: 10;
 }
 
+/* Styles alternés pour les lignes */
 tbody tr:nth-child(odd) {
   background-color: #f9f9f9;
 }
@@ -280,6 +307,7 @@ tbody tr:hover {
   transition: background-color 0.3s ease-in-out;
 }
 
+/* Statuts spécifiques */
 .synchro-echec {
   background-color: #f8d7da;
   color: #721c24;
@@ -290,20 +318,49 @@ tbody tr:hover {
   color: #856404;
 }
 
+/* Pagination */
 .pagination {
-  margin: 20px;
+  margin-top: 15px;
   display: flex;
-  gap: 10px;
   align-items: center;
+  justify-content: center;
+  gap: 15px;
+  padding: 10px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-.popup {
+.pagination button {
+  padding: 6px 12px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.pagination button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.pagination button:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+.pagination span {
+  font-weight: bold;
+}
+
+/* Popup */
+.popup-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0,0,0,0.5);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -312,12 +369,12 @@ tbody tr:hover {
 
 .popup-content {
   background: #fff;
-  padding: 20px 30px;
-  border-radius: 10px;
-  width: 500px;
-  max-width: 90%;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  font-size: 14px;
+  padding: 20px;
+  border-radius: 8px;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  position: relative;
 }
 
 .popup-content h3 {
@@ -376,5 +433,38 @@ tbody tr:hover {
   color: green;
   font-weight: bold;
   text-align: center;
+}
+
+.clickable {
+  cursor: pointer;
+  text-decoration: underline;
+  color: #007bff;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .main-content {
+    width: 100%;
+    padding: 5px;
+  }
+  
+  .filters {
+    width: 95%;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .filter-group {
+    flex: 1 1 auto;
+  }
+  
+  .table-wrapper {
+    width: 100%;
+  }
+  
+  th, td {
+    padding: 4px;
+    font-size: 8px;
+  }
 }
 </style>

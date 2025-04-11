@@ -1,170 +1,164 @@
 <template>
-  <div class="main-content">
-    <h2>Interventions RACC</h2>
-    <p>Suivi des interventions de raccordement.</p>
+  <div class="stat1-container">
+    <h2>Évolution horaire des statuts OK/NOK - SAV / RACC</h2>
 
-    <!-- Tableau des interventions RACC -->
-    <div class="table-container">
-      <table>
-        <thead>
-          <tr>
-            <th>Numéro de jeton</th>
-            <th>Date d'intervention</th>
-            <th>Heure de début</th>
-            <th>Technicien initial</th>
-            <th>Technicien intervenant</th>
-            <th>Nbr NOK</th>
-            <th>Nbr OK</th>
-            <th>Total interventions</th>
-            <th>Référence PM</th>
-            <th>Dernier échec</th>
-            <th>Secteur</th>
-            <th>Contre appel client</th>
-            <th>Sécurité</th>
-            <th>Heure démarrage</th>
-            <th>Heure clôture</th>
-            <th>Synchro</th>
-            <th>Résultat JJ</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="intervention in interventionsRACC" :key="intervention.numero_jeton">
-            <td>{{ intervention.numero_jeton }}</td>
-            <td>{{ intervention.date_intervention }}</td>
-            <td>{{ intervention.heure_debut }}</td>
-            <td>{{ intervention.techniciens_initial }}</td>
-            <td>{{ intervention.techniciens_intervenant }}</td>
-            <td>{{ intervention.nbr_nok }}</td>
-            <td>{{ intervention.nbr_ok }}</td>
-            <td>{{ intervention.total_interventions }}</td>
-            <td>{{ intervention.ref_pm }}</td>
-            <td>{{ intervention.dernier_echec }}</td>
-            <td>{{ intervention.secteur }}</td>
-            <td>{{ intervention.contre_appel_client }}</td>
-            <td>{{ intervention.secu }}</td>
-            <td>{{ intervention.heure_demarrage }}</td>
-            <td>{{ intervention.heure_cloture }}</td>
-            <td :class="{ 'ok-cell': intervention.synchro === 'OK', 'nok-cell': intervention.synchro === 'NOK' }">
-              {{ intervention.synchro }}
-            </td>
-            <td>{{ intervention.resultat_jj }}</td>
-          </tr>
-        </tbody>
-      </table>
+    <div class="filters">
+      <input type="date" v-model="selectedDate" />
     </div>
+
+    <canvas ref="lineChartCanvas" class="chart"></canvas>
   </div>
 </template>
 
 <script>
-import axios from 'axios';
+import {
+  Chart,
+  LineController,
+  LineElement,
+  PointElement,
+  LinearScale,
+  CategoryScale,
+  Tooltip,
+  Legend
+} from "chart.js";
+import axios from "axios";
+
+Chart.register(LineController, LineElement, PointElement, LinearScale, CategoryScale, Tooltip, Legend);
 
 export default {
-  name: "InterventionsRACC",
+  name: "Stat1",
   data() {
     return {
-      interventionsRACC: [], // Liste des interventions RACC
+      rawData: [],
+      selectedDate: new Date().toISOString().split("T")[0],
+      hourLabels: ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"],
+      chartInstance: null,
     };
   },
-  created() {
-    this.fetchInterventionsRACC(); // Récupérer les données au chargement du composant
+  watch: {
+    selectedDate() {
+      this.drawChart();
+    }
+  },
+  mounted() {
+    this.loadData();
   },
   methods: {
-    async fetchInterventionsRACC() {
-      try {
-        const response = await axios.get('/api/interventionsracc/'); // Appel à l'API Django
-        this.interventionsRACC = response.data; // Mettre à jour la liste des interventions
-      } catch (error) {
-        console.error("Erreur lors de la récupération des interventions RACC:", error);
-      }
+    loadData() {
+      axios
+        .get(`${import.meta.env.VITE_API_URL}/api/gantt/`)
+        .then((res) => {
+          this.rawData = res.data;
+          this.drawChart();
+        })
+        .catch((err) => console.error("Erreur API :", err));
     },
-  },
+    drawChart() {
+      if (!this.$refs.lineChartCanvas) return;
+      if (this.chartInstance) this.chartInstance.destroy();
+
+      const ctx = this.$refs.lineChartCanvas.getContext("2d");
+
+      const savOk = this.hourLabels.map((h) => this.getPercentage(h, "SAV", "OK"));
+      const savNok = this.hourLabels.map((h) => this.getPercentage(h, "SAV", "NOK"));
+      const raccOk = this.hourLabels.map((h) => this.getPercentage(h, "RACC", "OK"));
+      const raccNok = this.hourLabels.map((h) => this.getPercentage(h, "RACC", "NOK"));
+
+      this.chartInstance = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: this.hourLabels,
+          datasets: [
+            {
+              label: "SAV OK",
+              data: savOk,
+              borderColor: "green",
+              borderDash: [4, 4],
+              fill: false,
+              tension: 0.3
+            },
+            {
+              label: "SAV NOK",
+              data: savNok,
+              borderColor: "orange",
+              borderDash: [4, 4],
+              fill: false,
+              tension: 0.3
+            },
+            {
+              label: "RACC OK",
+              data: raccOk,
+              borderColor: "blue",
+              fill: false,
+              tension: 0.3
+            },
+            {
+              label: "RACC NOK",
+              data: raccNok,
+              borderColor: "red",
+              fill: false,
+              tension: 0.3
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              position: "top"
+            },
+            tooltip: {
+              callbacks: {
+                label: function (ctx) {
+                  return `${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)}%`;
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 100,
+              ticks: {
+                callback: val => `${val}%`
+              }
+            }
+          }
+        }
+      });
+    },
+    getPercentage(hour, type, status) {
+      const field = `heure_${hour.replace(":", "")}`;
+      const filtered = this.rawData.filter(d => d.date_intervention === this.selectedDate);
+
+      let count = 0;
+      let total = 0;
+
+      filtered.forEach(entry => {
+        const val = entry[field];
+        if (val && val.toLowerCase().includes(type.toLowerCase())) {
+          total++;
+          if (val.toLowerCase().includes(status.toLowerCase())) count++;
+        }
+      });
+
+      return total > 0 ? (count / total) * 100 : 0;
+    }
+  }
 };
 </script>
 
 <style scoped>
-.main-content {
-  width: 95%;
+.stat1-container {
+  width: 90%;
+  margin: auto;
   padding: 20px;
-  background-color: #f8f9fa;
-  color: #333;
-  border-radius: 8px;
-  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
 }
-
-.table-container {
+.filters {
+  margin-bottom: 20px;
+}
+.chart {
   width: 100%;
-  overflow-x: auto; /* Barre de défilement horizontale */
-  border-radius: 8px;
-  max-width: 100vw;
-  white-space: nowrap;
-  background-color: #ffffff;
-  margin-top: 20px;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-  min-width: 1200px;
-  table-layout: fixed; /* Force les colonnes à avoir la même largeur */
-}
-
-th, td {
-  border: 1px solid #ddd;
-  padding: 10px;
-  text-align: left;
-  white-space: nowrap;
-  width: 120px; /* Largeur fixe pour chaque colonne */
-}
-
-th {
-  background-color: #000000;
-  color: white;
-  text-transform: uppercase;
-  font-weight: bold;
-}
-
-td {
-  color: #333;
-}
-
-/* Alternance de couleur pour les lignes */
-tbody tr:nth-child(odd) {
-  background-color: #f9f9f9;
-}
-
-tbody tr:nth-child(even) {
-  background-color: #ffffff;
-}
-
-/* Effet hover sur les lignes */
-tbody tr:hover {
-  background-color: #e3f2fd;
-  transition: background-color 0.3s ease-in-out;
-}
-
-/* Styles pour les cellules OK et NOK */
-.ok-cell {
-  background-color: #c8e6c9; /* Vert clair */
-}
-
-.nok-cell {
-  background-color: #ffcc80; /* Orange clair */
-}
-
-@media (max-width: 768px) {
-  .table-container {
-    width: 90%;
-    margin-left: 10px;
-  }
-
-  table {
-    font-size: 12px;
-  }
-
-  th, td {
-    padding: 8px;
-    width: 100px; /* Ajustez la largeur pour les petits écrans */
-  }
+  max-height: 400px;
 }
 </style>

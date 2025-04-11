@@ -43,6 +43,7 @@ export default {
       
       { label: "Gantt", path: "/gantt" },
       { label: "Relance JJ", path: "/relancejj" },
+      {label:"Analytiques",path:"/analytiques"},
       {
         label: "Débrief",
         subItems: [
@@ -53,13 +54,13 @@ export default {
       { label: "Contrôle Photo (à chaud)", path: "/control-photo" },
       { label: "Contrôle à Froid", path: "/control-froid" },
      
-      {
+      /*{
         label: "Interventions Sécurisées",
         subItems: [
           { label: "SAV", path: "/interventions/sav" },
           { label: "RACC", path: "/interventions/racc" },
         ],
-      },
+      },*/
       { label: "Paramètres", path: "/parametres" },
     ];
 

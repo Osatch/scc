@@ -1,21 +1,20 @@
 <template>
   <div class="form-container">
-    <h2>Ajouter un Technicien</h2>
+    <h2 class="form-title">Ajouter un Technicien</h2>
     <form @submit.prevent="submitForm">
       <div class="form-grid">
-        <!-- ID Technicien -->
+        <!-- Ligne 1 -->
         <div class="form-group">
           <label for="id_tech">ID Technicien</label>
           <input type="text" id="id_tech" v-model="formData.id_tech" required />
         </div>
 
-        <!-- Nom et Prénom -->
-        <div class="form-group">
+        <div class="form-group spaced-group">
           <label for="nom_tech">Nom et Prénom</label>
           <input type="text" id="nom_tech" v-model="formData.nom_tech" required />
         </div>
 
-        <!-- Département -->
+        <!-- Ligne 2 -->
         <div class="form-group">
           <label for="departement">Département</label>
           <select id="departement" v-model="formData.departement" required>
@@ -23,13 +22,12 @@
           </select>
         </div>
 
-        <!-- Log Free -->
-        <div class="form-group">
+        <div class="form-group spaced-group">
           <label for="log_free">Log Free</label>
           <input type="text" id="log_free" v-model="formData.log_free" required />
         </div>
 
-        <!-- Compétence -->
+        <!-- Ligne 3 -->
         <div class="form-group">
           <label for="competence">Compétence</label>
           <select id="competence" v-model="formData.competence" required>
@@ -38,13 +36,12 @@
           </select>
         </div>
 
-        <!-- Actif Depuis -->
-        <div class="form-group">
+        <div class="form-group spaced-group">
           <label for="actif_depuis">Actif Depuis</label>
           <input type="date" id="actif_depuis" v-model="formData.actif_depuis" required />
         </div>
 
-        <!-- Contrôle Photo -->
+        <!-- Ligne 4 -->
         <div class="form-group">
           <label for="controle_photo">Contrôle Photo</label>
           <select id="controle_photo" v-model="formData.controle_photo" required>
@@ -53,13 +50,12 @@
           </select>
         </div>
 
-        <!-- Manager -->
-        <div class="form-group">
+        <div class="form-group spaced-group">
           <label for="manager">Manager</label>
           <input type="text" id="manager" v-model="formData.manager" required />
         </div>
 
-        <!-- Zone -->
+        <!-- Ligne 5 -->
         <div class="form-group">
           <label for="zone">Zone</label>
           <select id="zone" v-model="formData.zone" required>
@@ -68,8 +64,7 @@
           </select>
         </div>
 
-        <!-- Grille Actif -->
-        <div class="form-group">
+        <div class="form-group spaced-group">
           <label for="grille_actif">Grille Actif</label>
           <select id="grille_actif" v-model="formData.grille_actif" required>
             <option value="OUI">OUI</option>
@@ -77,29 +72,27 @@
           </select>
         </div>
 
-        <!-- Log Technicien -->
+        <!-- Ligne 6 -->
         <div class="form-group">
           <label for="log_technicien">Log Technicien</label>
           <input type="text" id="log_technicien" v-model="formData.log_technicien" required />
         </div>
 
-        <!-- Numéro du Technicien (optionnel) -->
-        <div class="form-group">
+        <div class="form-group spaced-group">
           <label for="numero_technicien">Numéro du Technicien</label>
           <input type="text" id="numero_technicien" v-model="formData.numero_technicien" />
         </div>
 
-        <!-- Société (optionnel) -->
-        <div class="form-group">
+        <!-- Ligne 7 -->
+        <div class="form-group full-width">
           <label for="societe">Société</label>
           <input type="text" id="societe" v-model="formData.societe" />
         </div>
       </div>
 
-      <!-- Boutons -->
       <div class="form-actions">
-        <button type="submit">Valider</button>
-        <button type="button" @click="cancelForm">Annuler</button>
+        <button type="submit" class="btn-submit">Valider</button>
+        <button type="button" @click="cancelForm" class="btn-cancel">Annuler</button>
       </div>
     </form>
   </div>
@@ -126,19 +119,15 @@ export default {
         numero_technicien: "",
         societe: ""
       },
-      // Génère une liste de numéros de département de 1 à 95
       departements: Array.from({ length: 95 }, (_, i) => (i + 1).toString()),
     };
   },
   methods: {
     submitForm() {
-      // Remplacez l'URL par celle de votre API
       axios
         .post(`${import.meta.env.VITE_API_URL}/api/parametres/`, this.formData)
         .then((response) => {
-          // Émettre l'événement "submit" avec les données de la réponse si nécessaire
           this.$emit("submit", response.data);
-          // Réinitialiser le formulaire après une soumission réussie
           this.resetForm();
         })
         .catch((error) => {
@@ -171,77 +160,97 @@ export default {
 
 <style scoped>
 .form-container {
-  max-width: 800px;
+  max-width: 850px;
   margin: 0 auto;
-  padding: 30px;
-  background-color: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  font-size: 10px;
+}
+
+.form-title {
+  text-align: center;
+  color: #2c3e50;
+  margin-bottom: 20px;
+  font-size: 1.8em;
 }
 
 .form-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
+  gap: 15px;
 }
 
 .form-group {
-  margin: 10px;
-  margin-bottom: 0;
+  margin-bottom: 12px;
+}
+
+.spaced-group {
+  margin-left: 15px;
+}
+
+.full-width {
+  grid-column: span 2;
 }
 
 label {
   display: block;
-  margin-bottom: 8px;
-  font-weight: 600;
-  color: #333;
+  margin-bottom: 4px;
+  font-weight: 500;
+  color: #495057;
+  font-size: 1.1em;
 }
 
 input, select {
   width: 100%;
-  padding: 12px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  font-size: 14px;
-  background-color: #f9f9f9;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
-  color: #000;
+  padding: 8px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 1em;
+  background-color: #fff;
+  transition: all 0.2s;
+  color: #212529;
 }
 
 input:focus, select:focus {
-  border-color: #007bff;
-  box-shadow: 0px 0px 5px rgba(0, 123, 255, 0.5);
+  border-color: #80bdff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
   outline: none;
-}
-
-button {
-  padding: 12px 24px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 600;
-  transition: background-color 0.3s ease;
-}
-
-button[type="button"] {
-  background-color: #6c757d;
-}
-
-button:hover {
-  background-color: #0056b3;
-}
-
-button[type="button"]:hover {
-  background-color: #5a6268;
 }
 
 .form-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
-  margin-top: 20px;
+  gap: 8px;
+  margin-top: 15px;
+}
+
+button {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1.1em;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.btn-submit {
+  background-color: #28a745;
+  color: white;
+}
+
+.btn-submit:hover {
+  background-color: #218838;
+}
+
+.btn-cancel {
+  background-color: #6c757d;
+  color: white;
+}
+
+.btn-cancel:hover {
+  background-color: #5a6268;
 }
 </style>
