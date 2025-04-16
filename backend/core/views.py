@@ -555,3 +555,58 @@ def upload_ard_file(request):
         return JsonResponse({'status': 'success', 'message': f'Fichier sauvegardé dans {save_path}'})
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+
+#--------------------------------------------------------------------------------------------------
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def upload_and_process_ard(request):
+    from datetime import date
+    import time, io, os
+    from django.conf import settings
+    from .models import ImportARDLog
+    from .serializers import ImportARDLogSerializer
+    from django.core.management import call_command
+
+    try:
+        # 📁 Trouver le dernier fichier CSV dans Bot/ard2
+        save_dir = os.path.join(settings.BASE_DIR, 'Bot', 'ard2')
+        os.makedirs(save_dir, exist_ok=True)
+
+        csv_files = [f for f in os.listdir(save_dir) if f.endswith('.csv')]
+        if not csv_files:
+            return Response({'status': 'error', 'message': 'Aucun fichier CSV trouvé.'}, status=404)
+
+        latest_file = sorted(csv_files, key=lambda x: os.path.getmtime(os.path.join(save_dir, x)), reverse=True)[0]
+        latest_path = os.path.join(save_dir, latest_file)
+
+        start_time = time.time()
+
+        # 🛠 Exécution des scripts Django
+        output = io.StringIO()
+        call_command('import_ard2', stdout=output)
+        call_command('sync_relancejj', stdout=output)
+        call_command('import_gantt', date=str(date.today()), stdout=output)
+        call_command('sync_controlphoto', stdout=output)
+        call_command('sync_dr', stdout=output)
+        call_command('sync_ds', stdout=output)
+
+        duration = round(time.time() - start_time, 2)
+
+        # 📝 Log en base
+        log = ImportARDLog.objects.create(
+            fichier_nom=latest_file,
+            duree=duration,
+            resultat=output.getvalue(),
+            utilisateur=request.user
+        )
+
+        return Response({
+            'status': 'success',
+            'message': '✅ Mise à jour effectuée avec succès.',
+            'duration': duration,
+            'log': ImportARDLogSerializer(log).data
+        })
+
+    except Exception as e:
+        return Response({'status': 'error', 'message': str(e)}, status=500)

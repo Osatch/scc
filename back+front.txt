@@ -35,12 +35,14 @@ stucture du code
     /backend/
     │── manage.py
     │── Bot/
+    │   ├── ard2/
+    │   ├── grdv/
     │   ├── imortard2.py
     │   ├── importgrdv.py
     │── config/
     │   ├── __init__.py
     │   ├── settings.py
-    │   ├── urls.py  # Ce fichier
+    │   ├── urls.py  
     │   ├── wsgi.py
     │   ├── asgi.py
     │── core/
@@ -52,15 +54,24 @@ stucture du code
     │   ├── admin.py
     │   ├── apps.py
     │   ├── migrations/
-    │   ├── management/commands/import_grdv.py 
-    │   ├── templates/
+    │   ├── management/commands/import_grdv.py , import_gantt.py , import_ard.py , import_parametres.py , sync_relancejj.py , sync_controlphoto.py, sync_dr.py , sync_ds.py   │   ├── templates/
     │   ├── static/
+    │   ├── manage.py
+    │   ├── requirements.txt
+    │   ├── schduker.py
     forntend /src/
+    ├── .vscode/
+    ├── node_modules/
+    ├── public/
     ├── components/
     │   ├── views-agent/
     │   │   ├── Agent-ControlPhoto.vue
+    │   │   ├── Agent-ControlFroid.vue
     │   ├── views/
+    │   │   ├── Analytiques.vue
+    │   │   ├── Ard2Table.vue
     │   │   ├── Gantt.vue
+    │   │   ├── GanttStat.vue
     │   │   ├── Relancejj.vue
     │   │   ├── DebriefRACC.vue
     │   │   ├── DebriefSAV.vue
@@ -72,11 +83,19 @@ stucture du code
     │   │   └── Parametres.vue
     │   ├── Sidebar.vue
     │   └── Header.vue
-        └── Dashboard.vue
+    │   └── Dashboard.vue
     │   ├── Agent-dashboard.vue
     │   ├── Agent-sidebar.vue
     ├── App.vue
-    └── main.js
+    ├── main.js
+    ├── rooter.js
+    ├── style.css
+    ├── .env.local
+    ├── frontend-requirements.txt
+    ├── index.html2
+    ├── package-lock.json
+    ├── package.json
+    └── vite.config.js
 
 
 
@@ -90,7 +109,7 @@ github
 
 git init
 git add .
-git commit -m "08-04  +render+db"
+git commit -m "11-04  +render+db"
 git remote add origin https://github.com/Osatch/scc.git
 git push -u origin main --force
 
@@ -163,11 +182,12 @@ Agent :
 
 
 python bot/grdv.py
+python manage.py import_parametres
 python manage.py import_grdv
 python manage.py import_ard2
-python manage.py import_parametres
+
 python manage.py sync_relancejj
-python manage.py import_gantt
+python manage.py import_gantt  --date 2025-04-16
 python manage.py sync_controlphoto
 python manage.py sync_dr
 python manage.py sync_ds
@@ -192,3 +212,14 @@ utilise le bouton reason active c'est non negociable
 Nok
 terlinée +nok ard2 
 
+
+DELETE FROM core_ard2 WHERE DATE(debut_intervention) = '2025-04-15';
+DELETE FROM core_gantt WHERE DATE(date_intervention) = '2025-04-15';
+DELETE FROM core_grdv WHERE DATE(date_rdv) = '2025-04-15';
+DELETE FROM core_relancejj WHERE DATE(date_rdv) = '2025-04-15';
+
+.env.local
+
+#VITE_API_URL=http://127.0.0.1:8000
+VITE_API_URL=http://192.168.127.28:8000
+#VITE_API_URL=http://192.168.127.4:8000

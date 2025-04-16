@@ -22,6 +22,7 @@ from .views import (
     commentaire_list,
     commentaire_detail,  # Vues de commentaire 
     upload_ard_file,
+    upload_and_process_ard,# historique ard2 
 )
 
 urlpatterns = [
@@ -94,4 +95,6 @@ urlpatterns = [
 
     #import ard2 file le csv
     path('upload_ard_file/', upload_ard_file),
+    #l'import 
+    path('upload_and_process_ard/', upload_and_process_ard, name='upload_and_process_ard'),
 ]

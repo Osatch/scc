@@ -4,37 +4,22 @@
     <div class="filters">
       <div class="filter-group">
         <label for="filter-departement">Département</label>
-        <input
-          type="text"
-          id="filter-departement"
-          v-model="selectedDepartement"
-          placeholder="Filtrer par département"
-        />
+        <input type="text" id="filter-departement" v-model="selectedDepartement" placeholder="Filtrer par département" />
       </div>
       <div class="filter-group">
         <label for="filter-technicien">Technicien</label>
-        <input
-          type="text"
-          id="filter-technicien"
-          v-model="selectedTechnicien"
-          placeholder="Filtrer par technicien"
-        />
+        <input type="text" id="filter-technicien" v-model="selectedTechnicien" placeholder="Filtrer par technicien" />
       </div>
       <div class="filter-group">
         <label for="filter-date">Date</label>
-        <input
-          type="date"
-          id="filter-date"
-          v-model="selectedDate"
-          placeholder="Filtrer par date"
-        />
+        <input type="date" id="filter-date" v-model="selectedDate" placeholder="Filtrer par date" />
       </div>
       <div class="filter-actions">
         <button @click="clearFilters">Effacer</button>
       </div>
     </div>
 
-    <!-- Tableau principal -->
+    <!-- Tableau -->
     <div class="table-wrapper">
       <table>
         <thead>
@@ -43,16 +28,7 @@
             <th>Dép</th>
             <th class="thi">Intervenant</th>
             <th>Société</th>
-            <th>08:00</th>
-            <th>09:00</th>
-            <th>10:00</th>
-            <th>11:00</th>
-            <th>12:00</th>
-            <th>13:00</th>
-            <th>14:00</th>
-            <th>15:00</th>
-            <th>16:00</th>
-            <th>17:00</th>
+            <th v-for="hour in hourFields" :key="hour">{{ hour }}:00</th>
             <th>% Transfo</th>
             <th>% Remp</th>
           </tr>
@@ -61,48 +37,21 @@
           <tr v-for="entry in paginatedParametres" :key="entry.id">
             <td class="thi">{{ formatDate(entry.date_intervention) }}</td>
             <td>{{ entry.departement }}</td>
-            <td>{{ entry.nom_intervenant }}</td>
+            <td class="clickable-name" @click="showTechnicianStats(entry.nom_intervenant)">
+              {{ entry.nom_intervenant }}
+            </td>
             <td>{{ entry.societe }}</td>
-            <td 
-              :class="getCellClass(entry.heure_08)" 
-              @click="showDetails(entry, '08')"
-            >{{ entry.heure_08 }}</td>
-            <td 
-              :class="getCellClass(entry.heure_09)" 
-              @click="showDetails(entry, '09')"
-            >{{ entry.heure_09 }}</td>
-            <td 
-              :class="getCellClass(entry.heure_10)" 
-              @click="showDetails(entry, '10')"
-            >{{ entry.heure_10 }}</td>
-            <td 
-              :class="getCellClass(entry.heure_11)" 
-              @click="showDetails(entry, '11')"
-            >{{ entry.heure_11 }}</td>
-            <td 
-              :class="getCellClass(entry.heure_12)" 
-              @click="showDetails(entry, '12')"
-            >{{ entry.heure_12 }}</td>
-            <td 
-              :class="getCellClass(entry.heure_13)" 
-              @click="showDetails(entry, '13')"
-            >{{ entry.heure_13 }}</td>
-            <td 
-              :class="getCellClass(entry.heure_14)" 
-              @click="showDetails(entry, '14')"
-            >{{ entry.heure_14 }}</td>
-            <td 
-              :class="getCellClass(entry.heure_15)" 
-              @click="showDetails(entry, '15')"
-            >{{ entry.heure_15 }}</td>
-            <td 
-              :class="getCellClass(entry.heure_16)" 
-              @click="showDetails(entry, '16')"
-            >{{ entry.heure_16 }}</td>
-            <td 
-              :class="getCellClass(entry.heure_17)" 
-              @click="showDetails(entry, '17')"
-            >{{ entry.heure_17 }}</td>
+            <td
+              v-for="hour in hourFields"
+              :key="hour"
+              :class="getCellClass(entry[`heure_${hour}`])"
+              @click="showDetails(entry, hour)"
+            >
+              <span>
+                {{ entry[`heure_${hour}`] }}
+                <span v-if="isLongIntervention(hour, entry)" class="badge-blink">⚠️</span>
+              </span>
+            </td>
             <td>{{ formatPercentage(entry.taux_transfo) }}</td>
             <td>{{ formatPercentage(entry.taux_remplissage) }}</td>
           </tr>
@@ -110,7 +59,7 @@
       </table>
     </div>
 
-    <!-- Popup de détails -->
+    <!-- Modal Détails -->
     <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
       <div class="modal-content">
         <div class="modal-header">
@@ -123,6 +72,85 @@
           <p><strong>Créneau:</strong> {{ modalHour }}h</p>
           <p><strong>Statut:</strong> {{ modalStatus }}</p>
           <p><strong>Jeton:</strong> {{ modalJeton || 'Non disponible' }}</p>
+          <p><strong>Heure début:</strong> {{ formatHour(modalData[`heure_debut_${modalHour}`]) || 'Non renseignée' }}</p>
+          <p><strong>Heure fin:</strong> {{ formatHour(modalData[`heure_fin_${modalHour}`]) || 'Non renseignée' }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Statistiques Technicien -->
+    <div v-if="showTechnicianModal" class="modal-overlay" @click.self="showTechnicianModal = false">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Statistiques de {{ technicianStats.name }}</h3>
+          <span class="close-btn" @click="showTechnicianModal = false">&times;</span>
+        </div>
+        <div class="modal-body">
+          <div class="stats-section">
+            <h4>Historique des interventions</h4>
+            <p><strong>Première intervention:</strong> {{ formatDate(technicianStats.firstIntervention?.date_intervention) }}</p>
+            <p><strong>Dernière intervention:</strong> {{ formatDate(technicianStats.lastIntervention?.date_intervention) }}</p>
+            <p><strong>Total interventions:</strong> {{ technicianStats.totalInterventions }}</p>
+            <p><strong>Jours travaillés:</strong> {{ technicianStats.workingDays }}</p>
+          </div>
+
+          <div class="stats-section">
+            <h4>Ratio global</h4>
+            <div class="ratio-container">
+              <div class="ratio-ok" :style="{ width: (technicianStats.okCount / technicianStats.totalInterventions * 100) + '%' }"></div>
+              <div class="ratio-nok" :style="{ width: (technicianStats.nokCount / technicianStats.totalInterventions * 100) + '%' }"></div>
+            </div>
+            <div class="ratio-labels">
+              <span>OK: {{ Math.round(technicianStats.okCount / technicianStats.totalInterventions * 100) }}%</span>
+              <span>NOK: {{ Math.round(technicianStats.nokCount / technicianStats.totalInterventions * 100) }}%</span>
+            </div>
+          </div>
+
+          <div class="stats-section">
+            <h4>Moyennes par jour</h4>
+            <p><strong>Interventions/jour:</strong> {{ technicianStats.averagePerDay.toFixed(1) }}</p>
+            <table class="stats-table">
+              <thead>
+                <tr>
+                  <th>Type</th>
+                  <th>Nombre</th>
+                  <th>%</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>SAV</td>
+                  <td>{{ technicianStats.savCount }}</td>
+                  <td>{{ Math.round(technicianStats.savCount / technicianStats.totalInterventions * 100) }}%</td>
+                </tr>
+                <tr>
+                  <td>RACC</td>
+                  <td>{{ technicianStats.raccCount }}</td>
+                  <td>{{ Math.round(technicianStats.raccCount / technicianStats.totalInterventions * 100) }}%</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="stats-section">
+            <h4>Détails par statut</h4>
+            <table class="stats-table">
+              <thead>
+                <tr>
+                  <th>Statut</th>
+                  <th>Nombre</th>
+                  <th>%</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(count, status) in technicianStats.interventionsByStatus" :key="status">
+                  <td>{{ status }}</td>
+                  <td>{{ count }}</td>
+                  <td>{{ Math.round(count / technicianStats.totalInterventions * 100) }}%</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
@@ -146,15 +174,31 @@ export default {
       parametres: [],
       selectedDepartement: "",
       selectedTechnicien: "",
-      selectedDate: "",
+      selectedDate: new Date().toISOString().split("T")[0],
       currentPage: 1,
       itemsPerPage: 50,
-      // Données pour le modal
       showModal: false,
       modalData: {},
       modalHour: '',
       modalStatus: '',
-      modalJeton: ''
+      modalJeton: '',
+      modalHeureDebut: null,
+      modalHeureFin: null,
+      showTechnicianModal: false,
+      technicianStats: {
+        name: '',
+        totalInterventions: 0,
+        okCount: 0,
+        nokCount: 0,
+        savCount: 0,
+        raccCount: 0,
+        interventionsByStatus: {},
+        firstIntervention: null,
+        lastIntervention: null,
+        workingDays: 0,
+        averagePerDay: 0
+      },
+      hourFields: ['08', '09', '10', '11', '12', '13', '14', '15', '16', '17']
     };
   },
   computed: {
@@ -162,14 +206,10 @@ export default {
       return this.parametres.filter((entry) => {
         let matches = true;
         if (this.selectedDepartement) {
-          matches = matches && entry.departement
-            .toLowerCase()
-            .includes(this.selectedDepartement.toLowerCase());
+          matches = matches && entry.departement?.toLowerCase().includes(this.selectedDepartement.toLowerCase());
         }
         if (this.selectedTechnicien) {
-          matches = matches && entry.nom_intervenant
-            .toLowerCase()
-            .includes(this.selectedTechnicien.toLowerCase());
+          matches = matches && entry.nom_intervenant?.toLowerCase().includes(this.selectedTechnicien.toLowerCase());
         }
         if (this.selectedDate) {
           matches = matches && entry.date_intervention === this.selectedDate;
@@ -183,50 +223,20 @@ export default {
     },
     totalPages() {
       return Math.ceil(this.filteredParametres.length / this.itemsPerPage);
-    },
+    }
   },
   mounted() {
-    this.selectedDate = new Date().toISOString().split("T")[0];
     this.loadData();
   },
   methods: {
     loadData() {
-      axios
-        .get(`${import.meta.env.VITE_API_URL}/api/gantt/`)
-        .then((response) => {
+      axios.get(`${import.meta.env.VITE_API_URL}/api/gantt/`)
+        .then(response => {
           this.parametres = response.data;
         })
-        .catch((error) => {
-          console.error("Erreur lors de la récupération des paramètres :", error);
+        .catch(error => {
+          console.error("Erreur lors du chargement des données :", error);
         });
-    },
-    getCellClass(value) {
-      if (!value) return "";
-      if (value.includes("NOK SAV") || value.includes("NOK RACC")) {
-        return "nok-cell";
-      }
-      else if (value.includes("OK SAV") || value.includes("OK RACC")) {
-        return "ok-cell";
-      }
-      else if (value.includes("EN COURS SAV") || value.includes("EN COURS RACC")) {
-        return "inprogress-cell";
-      }
-      else if (value.includes("ALERTE SAV") || value.includes("ALERTE RACC")) {
-        return "alert-cell";
-      }
-      else if (value.includes("PLANIFIÉE SAV") || value.includes("PLANIFIÉE RACC")) {
-        return "planned-cell";
-      }
-      return "";
-    },
-    formatPercentage(value) {
-      if (value === null || value === undefined) return '';
-      return `${Math.round(Number(value))}%`;
-    },
-    formatDate(dateString) {
-      if (!dateString) return '';
-      const date = new Date(dateString);
-      return date.toLocaleDateString('fr-FR');
     },
     clearFilters() {
       this.selectedDepartement = "";
@@ -234,24 +244,102 @@ export default {
       this.selectedDate = new Date().toISOString().split("T")[0];
       this.currentPage = 1;
     },
+    formatDate(dateString) {
+      if (!dateString) return "";
+      const date = new Date(dateString);
+      return date.toLocaleDateString("fr-FR");
+    },
+    formatPercentage(value) {
+      if (value === null || value === undefined) return "";
+      return `${Math.round(Number(value))}%`;
+    },
+    formatHour(value) {
+      if (!value) return null;
+      const d = new Date(`1970-01-01T${value}`);
+      return d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    },
+    getCellClass(value) {
+      if (!value) return "";
+      if (value.includes("NOK")) return "nok-cell";
+      if (value.includes("OK")) return "ok-cell";
+      if (value.includes("EN COURS")) return "inprogress-cell";
+      if (value.includes("ALERTE")) return "alert-cell";
+      if (value.includes("PLANIFIÉE")) return "planned-cell";
+      return "";
+    },
+    isLongIntervention(hour, entry) {
+      const start = entry[`heure_debut_${hour}`];
+      const end = entry[`heure_fin_${hour}`];
+      if (!start || !end) return false;
+      const startDate = new Date(`1970-01-01T${start}`);
+      const endDate = new Date(`1970-01-01T${end}`);
+      const diff = (endDate - startDate) / (1000 * 60 * 60); // heures
+      return diff > 2;
+    },
     showDetails(entry, hour) {
       const statusField = `heure_${hour}`;
       const jetonField = `jeton_${hour}`;
-      
-      if (!entry[statusField]) return;
-      
+      const heureDebutField = `heure_debut_${hour}`;
+      const heureFinField = `heure_fin_${hour}`;
+
       this.modalData = entry;
       this.modalHour = hour;
       this.modalStatus = entry[statusField];
       this.modalJeton = entry[jetonField];
+      this.modalHeureDebut = entry[heureDebutField];
+      this.modalHeureFin = entry[heureFinField];
       this.showModal = true;
     },
     closeModal() {
       this.showModal = false;
+    },
+    showTechnicianStats(technicianName) {
+      const interventions = this.parametres.filter(e => e.nom_intervenant === technicianName);
+      const stats = {
+        name: technicianName,
+        totalInterventions: 0,
+        okCount: 0,
+        nokCount: 0,
+        savCount: 0,
+        raccCount: 0,
+        interventionsByStatus: {},
+        firstIntervention: null,
+        lastIntervention: null,
+        workingDays: new Set(),
+        averagePerDay: 0
+      };
+
+      interventions.forEach(entry => {
+        stats.workingDays.add(entry.date_intervention);
+        const date = new Date(entry.date_intervention);
+        if (!stats.firstIntervention || date < new Date(stats.firstIntervention.date_intervention)) stats.firstIntervention = entry;
+        if (!stats.lastIntervention || date > new Date(stats.lastIntervention.date_intervention)) stats.lastIntervention = entry;
+
+        this.hourFields.forEach(hour => {
+          const value = entry[`heure_${hour}`];
+          if (!value) return;
+
+          stats.totalInterventions++;
+          if (value.includes("OK")) stats.okCount++;
+          if (value.includes("NOK")) stats.nokCount++;
+          if (value.includes("SAV")) stats.savCount++;
+          if (value.includes("RACC")) stats.raccCount++;
+
+          const statusKey = value.trim();
+          stats.interventionsByStatus[statusKey] = (stats.interventionsByStatus[statusKey] || 0) + 1;
+        });
+      });
+
+      stats.workingDays = stats.workingDays.size;
+      stats.averagePerDay = stats.totalInterventions / (stats.workingDays || 1);
+      this.technicianStats = stats;
+      this.showTechnicianModal = true;
     }
-  },
+  }
 };
 </script>
+
+
 
 <style scoped>
 .main-content {
@@ -328,6 +416,7 @@ th, td {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  position: relative;
 }
 .thi{
   width: 120px;
@@ -470,27 +559,46 @@ td[class*="-cell"]:hover {
   position: relative;
 }
 
+/* Badge clignotant pour longue intervention */
+.badge-long {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: red;
+  animation: blink 1s infinite;
+  z-index: 2;
+}
+
+@keyframes blink {
+  0% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
 @media (max-width: 768px) {
   .main-content {
     width: 100%;
     padding: 5px;
   }
-  
+
   .filters {
     width: 95%;
     flex-direction: column;
     gap: 10px;
   }
-  
+
   .filter-group {
     flex: 1 1 auto;
   }
-  
+
   th, td {
     padding: 4px;
     font-size: 8px;
   }
-  
+
   .modal-content {
     width: 95%;
   }

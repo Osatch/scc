@@ -171,6 +171,41 @@ class Gantt(models.Model):
     jeton_16 = models.CharField(max_length=10, blank=True, null=True)
     jeton_17 = models.CharField(max_length=10, blank=True, null=True)
     jeton_18 = models.CharField(max_length=10, blank=True, null=True)
+
+    # Heures début et fin pour chaque créneau
+    heure_debut_08 = models.TimeField(null=True, blank=True)
+    heure_fin_08 = models.TimeField(null=True, blank=True)
+
+    heure_debut_09 = models.TimeField(null=True, blank=True)
+    heure_fin_09 = models.TimeField(null=True, blank=True)
+
+    heure_debut_10 = models.TimeField(null=True, blank=True)
+    heure_fin_10 = models.TimeField(null=True, blank=True)
+
+    heure_debut_11 = models.TimeField(null=True, blank=True)
+    heure_fin_11 = models.TimeField(null=True, blank=True)
+
+    heure_debut_12 = models.TimeField(null=True, blank=True)
+    heure_fin_12 = models.TimeField(null=True, blank=True)
+
+    heure_debut_13 = models.TimeField(null=True, blank=True)
+    heure_fin_13 = models.TimeField(null=True, blank=True)
+
+    heure_debut_14 = models.TimeField(null=True, blank=True)
+    heure_fin_14 = models.TimeField(null=True, blank=True)
+
+    heure_debut_15 = models.TimeField(null=True, blank=True)
+    heure_fin_15 = models.TimeField(null=True, blank=True)
+
+    heure_debut_16 = models.TimeField(null=True, blank=True)
+    heure_fin_16 = models.TimeField(null=True, blank=True)
+
+    heure_debut_17 = models.TimeField(null=True, blank=True)
+    heure_fin_17 = models.TimeField(null=True, blank=True)
+
+    heure_debut_18 = models.TimeField(null=True, blank=True)
+    heure_fin_18 = models.TimeField(null=True, blank=True)
+
     
     # Champs existants (stats et métadonnées)
     taux_transfo = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
@@ -266,13 +301,14 @@ class ARD2(models.Model):
     ]
 
     jeton_commande = models.CharField(max_length=JETON_MAX_LENGTH, unique=True)
-    debut_intervention = models.DateTimeField(null=True, blank=True)  # Autorise None
+    debut_intervention = models.DateTimeField(null=True, blank=True)
     fin_intervention = models.DateTimeField(null=True, blank=True)
     terminee = models.BooleanField(default=False)
     etat_intervention = models.CharField(max_length=3, choices=ETAT_CHOICES)
     technicien = models.CharField(max_length=255)
     departement = models.CharField(max_length=255)
     pm = models.CharField(max_length=PM_MAX_LENGTH)
+    date_rendez_vous = models.DateTimeField(null=True, blank=True)  # ✅ ajout ici
     date_importation = models.DateTimeField(null=True, blank=True)
 
     def save(self, *args, **kwargs):
@@ -936,6 +972,25 @@ class Commentaire(models.Model):
 
 
 
+# models.py
+
+from django.db import models
+from django.conf import settings
+
+class ImportARDLog(models.Model):
+    fichier_nom = models.CharField(max_length=255)
+    import_date = models.DateTimeField(auto_now_add=True)
+    duree = models.FloatField(help_text="Durée en secondes")
+    resultat = models.TextField(help_text="Log brut du traitement")
+    utilisateur = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL
+    )
+
+    def __str__(self):
+        return f"{self.fichier_nom} - {self.import_date.strftime('%Y-%m-%d %H:%M')}"
 
 
-        
+

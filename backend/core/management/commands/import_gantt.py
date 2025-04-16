@@ -1,202 +1,189 @@
-from datetime import datetime
+from datetime import datetime, time
 from django.core.management.base import BaseCommand
-from django.db import transaction
 from django.utils import timezone
+from django.db import transaction
 from core.models import ARD2, RelanceJJ, Gantt
 
 
 class Command(BaseCommand):
-    help = "Importe les interventions avec jetons dans Gantt"
+    help = "Synchronise les interventions dans le Gantt en fonction de l'état réel (optimisé avec bulk_update)"
 
     def add_arguments(self, parser):
         parser.add_argument(
             '--date',
             type=str,
-            help="Date au format YYYY-MM-DD (par défaut aujourd'hui)"
+            help="Date de synchronisation au format YYYY-MM-DD (défaut : aujourd'hui)"
         )
 
     def handle(self, *args, **options):
         date_str = options.get('date')
-        if date_str:
-            try:
-                intervention_date = timezone.datetime.strptime(date_str, '%Y-%m-%d').date()
-            except ValueError:
-                self.stdout.write(self.style.ERROR("Format de date invalide. Utilisez YYYY-MM-DD."))
-                return
-        else:
-            intervention_date = timezone.localdate()
-            date_str = intervention_date.strftime('%Y-%m-%d')
+        intervention_date = timezone.localdate() if not date_str else datetime.strptime(date_str, '%Y-%m-%d').date()
 
-        self.stdout.write(self.style.NOTICE(f"📆 Import Gantt pour le {date_str}"))
+        self.stdout.write(self.style.NOTICE(f"\n📅 Synchronisation GANTT pour le {intervention_date}"))
 
-        # Récupération des ARD2 du jour
-        ard2_qs = ARD2.objects.filter(
-            debut_intervention__date=intervention_date
-        ) | ARD2.objects.filter(
-            fin_intervention__date=intervention_date
-        )
-
-        gantt_data = {}
+        relances = list(RelanceJJ.objects.filter(date_rdv=intervention_date))
+        interventions = {
+            i.jeton_commande: i for i in ARD2.objects.filter(date_rendez_vous__date=intervention_date)
+        }
         now = timezone.localtime()
+        gantt_data = {}
 
-        for ard in ard2_qs:
-            relance = RelanceJJ.objects.filter(jeton_commande=ard.jeton_commande).first()
-            if not relance:
-                self.stdout.write(self.style.WARNING(f"⚠️ Aucune RelanceJJ pour {ard.jeton_commande}"))
+        for relance in relances:
+            jeton = relance.jeton_commande
+            technicien = self.get_technicien(relance.techniciens)
+            heure = max(8, min(self.get_creneau_horaire(relance), 18))
+            slot = f"heure_{heure:02d}"
+            jeton_slot = f"jeton_{heure:02d}"
+
+            intervention = interventions.get(jeton)
+            statut = self.get_statut(relance, intervention, now)
+            if not statut:
                 continue
-
-            activite = (relance.activite or "").upper()
-            heure_prevue = relance.heure_prevue
-            societe = relance.societe or ""
-
-            hour = ard.debut_intervention.hour if ard.debut_intervention else (
-                heure_prevue.hour if heure_prevue else 8
-            )
-            if hour < 8:
-                hour = 8
-            slot = f"heure_{min(hour, 18):02d}"
-            jeton_slot = f"jeton_{min(hour, 18):02d}"  # Champ jeton correspondant
-
-            statut_final = ""
-            etat = (ard.etat_intervention or "").upper()
-
-            if etat == "OK":
-                if activite == "SAV":
-                    statut_final = "OK SAV"
-                elif activite == "RACC":
-                    statut_final = "OK RACC"
-
-            elif etat == "NOK":
-                if ard.debut_intervention and ard.fin_intervention:
-                    if activite == "SAV":
-                        statut_final = "NOK SAV"
-                    elif activite == "RACC":
-                        statut_final = "NOK RACC"
-                elif ard.debut_intervention and not ard.fin_intervention:
-                    if activite == "SAV":
-                        statut_final = "EN COURS SAV"
-                    elif activite == "RACC":
-                        statut_final = "EN COURS RACC"
-                elif not ard.debut_intervention and heure_prevue:
-                    heure_ref = datetime.combine(intervention_date, heure_prevue).replace(tzinfo=timezone.get_current_timezone())
-                    if now > heure_ref:
-                        statut_final = "ALERTE SAV" if activite == "SAV" else "ALERTE RACC"
-                    else:
-                        statut_final = "PLANIFIÉE SAV" if activite == "SAV" else "PLANIFIÉE RACC"
-
-            if not statut_final:
-                self.stdout.write(self.style.WARNING(
-                    f"❌ Pas de statut pour jeton {ard.jeton_commande} (état={etat}, activité={activite}, heure prévue={heure_prevue})"
-                ))
-                continue
-
-            raw_tech = relance.techniciens or ard.technicien or "TECH INCONNU"
-            if "," in raw_tech:
-                technicien = raw_tech.split(",")[1].strip()
-            else:
-                technicien = raw_tech.strip()
 
             if technicien not in gantt_data:
                 gantt_data[technicien] = {
-                    "secteur": int(ard.departement) if ard.departement and ard.departement.isdigit() else 0,
-                    "departement": ard.departement or "",
+                    "secteur": self.get_secteur(intervention, relance),
+                    "departement": relance.departement or (intervention.departement if intervention else ""),
                     "nom_intervenant": technicien,
-                    "societe": societe,
+                    "societe": relance.societe or "",
                     "interventions": {},
-                    "jetons": {}  # Nouveau dictionnaire pour les jetons
+                    "jetons": {},
+                    "heure_debuts": {},
+                    "heure_fins": {},
+                    "total_interventions": 0,
+                    "ok_count": 0,
                 }
 
-            gantt_data[technicien]["interventions"][slot] = statut_final
-            gantt_data[technicien]["jetons"][jeton_slot] = ard.jeton_commande  # Ajout du jeton
+            if jeton in gantt_data[technicien]["jetons"].values():
+                current_jeton = gantt_data[technicien]["jetons"].get(jeton_slot)
+                if current_jeton != jeton:
+                    self.stdout.write(self.style.WARNING(f"⛔ Jeton {jeton} déjà utilisé pour {technicien} – {slot} ignoré"))
+                    continue
 
-        # Compléter avec les RelanceJJ sans intervention ARD2
-        relances_planifiees = RelanceJJ.objects.filter(
-            date_rdv=intervention_date,
-            heure_debut__isnull=True,
-            heure_fin__isnull=True,
-            heure_prevue__isnull=False,
-        ).exclude(
-            jeton_commande__in=[ard.jeton_commande for ard in ard2_qs]
-        )
+            if statut.startswith("EN COURS") and any(
+                v.startswith("EN COURS") for v in gantt_data[technicien]["interventions"].values()
+            ) and slot not in gantt_data[technicien]["interventions"]:
+                self.stdout.write(self.style.WARNING(f"⛔ {technicien} a déjà une intervention EN COURS – {slot} ignoré"))
+                continue
 
-        for relance in relances_planifiees:
-            activite = (relance.activite or "").upper()
-            societe = relance.societe or ""
-            raw_tech = relance.techniciens or "TECH INCONNU"
+            current = gantt_data[technicien]["interventions"].get(slot, "")
+            if not current or self.plus_prioritaire(statut, current):
+                gantt_data[technicien]["interventions"][slot] = statut
+                gantt_data[technicien]["jetons"][jeton_slot] = jeton
+                gantt_data[technicien]["heure_debuts"][f"heure_debut_{heure:02d}"] = relance.heure_debut
+                gantt_data[technicien]["heure_fins"][f"heure_fin_{heure:02d}"] = relance.heure_fin
+                self.stdout.write(self.style.SUCCESS(f"🔄 {technicien} – {slot}: {current or 'VIDE'} → {statut}"))
 
-            if "," in raw_tech:
-                technicien = raw_tech.split(",")[1].strip()
-            else:
-                technicien = raw_tech.strip()
+            gantt_data[technicien]["total_interventions"] += 1
+            if statut.startswith("OK"):
+                gantt_data[technicien]["ok_count"] += 1
 
-            heure_prevue = relance.heure_prevue
-            heure_ref = datetime.combine(intervention_date, heure_prevue).replace(tzinfo=timezone.get_current_timezone())
+        self.save_gantt_bulk(gantt_data, intervention_date)
+        self.stdout.write(self.style.SUCCESS("\n✅ Synchronisation GANTT terminée."))
 
-            statut_final = "ALERTE RACC" if now > heure_ref else "PLANIFIÉE RACC"
-            if activite == "SAV":
-                statut_final = "ALERTE SAV" if now > heure_ref else "PLANIFIÉE SAV"
-
-            hour = heure_prevue.hour if heure_prevue.hour >= 8 else 8
-            slot = f"heure_{min(hour, 18):02d}"
-            jeton_slot = f"jeton_{min(hour, 18):02d}"
-
-            if technicien not in gantt_data:
-                gantt_data[technicien] = {
-                    "secteur": 0,
-                    "departement": relance.departement or "",
-                    "nom_intervenant": technicien,
-                    "societe": societe,
-                    "interventions": {},
-                    "jetons": {}
-                }
-
-            current_status = gantt_data[technicien]["interventions"].get(slot, "")
-            if not current_status or any(x in current_status for x in ["PLANIFIÉE", "ALERTE"]):
-                gantt_data[technicien]["interventions"][slot] = statut_final
-                gantt_data[technicien]["jetons"][jeton_slot] = relance.jeton_commande  # Ajout du jeton
-                self.stdout.write(self.style.NOTICE(f"📝 {statut_final} ajouté pour {technicien} à {slot} (jeton: {relance.jeton_commande})"))
-            else:
-                self.stdout.write(self.style.NOTICE(f"⏭️ Slot {slot} pour {technicien} déjà rempli, non écrasé."))
-
-        # Enregistrement dans Gantt
+    def save_gantt_bulk(self, gantt_data, date):
         with transaction.atomic():
+            existing_map = {
+                g.nom_intervenant: g
+                for g in Gantt.objects.filter(date_intervention=date)
+            }
+
+            to_update = []
+            to_create = []
+
             for tech, data in gantt_data.items():
-                horaires = {}
-                jetons = {}
-                
-                for i in range(8, 19):
-                    h_key = f"heure_{i:02d}"
-                    j_key = f"jeton_{i:02d}"
-                    
-                    # Gestion des statuts
-                    new_statut = data["interventions"].get(h_key, "")
-                    old_statut = getattr(gantt_obj, h_key) if gantt_obj else ""
-                    horaires[h_key] = new_statut if new_statut else old_statut
-                    
-                    # Gestion des jetons
-                    new_jeton = data["jetons"].get(j_key, "")
-                    old_jeton = getattr(gantt_obj, j_key) if gantt_obj else ""
-                    jetons[j_key] = new_jeton if new_jeton else old_jeton
+                horaires = {f"heure_{h:02d}": "" for h in range(8, 19)}
+                jetons = {f"jeton_{h:02d}": "" for h in range(8, 19)}
+                heure_debuts = {f"heure_debut_{h:02d}": None for h in range(8, 19)}
+                heure_fins = {f"heure_fin_{h:02d}": None for h in range(8, 19)}
 
-                ok_count = sum(1 for val in horaires.values() if "OK" in val.upper())
-                filled_count = sum(1 for val in horaires.values() if val)
-                taux_transfo = (ok_count / filled_count * 100) if filled_count else 0
-                taux_remplissage = (filled_count / 11 * 100)
+                for h in range(8, 19):
+                    slot = f"heure_{h:02d}"
+                    jeton_slot = f"jeton_{h:02d}"
+                    heure_debut_slot = f"heure_debut_{h:02d}"
+                    heure_fin_slot = f"heure_fin_{h:02d}"
 
-                gantt_obj, created = Gantt.objects.update_or_create(
-                    nom_intervenant=data["nom_intervenant"],
-                    date_intervention=intervention_date,
-                    defaults={
-                        "secteur": data["secteur"],
-                        "departement": data["departement"],
-                        "societe": data["societe"],
-                        **horaires,
-                        **jetons,  # Ajout des jetons dans la mise à jour
-                        "taux_transfo": taux_transfo,
-                        "taux_remplissage": taux_remplissage,
-                    }
+                    horaires[slot] = data["interventions"].get(slot, "")
+                    jetons[jeton_slot] = data["jetons"].get(jeton_slot, "")
+                    heure_debuts[heure_debut_slot] = data["heure_debuts"].get(heure_debut_slot)
+                    heure_fins[heure_fin_slot] = data["heure_fins"].get(heure_fin_slot)
+
+                total = data["total_interventions"]
+                ok = data["ok_count"]
+                taux_transfo = round((ok / total * 100), 2) if total else 0
+                taux_remplissage = round((total / 5 * 100), 2)
+
+                fields = {
+                    "secteur": data["secteur"],
+                    "departement": data["departement"],
+                    "societe": data["societe"],
+                    "taux_transfo": taux_transfo,
+                    "taux_remplissage": taux_remplissage,
+                    **horaires,
+                    **jetons,
+                    **heure_debuts,
+                    **heure_fins,
+                }
+
+                if tech in existing_map:
+                    gantt = existing_map[tech]
+                    for k, v in fields.items():
+                        setattr(gantt, k, v)
+                    to_update.append(gantt)
+                else:
+                    to_create.append(Gantt(
+                        nom_intervenant=tech,
+                        date_intervention=date,
+                        **fields
+                    ))
+
+            if to_create:
+                Gantt.objects.bulk_create(to_create, batch_size=1000)
+
+            if to_update:
+                Gantt.objects.bulk_update(
+                    to_update,
+                    fields=[
+                        "secteur", "departement", "societe",
+                        "taux_transfo", "taux_remplissage"
+                    ]
+                    + [f"heure_{h:02d}" for h in range(8, 19)]
+                    + [f"jeton_{h:02d}" for h in range(8, 19)]
+                    + [f"heure_debut_{h:02d}" for h in range(8, 19)]
+                    + [f"heure_fin_{h:02d}" for h in range(8, 19)],
+                    batch_size=1000
                 )
-                action = "🆕 Créé" if created else "✅ Mis à jour"
-                self.stdout.write(self.style.SUCCESS(f"{action} Gantt pour {tech} - {date_str}"))
 
-        self.stdout.write(self.style.SUCCESS("🚀 Importation Gantt avec jetons terminée."))
+    def get_statut(self, relance, intervention, now):
+        activite = (relance.activite or "SAV").upper()
+        heure_prevue = relance.heure_prevue or time(8, 0)
+        heure_datetime = datetime.combine(relance.date_rdv, heure_prevue).replace(tzinfo=timezone.get_current_timezone())
+
+        if intervention:
+            if intervention.fin_intervention:
+                return f"OK {activite}" if intervention.etat_intervention == "OK" else f"NOK {activite}"
+            if intervention.debut_intervention:
+                return f"EN COURS {activite}"
+        else:
+            if relance.statut == "Cloturée":
+                return f"OK {activite}"
+            if relance.statut == "Taguée":
+                return f"EN COURS {activite}"
+
+        return f"ALERTE {activite}" if now > heure_datetime else f"PLANIFIÉE {activite}"
+
+    def plus_prioritaire(self, new, old):
+        ordre = ['OK', 'NOK', 'EN COURS', 'ALERTE', 'PLANIFIÉE']
+        idx = lambda s: next((i for i, v in enumerate(ordre) if v in s), 999)
+        return idx(new) < idx(old)
+
+    def get_technicien(self, raw):
+        name = (raw or "TECH INCONNU").strip()
+        return name.split(",")[1].strip() if "," in name else name
+
+    def get_creneau_horaire(self, relance):
+        return (relance.heure_prevue or time(8, 0)).hour
+
+    def get_secteur(self, intervention, relance):
+        dep = intervention.departement if intervention else relance.departement
+        return int(dep) if dep and dep.isdigit() else 0

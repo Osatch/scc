@@ -2,7 +2,7 @@ from rest_framework import serializers
 from django import forms
 from .models import (
     Gantt, GRDV, GanttStatistics, ARD2, Parametres, RelanceJJ, NOK,
-    ControlPhoto, Controlafroid, DebriefRACC, DebriefSAV, InterventionsSAV, InterventionsRACC, Commentaire
+    ControlPhoto, Controlafroid, DebriefRACC, DebriefSAV, InterventionsSAV, InterventionsRACC, Commentaire,ImportARDLog 
 )
 
 # Serializer pour le modèle Gantt
@@ -108,3 +108,13 @@ class ParametresForm(forms.ModelForm):
 # Serializer pour une réponse protégée
 class ProtectedSerializer(serializers.Serializer):
     message = serializers.CharField()
+
+
+# serializers.py
+
+class ImportARDLogSerializer(serializers.ModelSerializer):
+    utilisateur_email = serializers.ReadOnlyField(source='utilisateur.email')
+
+    class Meta:
+        model = ImportARDLog
+        fields = ['id', 'fichier_nom', 'import_date', 'duree', 'resultat', 'utilisateur_email']

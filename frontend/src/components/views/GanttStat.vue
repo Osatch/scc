@@ -3,7 +3,7 @@
     <div class="modal-content" ref="statContent">
       <h2>Statistiques du Gantt</h2>
 
-      <!-- 🎯 Filtres : date + département + société -->
+      <!-- Filtres -->
       <div class="filters">
         <input type="date" v-model="selectedDate" class="filter-input" />
         <select v-model="selectedDepartement" class="filter-input">
@@ -16,27 +16,33 @@
         </select>
       </div>
 
-      <!-- Donuts côte à côte -->
+      <!-- Donuts -->
       <div class="donut-charts">
         <div class="donut-item">
-          <canvas ref="chartSAV" class="donut-canvas" width="100" height="100"></canvas>
+          <div class="donut-container">
+            <canvas ref="chartSAV" class="donut-canvas" width="100" height="100"></canvas>
+            <div class="donut-center-text">{{ savPercentage }}%</div>
+          </div>
           <p class="donut-title">Ratio OK/NOK SAV</p>
           <p class="donut-sub">Données SAV du {{ selectedDate }}</p>
         </div>
         <div class="donut-item">
-          <canvas ref="chartRACC" class="donut-canvas" width="100" height="100"></canvas>
+          <div class="donut-container">
+            <canvas ref="chartRACC" class="donut-canvas" width="100" height="100"></canvas>
+            <div class="donut-center-text">{{ raccPercentage }}%</div>
+          </div>
           <p class="donut-title">Ratio OK/NOK RACC</p>
           <p class="donut-sub">Données RACC du {{ selectedDate }}</p>
         </div>
       </div>
 
-      <!-- Légende Globale -->
+      <!-- Légende -->
       <div class="global-legend">
         <span><span class="legend-box ok"></span> OK</span>
         <span><span class="legend-box nok"></span> NOK</span>
       </div>
 
-      <!-- ✅ Barres de progression -->
+      <!-- Progress bars -->
       <div class="progress-wrapper">
         <div class="progress-label">
           <span>Taux de remplissage</span>
@@ -65,17 +71,10 @@
             <th style="background-color: yellowgreen;">En cours</th>
             <th style="background-color: red;">En perile</th>
             <th style="background-color: blue;">PLANIFIÉE</th>
+            <th style="background-color: brown;">PDC</th>
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <th>SAV</th>
-            <td>{{ countOkSAV }}</td>
-            <td>{{ countNokSAV }}</td>
-            <td>{{ countEnCoursSAV }}</td>
-            <td>{{ countALERTESAV }}</td>
-            <td>{{ countPLANIFIÉESAV }}</td>
-          </tr>
           <tr>
             <th>RACC</th>
             <td>{{ countOkRACC }}</td>
@@ -83,7 +82,18 @@
             <td>{{ countEnCoursRACC }}</td>
             <td>{{ countALERTERACC }}</td>
             <td>{{ countPLANIFIÉERACC }}</td>
+            <td>{{ countOkRACC+countNokRACC+countEnCoursRACC+countALERTERACC+countPLANIFIÉERACC }}</td>
           </tr>
+          <tr>
+            <th>SAV</th>
+            <td>{{ countOkSAV }}</td>
+            <td>{{ countNokSAV }}</td>
+            <td>{{ countEnCoursSAV }}</td>
+            <td>{{ countALERTESAV }}</td>
+            <td>{{ countPLANIFIÉESAV }}</td>
+            <td>{{ countOkSAV+countNokSAV+countEnCoursSAV+countALERTESAV+countALERTESAV+countPLANIFIÉESAV}}</td>
+          </tr>
+          
         </tbody>
       </table>
 
@@ -126,7 +136,6 @@ export default {
     };
   },
   computed: {
-    // ✅ Corrigé ici : gestion propre de .trim() et valeurs nulles
     filteredData() {
       return this.ganttData.filter(entry => {
         const dateOk = entry.date_intervention === this.selectedDate;
@@ -176,11 +185,13 @@ export default {
     hasData() {
       return this.filteredData.length > 0;
     },
-    donutSubTitle() {
-      let parts = [`${this.selectedDate}`];
-      if (this.selectedDepartement) parts.push(`Dépt: ${this.selectedDepartement}`);
-      if (this.selectedSociete) parts.push(`Société: ${this.selectedSociete}`);
-      return parts.join(" | ");
+    savPercentage() {
+      const total = this.countOkSAV + this.countNokSAV;
+      return total > 0 ? Math.round((this.countOkSAV / total) * 100) : 0;
+    },
+    raccPercentage() {
+      const total = this.countOkRACC + this.countNokRACC;
+      return total > 0 ? Math.round((this.countOkRACC / total) * 100) : 0;
     }
   },
   watch: {
@@ -224,15 +235,15 @@ export default {
       return count;
     },
     renderCharts() {
-      this.renderDonutChart(this.$refs.chartSAV, [this.countOkSAV, this.countNokSAV], chart => this.chartInstanceSAV = chart);
-      this.renderDonutChart(this.$refs.chartRACC, [this.countOkRACC, this.countNokRACC], chart => this.chartInstanceRACC = chart);
+      this.renderDonutChart(this.$refs.chartSAV, [this.countOkSAV, this.countNokSAV]);
+      this.renderDonutChart(this.$refs.chartRACC, [this.countOkRACC, this.countNokRACC]);
     },
-    renderDonutChart(canvas, data, assignChartInstance) {
+    renderDonutChart(canvas, data) {
       if (!canvas) return;
 
       const context = canvas.getContext("2d");
 
-      // 🔁 Destroy ancien si existe
+      // Destroy ancien si existe
       if (canvas._chartInstance) {
         canvas._chartInstance.destroy();
       }
@@ -249,7 +260,7 @@ export default {
         },
         options: {
           responsive: false,
-          cutout: "60%",
+          cutout: "70%",
           plugins: {
             legend: { display: false },
             tooltip: { enabled: true }
@@ -258,7 +269,6 @@ export default {
       });
 
       canvas._chartInstance = chart;
-      assignChartInstance(chart);
     },
     closeModal() {
       this.$emit("close");
@@ -274,10 +284,6 @@ export default {
   }
 };
 </script>
-
-
-
-
 
 <style scoped>
 .modal-overlay {
@@ -332,14 +338,31 @@ export default {
   align-items: center;
   max-width: 120px;
 }
-.donut-canvas {
+.donut-container {
+  position: relative;
   width: 90px;
   height: 90px;
+}
+.donut-canvas {
+  width: 100%;
+  height: 100%;
+}
+.donut-center-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-weight: bold;
+  font-size: 18px;
 }
 .donut-title {
   font-weight: bold;
   font-size: 13px;
   margin-top: 5px;
+}
+.donut-sub {
+  font-size: 11px;
+  color: #666;
 }
 .global-legend {
   display: flex;
@@ -423,6 +446,11 @@ export default {
   border-radius: 4px;
   color: #fff;
   cursor: pointer;
+  transition: opacity 0.2s;
+}
+.save-btn:hover,
+.close-btn:hover {
+  opacity: 0.9;
 }
 .save-btn { background-color: #28a745; }
 .close-btn { background-color: #dc3545; }

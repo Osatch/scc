@@ -111,22 +111,21 @@ export default {
   methods: {
     async fetchUserIP() {
       try {
-        // Premier essai avec ipify
-        const response = await fetch('https://api.ipify.org?format=json');
+        const response = await fetch("https://api.ipify.org?format=json");
         if (!response.ok) throw new Error("Première API échouée");
         const data = await response.json();
         this.userIP = data.ip;
       } catch (error) {
         console.log("Tentative avec le service de fallback...");
         try {
-          // Fallback avec ipapi
-          const fallbackResponse = await fetch('https://ipapi.co/json/');
+          const fallbackResponse = await fetch("https://ipapi.co/json/");
           const fallbackData = await fallbackResponse.json();
           this.userIP = fallbackData.ip || "Inconnue";
-          
-          // Optionnel: stocker plus d'infos sur la localisation
           if (fallbackData.city && fallbackData.country) {
-            localStorage.setItem('userLocation', `${fallbackData.city}, ${fallbackData.country}`);
+            localStorage.setItem(
+              "userLocation",
+              `${fallbackData.city}, ${fallbackData.country}`
+            );
           }
         } catch (fallbackError) {
           console.error("Erreur de récupération IP:", fallbackError);
@@ -162,26 +161,46 @@ export default {
       if (!file) return;
 
       this.startImportTimer();
-      
+
       const formData = new FormData();
       formData.append("file", file);
 
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/upload_ard_file/`, {
+        // 1️⃣ Upload du fichier
+        const uploadResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/upload_ard_file/`, {
           method: "POST",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("access")}`,
+          },
           body: formData,
         });
 
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(errorText || "Erreur lors de l'envoi du fichier.");
+        const uploadResult = await uploadResponse.json();
+        if (!uploadResponse.ok || uploadResult.status !== "success") {
+          throw new Error(uploadResult.message || "Erreur pendant l'envoi du fichier.");
+        }
+
+        // 2️⃣ Ensuite, on lance les scripts
+        const processResponse = await fetch(`${import.meta.env.VITE_API_URL}/api/upload_and_process_ard/`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("access")}`,
+            "Content-Type": "application/json", // 👈 ce header est optionnel ici, mais OK
+          },
+          body: JSON.stringify({}) // 👈 ajoute ce body vide ou retire-le, mais ne renvoie pas `FormData`
+        });
+
+        const processResult = await processResponse.json();
+        if (!processResponse.ok || processResult.status !== "success") {
+          throw new Error(processResult.message || "Erreur pendant le traitement.");
         }
 
         const now = new Date();
         this.lastImportTime = now.toISOString();
         localStorage.setItem("lastImportTime", this.lastImportTime);
-        
-        alert("Fichier ARD importé avec succès !");
+
+        const durationFormatted = this.formatTime(processResult.duration);
+        alert("✅ Mise à jour effectuée avec succès en " + durationFormatted);
       } catch (error) {
         console.error("Erreur import ARD :", error);
         alert(error.message || "Erreur lors de l'import ARD.");
@@ -192,11 +211,9 @@ export default {
     },
     startImportTimer() {
       this.isImporting = true;
-      this.remainingTime = 20 * 60; // 20 minutes en secondes
-      
+      this.remainingTime = 20 * 60;
       this.timerInterval = setInterval(() => {
         this.remainingTime -= 1;
-        
         if (this.remainingTime <= 0) {
           this.stopImportTimer();
         }
@@ -212,11 +229,9 @@ export default {
     },
     checkImportCooldown() {
       if (!this.lastImportTime) return;
-      
       const lastImport = new Date(this.lastImportTime);
       const now = new Date();
       const diffInMinutes = Math.floor((now - lastImport) / (1000 * 60));
-      
       if (diffInMinutes < 20) {
         this.isImporting = true;
         this.remainingTime = (20 - diffInMinutes) * 60;
@@ -226,17 +241,17 @@ export default {
     formatTime(seconds) {
       const mins = Math.floor(seconds / 60);
       const secs = seconds % 60;
-      return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+      return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
     },
     formatDateTime(isoString) {
-      if (!isoString) return '';
+      if (!isoString) return "";
       const date = new Date(isoString);
-      return date.toLocaleString('fr-FR', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
+      return date.toLocaleString("fr-FR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
       });
     },
     refresh() {
@@ -257,6 +272,7 @@ export default {
   },
 };
 </script>
+
 
 <style scoped>
 button:disabled {
