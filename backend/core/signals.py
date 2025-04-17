@@ -1,7 +1,7 @@
 import unicodedata
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from .models import GRDV, ARD2, RelanceJJ, Parametres,ImportARDLog 
+from .models import GRDV, ARD2, RelanceJJ, Parametres
 
 
 @receiver(post_save, sender=GRDV)

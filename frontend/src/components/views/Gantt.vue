@@ -1,6 +1,5 @@
 <template>
   <div class="main-content">
-    <!-- Filtres -->
     <div class="filters">
       <div class="filter-group">
         <label for="filter-departement">Département</label>
@@ -17,9 +16,23 @@
       <div class="filter-actions">
         <button @click="clearFilters">Effacer</button>
       </div>
+      
     </div>
-
-    <!-- Tableau -->
+    <div class="filter-group">
+        <label>
+          <input type="checkbox" v-model="showIndicators" />
+          Afficher les indicateurs   
+        </label>
+        <div class="pagination">
+      <button :disabled="currentPage === 1" @click="currentPage--">Précédent</button>
+      <span>Page {{ currentPage }} / {{ totalPages }}</span>
+      <button :disabled="currentPage === totalPages" @click="currentPage++">Suivant</button>
+    </div>
+      </div>
+      <div v-if="showIndicators" class="legend-indicateurs">
+      <strong>Légende :</strong> L'inter dure plus de 2H :⚠️ | Legende - En retar :🔴 | En avance :🔵
+    </div>
+    
     <div class="table-wrapper">
       <table>
         <thead>
@@ -49,7 +62,11 @@
             >
               <span>
                 {{ entry[`heure_${hour}`] }}
-                <span v-if="isLongIntervention(hour, entry)" class="badge-blink">⚠️</span>
+                <template v-if="showIndicators">
+                  <span v-if="isLongIntervention(hour, entry)">⚠️</span>
+                  <span v-if="isRetard(entry, hour)">🔴</span>
+                  <span v-if="isAvance(entry, hour)">🔵</span>
+                </template>
               </span>
             </td>
             <td>{{ formatPercentage(entry.taux_transfo) }}</td>
@@ -59,7 +76,8 @@
       </table>
     </div>
 
-    <!-- Modal Détails -->
+    
+
     <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
       <div class="modal-content">
         <div class="modal-header">
@@ -78,7 +96,6 @@
       </div>
     </div>
 
-    <!-- Modal Statistiques Technicien -->
     <div v-if="showTechnicianModal" class="modal-overlay" @click.self="showTechnicianModal = false">
       <div class="modal-content">
         <div class="modal-header">
@@ -155,12 +172,7 @@
       </div>
     </div>
 
-    <!-- Pagination -->
-    <div class="pagination">
-      <button :disabled="currentPage === 1" @click="currentPage--">Précédent</button>
-      <span>Page {{ currentPage }} / {{ totalPages }}</span>
-      <button :disabled="currentPage === totalPages" @click="currentPage++">Suivant</button>
-    </div>
+   
   </div>
 </template>
 
@@ -176,7 +188,7 @@ export default {
       selectedTechnicien: "",
       selectedDate: new Date().toISOString().split("T")[0],
       currentPage: 1,
-      itemsPerPage: 50,
+      itemsPerPage: 80,
       showModal: false,
       modalData: {},
       modalHour: '',
@@ -184,6 +196,9 @@ export default {
       modalJeton: '',
       modalHeureDebut: null,
       modalHeureFin: null,
+      modalMotif: '',
+      modalCommentaire: '',
+      showIndicators: false,
       showTechnicianModal: false,
       technicianStats: {
         name: '',
@@ -270,17 +285,52 @@ export default {
     isLongIntervention(hour, entry) {
       const start = entry[`heure_debut_${hour}`];
       const end = entry[`heure_fin_${hour}`];
+
       if (!start || !end) return false;
-      const startDate = new Date(`1970-01-01T${start}`);
-      const endDate = new Date(`1970-01-01T${end}`);
-      const diff = (endDate - startDate) / (1000 * 60 * 60); // heures
-      return diff > 2;
+
+      try {
+        // Forcer le format avec les secondes si manquantes (ex: "07:30" -> "07:30:00")
+        const startTime = start.length === 5 ? `${start}:00` : start;
+        const endTime = end.length === 5 ? `${end}:00` : end;
+
+        const startDate = new Date(`1970-01-01T${startTime}`);
+        const endDate = new Date(`1970-01-01T${endTime}`);
+
+        if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+          console.warn(`Heure invalide pour ${hour}h - début: ${start}, fin: ${end}`);
+          return false;
+        }
+
+        const diff = (endDate - startDate) / (1000 * 60 * 60);
+        return diff >= 2;
+      } catch (error) {
+        console.error(`Erreur dans isLongIntervention pour ${hour}:`, error);
+        return false;
+      }
+    },
+    isRetard(entry, hour) {
+      const heureDebut = entry[`heure_debut_${hour}`];
+      if (!heureDebut) return false;
+
+      const ref = new Date(`1970-01-01T${hour}:00`);
+      const debut = new Date(`1970-01-01T${heureDebut}`);
+      return debut > ref;
+    },
+    isAvance(entry, hour) {
+      const heureDebut = entry[`heure_debut_${hour}`];
+      if (!heureDebut) return false;
+
+      const ref = new Date(`1970-01-01T${hour}:00`);
+      const debut = new Date(`1970-01-01T${heureDebut}`);
+      return debut < ref;
     },
     showDetails(entry, hour) {
       const statusField = `heure_${hour}`;
       const jetonField = `jeton_${hour}`;
       const heureDebutField = `heure_debut_${hour}`;
       const heureFinField = `heure_fin_${hour}`;
+      const motifField = `motif_retard_${hour}`;
+      const commentaireField = `commentaire_${hour}`;
 
       this.modalData = entry;
       this.modalHour = hour;
@@ -288,10 +338,28 @@ export default {
       this.modalJeton = entry[jetonField];
       this.modalHeureDebut = entry[heureDebutField];
       this.modalHeureFin = entry[heureFinField];
+      this.modalMotif = entry[motifField] || '';
+      this.modalCommentaire = entry[commentaireField] || '';
       this.showModal = true;
     },
     closeModal() {
       this.showModal = false;
+    },
+    validerIntervention() {
+      const payload = {
+        [`heure_${this.modalHour}`]: 'Validé ✅',
+        [`motif_retard_${this.modalHour}`]: this.modalMotif,
+        [`commentaire_${this.modalHour}`]: this.modalCommentaire
+      };
+
+      axios.patch(`${import.meta.env.VITE_API_URL}/api/gantt/${this.modalData.id}/`, payload)
+        .then(() => {
+          this.loadData();
+          this.closeModal();
+        })
+        .catch(error => {
+          console.error("Erreur lors de la validation :", error);
+        });
     },
     showTechnicianStats(technicianName) {
       const interventions = this.parametres.filter(e => e.nom_intervenant === technicianName);
@@ -343,6 +411,7 @@ export default {
 
 <style scoped>
 .main-content {
+  margin-top: 100px;
   width: 95%;
   padding: 10px;
   background-color: #f8f9fa;
@@ -362,6 +431,10 @@ export default {
   display: flex;
   flex-wrap: wrap;
   gap: 15px;
+  position: sticky;
+  top: 0;
+ 
+  background: white;
 }
 .filter-group {
   display: flex;
@@ -396,10 +469,11 @@ export default {
 
 .table-wrapper {
   width: 85%;
-  overflow: hidden;
+  overflow: auto;
   border-radius: 8px;
   background-color: #ffffff;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  max-height: 80vh; /* facultatif si tu veux scroll à l'intérieur du tableau */
 }
 
 table {
@@ -427,7 +501,9 @@ th {
   text-transform: uppercase;
   font-weight: bold;
   top: 0;
-  z-index: 10;
+  position: sticky;
+  z-index: 9;
+ 
 }
 
 tbody tr:nth-child(odd) {
@@ -571,6 +647,15 @@ td[class*="-cell"]:hover {
   animation: blink 1s infinite;
   z-index: 2;
 }
+.legend-indicateurs {
+  margin-top: 10px;
+  font-size: 12px;
+  background-color: #f5f5f5;
+  padding: 6px 10px;
+  border-radius: 6px;
+  display: inline-block;
+}
+
 
 @keyframes blink {
   0% { opacity: 1; }

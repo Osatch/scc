@@ -168,10 +168,12 @@ REST_FRAMEWORK = {
 }
 
 CORS_ALLOW_METHODS = [
-    'GET',
-    'POST',
-    'PUT',  # <-- Assurez-vous que PUT est autorisé
-    'DELETE',
+    "DELETE",
+    "GET",
+    "OPTIONS",
+    "PATCH",   # ✅ Très important
+    "POST",
+    "PUT",
 ]
 
 from datetime import timedelta

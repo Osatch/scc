@@ -123,6 +123,7 @@ class GRDV(models.Model):
         verbose_name_plural = "GRDVs"
 
 #gantt================================================================================================================
+#gantt================================================================================================================
 from django.db import models
 
 class Gantt(models.Model):
@@ -139,14 +140,12 @@ class Gantt(models.Model):
         ('Planifiée RACC', 'Planifiée RACC'),
     ]
 
-    # Champs existants inchangés
     date_intervention = models.DateField()
     secteur = models.IntegerField()
     departement = models.CharField(max_length=255, null=True, blank=True)
     nom_intervenant = models.CharField(max_length=255)
     societe = models.CharField(max_length=255, null=True, blank=True)
-    
-    # Champs horaires existants (statuts)
+
     heure_08 = models.CharField(max_length=50, choices=INTERVENTION_CHOICES, null=True, blank=True)
     heure_09 = models.CharField(max_length=50, choices=INTERVENTION_CHOICES, null=True, blank=True)
     heure_10 = models.CharField(max_length=50, choices=INTERVENTION_CHOICES, null=True, blank=True)
@@ -158,8 +157,7 @@ class Gantt(models.Model):
     heure_16 = models.CharField(max_length=50, choices=INTERVENTION_CHOICES, null=True, blank=True)
     heure_17 = models.CharField(max_length=50, choices=INTERVENTION_CHOICES, null=True, blank=True)
     heure_18 = models.CharField(max_length=50, choices=INTERVENTION_CHOICES, null=True, blank=True)
-    
-    # Nouveaux champs pour les jetons (un par créneau)
+
     jeton_08 = models.CharField(max_length=10, blank=True, null=True)
     jeton_09 = models.CharField(max_length=10, blank=True, null=True)
     jeton_10 = models.CharField(max_length=10, blank=True, null=True)
@@ -172,7 +170,6 @@ class Gantt(models.Model):
     jeton_17 = models.CharField(max_length=10, blank=True, null=True)
     jeton_18 = models.CharField(max_length=10, blank=True, null=True)
 
-    # Heures début et fin pour chaque créneau
     heure_debut_08 = models.TimeField(null=True, blank=True)
     heure_fin_08 = models.TimeField(null=True, blank=True)
 
@@ -206,8 +203,39 @@ class Gantt(models.Model):
     heure_debut_18 = models.TimeField(null=True, blank=True)
     heure_fin_18 = models.TimeField(null=True, blank=True)
 
-    
-    # Champs existants (stats et métadonnées)
+    motif_retard_08 = models.TextField(blank=True, null=True)
+    commentaire_08 = models.TextField(blank=True, null=True)
+
+    motif_retard_09 = models.TextField(blank=True, null=True)
+    commentaire_09 = models.TextField(blank=True, null=True)
+
+    motif_retard_10 = models.TextField(blank=True, null=True)
+    commentaire_10 = models.TextField(blank=True, null=True)
+
+    motif_retard_11 = models.TextField(blank=True, null=True)
+    commentaire_11 = models.TextField(blank=True, null=True)
+
+    motif_retard_12 = models.TextField(blank=True, null=True)
+    commentaire_12 = models.TextField(blank=True, null=True)
+
+    motif_retard_13 = models.TextField(blank=True, null=True)
+    commentaire_13 = models.TextField(blank=True, null=True)
+
+    motif_retard_14 = models.TextField(blank=True, null=True)
+    commentaire_14 = models.TextField(blank=True, null=True)
+
+    motif_retard_15 = models.TextField(blank=True, null=True)
+    commentaire_15 = models.TextField(blank=True, null=True)
+
+    motif_retard_16 = models.TextField(blank=True, null=True)
+    commentaire_16 = models.TextField(blank=True, null=True)
+
+    motif_retard_17 = models.TextField(blank=True, null=True)
+    commentaire_17 = models.TextField(blank=True, null=True)
+
+    motif_retard_18 = models.TextField(blank=True, null=True)
+    commentaire_18 = models.TextField(blank=True, null=True)
+
     taux_transfo = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     taux_remplissage = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     date_mise_a_jour = models.DateTimeField(auto_now=True)
@@ -215,9 +243,7 @@ class Gantt(models.Model):
     def __str__(self):
         return f"{self.nom_intervenant} - {self.date_intervention}"
 
-    # Méthode utilitaire pour accéder aux paires (statut, jeton)
     def get_creneau(self, heure):
-        """Retourne (statut, jeton) pour un créneau donné"""
         return {
             'statut': getattr(self, f'heure_{heure}'),
             'jeton': getattr(self, f'jeton_{heure}')

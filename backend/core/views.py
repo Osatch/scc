@@ -82,6 +82,20 @@ def gantt_detail(request, pk):
     serializer = GanttSerializer(gantt_entry)
     return Response(serializer.data)
 
+#ici le form de gantt 
+@api_view(['PATCH'])
+def gantt_partial_update(request, pk):
+    """
+    Mise à jour partielle d'un objet Gantt (pour motif/commentaire/validation).
+    """
+    gantt = get_object_or_404(Gantt, pk=pk)
+    serializer = GanttSerializer(gantt, data=request.data, partial=True)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 @api_view(['GET'])
 def gantt_statistics_list(request):
     """

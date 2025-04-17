@@ -109,7 +109,7 @@ github
 
 git init
 git add .
-git commit -m "11-04  +render+db"
+git commit -m "16-04  +render+db"
 git remote add origin https://github.com/Osatch/scc.git
 git push -u origin main --force
 
@@ -182,12 +182,13 @@ Agent :
 
 
 python bot/grdv.py
-python manage.py import_parametres
 python manage.py import_grdv
-python manage.py import_ard2
+python manage.py import_parametres
 
+python manage.py import_ard2
+python manage.py import_parametres
 python manage.py sync_relancejj
-python manage.py import_gantt  --date 2025-04-16
+python manage.py import_gantt  --date 2025-04-17
 python manage.py sync_controlphoto
 python manage.py sync_dr
 python manage.py sync_ds

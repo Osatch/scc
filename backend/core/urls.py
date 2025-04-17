@@ -23,6 +23,7 @@ from .views import (
     commentaire_detail,  # Vues de commentaire 
     upload_ard_file,
     upload_and_process_ard,# historique ard2 
+    gantt_partial_update,  # 👈 AJOUTE CELUI-CI ICI
 )
 
 urlpatterns = [
@@ -97,4 +98,6 @@ urlpatterns = [
     path('upload_ard_file/', upload_ard_file),
     #l'import 
     path('upload_and_process_ard/', upload_and_process_ard, name='upload_and_process_ard'),
+    # le form de gantt 
+    path('gantt/<int:pk>/', gantt_partial_update, name='gantt_partial_update'),
 ]
