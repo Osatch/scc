@@ -20,7 +20,7 @@
             <option value="">Tous</option>
             <option value="Cloturée">Clôturée</option>
             <option value="Taguée">Taguée</option>
-            <option value="Vide">Vide</option>
+            <option value="Vide">En Alerte</option>
           </select>
         </div>
         <!-- Filtre Date -->

@@ -16,36 +16,165 @@
       <div class="filter-actions">
         <button @click="clearFilters">Effacer</button>
       </div>
-      
     </div>
+
     <div class="filter-group">
-        <label>
-          <input type="checkbox" v-model="showIndicators" />
-          Afficher les indicateurs   
-        </label>
-        <div class="pagination">
-      <button :disabled="currentPage === 1" @click="currentPage--">Précédent</button>
-      <span>Page {{ currentPage }} / {{ totalPages }}</span>
-      <button :disabled="currentPage === totalPages" @click="currentPage++">Suivant</button>
+      <label>
+        <input type="checkbox" v-model="showIndicators" />
+        Afficher les indicateurs
+        <div v-if="showIndicators" class="legend-indicateurs">
+      <strong>Légende :</strong> L'inter dure plus de 2H :⚠️ | En retard :🔴 | En avance :🔵
     </div>
+      </label>
+      
+      <div class="pagination">
+        <button :disabled="currentPage === 1" @click="currentPage--">Précédent</button>
+        <span>Page {{ currentPage }} / {{ totalPages }}</span>
+        <button :disabled="currentPage === totalPages" @click="currentPage++">Suivant</button>
       </div>
-      <div v-if="showIndicators" class="legend-indicateurs">
-      <strong>Légende :</strong> L'inter dure plus de 2H :⚠️ | Legende - En retar :🔴 | En avance :🔵
     </div>
+
     
+
     <div class="table-wrapper">
       <table>
         <thead>
-          <tr>
-            <th>Date Intervention</th>
-            <th>Dép</th>
-            <th class="thi">Intervenant</th>
-            <th>Société</th>
-            <th v-for="hour in hourFields" :key="hour">{{ hour }}:00</th>
-            <th>% Transfo</th>
-            <th>% Remp</th>
-          </tr>
-        </thead>
+            <tr>
+              <th>Date Intervention</th>
+              <th>Dép</th>
+              <th class="thi">Intervenant</th>
+
+              <!-- Société -->
+              <th>
+                Société
+                <span
+                  @click.stop="openSelect('societe', $event)"
+                  style="margin-left: 5px; font-size: 12px; color: #666; cursor: pointer;"
+                  title="Filtrer"
+                >
+                  ⏷
+                </span>
+                <select
+                  ref="societe"
+                  v-model="selectedSociete"
+                  class="no-arrow"
+                  @click.stop
+                  style="display: none; position: fixed; z-index: 1000; width: 200px; padding: 10px;"
+                >
+                  <option value="">Toutes</option>
+                  <option v-for="soc in uniqueSocietes" :key="soc" :value="soc">{{ soc }}</option>
+                </select>
+              </th>
+
+              <!-- Colonnes horaires dynamiques -->
+              <th
+                v-for="hour in hourFields"
+                :key="'h-' + hour"
+              >
+                {{ hour }}:00
+                <span
+                  @click.stop="openSelect('status_' + hour, $event)"
+                  style="margin-left: 5px; font-size: 12px; color: #666; cursor: pointer;"
+                  title="Filtrer"
+                >
+                  ⏷
+                </span>
+                <select
+                  :ref="'status_' + hour"
+                  v-model="selectedStatus[hour]"
+                  class="no-arrow"
+                  multiple
+                  @click.stop
+                  style="display: none; position: fixed; z-index: 1000; width: 200px; height:500px; margin-top:10px; padding: 10px;"
+                >
+                  <option value="">Tous</option>
+                  <option value="OK">OK</option>
+                  <option value="OK SAV">OK SAV</option>
+                  <option value="OK RACC">OK RACC</option>
+
+                  <option value="NOK">NOK</option>
+                  <option value="NOK SAV">NOK SAV</option>
+                  <option value="NOK RACC">NOK RACC</option>
+
+                  <option value="EN COURS">EN COURS</option>
+                  <option value="En cours SAV">EN COURS SAV</option>
+                  <option value="En cours RACC">EN COURS RACC</option>
+
+                  <option value="ALERTE">ALERTE</option>
+                  <option value="Alerte SAV">ALERTE SAV</option>
+                  <option value="Alerte RACC">ALERTE RACC</option>
+
+                  <option value="PLANIFIÉE">PLANIFIÉE</option>
+                  <option value="Planifiée SAV">PLANIFIÉE SAV</option>
+                  <option value="Planifiée RACC">PLANIFIÉE RACC</option>
+                </select>
+
+              </th>
+
+              <!-- % Transfo -->
+              <th>
+                % Tran
+                <span
+                  @click.stop="openSelect('transfo', $event)"
+                  style="margin-left: 5px; font-size: 12px; color: #666; cursor: pointer;"
+                  title="Filtrer"
+                >
+                  ⏷
+                </span>
+                <select
+                  ref="transfo"
+                  v-model="selectedTauxTransfo"
+                  class="no-arrow"
+                  @click.stop
+                  style="display: none; position: fixed; z-index: 1000; width: 200px;margin-top:10px; padding: 10px;"
+                >
+                  <option value="">Tous</option>
+                  <option value="0">0%</option>
+                  <option value="10-50">10–50%</option>
+                  <option value="50-99">50–99%</option>
+                  <option value="100">100%</option>
+                </select>
+              </th>
+
+              <!-- % Remplissage -->
+              <th>
+                % Remp
+                <span
+                  @click.stop="openSelect('remp', $event)"
+                  style="margin-left: 5px; font-size: 12px; color: #666; cursor: pointer;"
+                  title="Filtrer"
+                >
+                  ⏷
+                </span>
+                <select
+                  ref="remp"
+                  v-model="selectedTauxRemplissage"
+                  class="no-arrow"
+                  @click.stop
+                  style="display: none; position: fixed; z-index: 1000; width: 200px;margin-top:10px; padding: 10px;"
+                >
+                  <option value="">Tous</option>
+                  <option value="0">0%</option>
+                  <option value="10">10%</option>
+                  <option value="20">20%</option>
+                  <option value="30">30%</option>
+                  <option value="40">40%</option>
+                  <option value="50">50%</option>
+                  <option value="60">60%</option>
+                  <option value="70">70%</option>
+                  <option value="80">80%</option>
+                  <option value="90">90%</option>
+                  <option value="100">100%</option>
+                  <option value="110">110%</option>
+                  <option value="120">120%</option>
+                  <option value="130">130%</option>
+                  <option value="140">140%</option>
+                  <option value=">140">+140%</option>
+                </select>
+              </th>
+            </tr>
+          </thead>
+
         <tbody>
           <tr v-for="entry in paginatedParametres" :key="entry.id">
             <td class="thi">{{ formatDate(entry.date_intervention) }}</td>
@@ -53,10 +182,10 @@
             <td class="clickable-name" @click="showTechnicianStats(entry.nom_intervenant)">
               {{ entry.nom_intervenant }}
             </td>
-            <td>{{ entry.societe }}</td>
+            <td @click="selectedSociete = entry.societe">{{ entry.societe }}</td>
             <td
               v-for="hour in hourFields"
-              :key="hour"
+              :key="'cell-' + hour + '-' + entry.id"
               :class="getCellClass(entry[`heure_${hour}`])"
               @click="showDetails(entry, hour)"
             >
@@ -75,8 +204,6 @@
         </tbody>
       </table>
     </div>
-
-    
 
     <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
       <div class="modal-content">
@@ -171,8 +298,6 @@
         </div>
       </div>
     </div>
-
-   
   </div>
 </template>
 
@@ -187,6 +312,15 @@ export default {
       selectedDepartement: "",
       selectedTechnicien: "",
       selectedDate: new Date().toISOString().split("T")[0],
+      selectedSociete: "",
+      selectedStatus: (() => {
+        const obj = {};
+        const hours = ['08', '09', '10', '11', '12', '13', '14', '15', '16', '17'];
+        hours.forEach(h => obj[h] = []);
+        return obj;
+      })(),
+      selectedTauxTransfo: "",
+      selectedTauxRemplissage: "",
       currentPage: 1,
       itemsPerPage: 80,
       showModal: false,
@@ -220,15 +354,83 @@ export default {
     filteredParametres() {
       return this.parametres.filter((entry) => {
         let matches = true;
+
         if (this.selectedDepartement) {
           matches = matches && entry.departement?.toLowerCase().includes(this.selectedDepartement.toLowerCase());
         }
+
         if (this.selectedTechnicien) {
           matches = matches && entry.nom_intervenant?.toLowerCase().includes(this.selectedTechnicien.toLowerCase());
         }
+
         if (this.selectedDate) {
           matches = matches && entry.date_intervention === this.selectedDate;
         }
+
+        if (this.selectedSociete) {
+          matches = matches && entry.societe?.toLowerCase().includes(this.selectedSociete.toLowerCase());
+        }
+
+        const STATUS_GROUPS = {
+            'OK': ['OK SAV', 'OK RACC'],
+            'NOK': ['NOK SAV', 'NOK RACC'],
+            'EN COURS': ['EN COURS SAV', 'EN COURS RACC'],
+            'ALERTE': ['ALERTE SAV', 'ALERTE RACC'],
+            'PLANIFIÉE': ['PLANIFIÉE SAV', 'PLANIFIÉE RACC']
+          };
+
+          for (const hour of this.hourFields) {
+            const selected = this.selectedStatus[hour];
+
+            if (selected && selected.length > 0) {
+              // Si seul "Tous" est sélectionné, on passe
+              if (selected.length === 1 && selected[0] === '') {
+                continue;
+              }
+
+              const statut = entry[`heure_${hour}`];
+
+              // On construit la liste complète des statuts autorisés
+              const selectedNormalized = selected.flatMap(val => {
+                if (val === '') {
+                  return Object.values(STATUS_GROUPS).flat(); // Tous les statuts connus
+                }
+                return STATUS_GROUPS[val] || [val]; // Groupe ou valeur simple
+              });
+
+              if (!statut || !selectedNormalized.includes(statut)) {
+                matches = false;
+                break;
+              }
+            }
+        }
+
+ 
+        const transfo = Number(entry.taux_transfo || 0);
+        if (this.selectedTauxTransfo === "0" && transfo !== 0) matches = false;
+        if (this.selectedTauxTransfo === "10-50" && !(transfo >= 10 && transfo <= 50)) matches = false;
+        if (this.selectedTauxTransfo === "50-99" && !(transfo > 50 && transfo < 100)) matches = false;
+        if (this.selectedTauxTransfo === "100" && transfo !== 100) matches = false;
+
+        const rempl = Number(entry.taux_remplissage || 0);
+        if (this.selectedTauxRemplissage === "0" && rempl !== 0) matches = false;
+        if (this.selectedTauxRemplissage === "10" && rempl !== 10) matches = false;
+        if (this.selectedTauxRemplissage === "20" && rempl !== 20) matches = false;
+        if (this.selectedTauxRemplissage === "30" && rempl !== 30) matches = false;
+        if (this.selectedTauxRemplissage === "40" && rempl !== 40) matches = false;
+        if (this.selectedTauxRemplissage === "50" && rempl !== 50) matches = false;
+        if (this.selectedTauxRemplissage === "60" && rempl !== 60) matches = false;
+        if (this.selectedTauxRemplissage === "70" && rempl !== 70) matches = false;
+        if (this.selectedTauxRemplissage === "80" && rempl !== 80) matches = false;
+        if (this.selectedTauxRemplissage === "90" && rempl !== 90) matches = false;
+        if (this.selectedTauxRemplissage === "100" && rempl !== 100) matches = false;
+        if (this.selectedTauxRemplissage === "110" && rempl !== 110) matches = false;
+        if (this.selectedTauxRemplissage === "120" && rempl !== 120) matches = false;
+        if (this.selectedTauxRemplissage === "130" && rempl !== 130) matches = false;
+        if (this.selectedTauxRemplissage === "140" && rempl !== 140) matches = false;
+        if (this.selectedTauxRemplissage === "<50" && rempl >= 50) matches = false;
+        if (this.selectedTauxRemplissage === ">140" && rempl <= 140) matches = false;
+
         return matches;
       });
     },
@@ -238,10 +440,18 @@ export default {
     },
     totalPages() {
       return Math.ceil(this.filteredParametres.length / this.itemsPerPage);
+    },
+    uniqueSocietes() {
+      const set = new Set(this.parametres.map(e => e.societe).filter(Boolean));
+      return Array.from(set).sort();
     }
   },
   mounted() {
     this.loadData();
+    document.addEventListener('click', this.closeAllSelects);
+  },
+  beforeUnmount() {
+    document.removeEventListener('click', this.closeAllSelects);
   },
   methods: {
     loadData() {
@@ -257,7 +467,15 @@ export default {
       this.selectedDepartement = "";
       this.selectedTechnicien = "";
       this.selectedDate = new Date().toISOString().split("T")[0];
+      this.selectedSociete = "";
+      this.selectedTauxTransfo = "";
+      this.selectedTauxRemplissage = "";
       this.currentPage = 1;
+
+      // reset selectedStatus
+      const reset = {};
+      this.hourFields.forEach(h => reset[h] = []);
+      this.selectedStatus = reset;
     },
     formatDate(dateString) {
       if (!dateString) return "";
@@ -285,33 +503,23 @@ export default {
     isLongIntervention(hour, entry) {
       const start = entry[`heure_debut_${hour}`];
       const end = entry[`heure_fin_${hour}`];
-
       if (!start || !end) return false;
 
       try {
-        // Forcer le format avec les secondes si manquantes (ex: "07:30" -> "07:30:00")
         const startTime = start.length === 5 ? `${start}:00` : start;
         const endTime = end.length === 5 ? `${end}:00` : end;
-
         const startDate = new Date(`1970-01-01T${startTime}`);
         const endDate = new Date(`1970-01-01T${endTime}`);
-
-        if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
-          console.warn(`Heure invalide pour ${hour}h - début: ${start}, fin: ${end}`);
-          return false;
-        }
-
+        if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) return false;
         const diff = (endDate - startDate) / (1000 * 60 * 60);
         return diff >= 2;
-      } catch (error) {
-        console.error(`Erreur dans isLongIntervention pour ${hour}:`, error);
+      } catch {
         return false;
       }
     },
     isRetard(entry, hour) {
       const heureDebut = entry[`heure_debut_${hour}`];
       if (!heureDebut) return false;
-
       const ref = new Date(`1970-01-01T${hour}:00`);
       const debut = new Date(`1970-01-01T${heureDebut}`);
       return debut > ref;
@@ -319,7 +527,6 @@ export default {
     isAvance(entry, hour) {
       const heureDebut = entry[`heure_debut_${hour}`];
       if (!heureDebut) return false;
-
       const ref = new Date(`1970-01-01T${hour}:00`);
       const debut = new Date(`1970-01-01T${heureDebut}`);
       return debut < ref;
@@ -331,7 +538,6 @@ export default {
       const heureFinField = `heure_fin_${hour}`;
       const motifField = `motif_retard_${hour}`;
       const commentaireField = `commentaire_${hour}`;
-
       this.modalData = entry;
       this.modalHour = hour;
       this.modalStatus = entry[statusField];
@@ -351,7 +557,6 @@ export default {
         [`motif_retard_${this.modalHour}`]: this.modalMotif,
         [`commentaire_${this.modalHour}`]: this.modalCommentaire
       };
-
       axios.patch(`${import.meta.env.VITE_API_URL}/api/gantt/${this.modalData.id}/`, payload)
         .then(() => {
           this.loadData();
@@ -386,13 +591,11 @@ export default {
         this.hourFields.forEach(hour => {
           const value = entry[`heure_${hour}`];
           if (!value) return;
-
           stats.totalInterventions++;
           if (value.includes("OK")) stats.okCount++;
           if (value.includes("NOK")) stats.nokCount++;
           if (value.includes("SAV")) stats.savCount++;
           if (value.includes("RACC")) stats.raccCount++;
-
           const statusKey = value.trim();
           stats.interventionsByStatus[statusKey] = (stats.interventionsByStatus[statusKey] || 0) + 1;
         });
@@ -402,12 +605,39 @@ export default {
       stats.averagePerDay = stats.totalInterventions / (stats.workingDays || 1);
       this.technicianStats = stats;
       this.showTechnicianModal = true;
+    },
+    openSelect(refName, event) {
+      let el = this.$refs[refName];
+      if (Array.isArray(el)) {
+        el = el[0];
+      }
+
+      if (!el) return;
+
+      this.closeAllSelects();
+
+      const rect = event.target.getBoundingClientRect();
+      el.style.position = 'fixed';
+      el.style.left = `${rect.left}px`;
+      el.style.top = `${rect.bottom}px`;
+      el.style.display = 'block';
+      el.style.zIndex = '1000';
+      el.focus();
+    },
+    closeAllSelects() {
+      Object.keys(this.$refs).forEach(key => {
+        let el = this.$refs[key];
+        if (Array.isArray(el)) {
+          el = el[0];
+        }
+        if (el?.style) {
+          el.style.display = 'none';
+        }
+      });
     }
   }
 };
 </script>
-
-
 
 <style scoped>
 .main-content {
@@ -433,28 +663,32 @@ export default {
   gap: 15px;
   position: sticky;
   top: 0;
- 
   background: white;
 }
+
 .filter-group {
   display: flex;
   flex-direction: column;
   flex: 1 1 200px;
 }
+
 .filter-group label {
   margin-bottom: 5px;
   font-weight: bold;
   font-size: 14px;
 }
+
 .filter-group input {
   padding: 8px;
   border: 1px solid #ddd;
   border-radius: 4px;
 }
+
 .filter-actions {
   display: flex;
   align-items: flex-end;
 }
+
 .filter-actions button {
   padding: 8px 16px;
   background-color: #007bff;
@@ -463,6 +697,7 @@ export default {
   border-radius: 4px;
   cursor: pointer;
 }
+
 .filter-actions button:hover {
   background-color: #0056b3;
 }
@@ -473,7 +708,7 @@ export default {
   border-radius: 8px;
   background-color: #ffffff;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  max-height: 80vh; /* facultatif si tu veux scroll à l'intérieur du tableau */
+  max-height: 80vh;
 }
 
 table {
@@ -492,9 +727,11 @@ th, td {
   white-space: nowrap;
   position: relative;
 }
-.thi{
+
+.thi {
   width: 120px;
 }
+
 th {
   background-color: #000000;
   color: white;
@@ -503,7 +740,6 @@ th {
   top: 0;
   position: sticky;
   z-index: 9;
- 
 }
 
 tbody tr:nth-child(odd) {
@@ -546,11 +782,12 @@ tbody tr:hover {
 }
 
 .pagination {
-  margin-top: 15px;
+  margin: 15px;
   display: flex;
   align-items: center;
   gap: 10px;
   font-size: 12px;
+  
 }
 
 .pagination button {
@@ -567,7 +804,6 @@ tbody tr:hover {
   cursor: not-allowed;
 }
 
-/* Styles pour le modal */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -621,7 +857,6 @@ tbody tr:hover {
   line-height: 1.6;
 }
 
-/* Rendre les cellules cliquables */
 td[class*="-cell"] {
   cursor: pointer;
   transition: all 0.2s;
@@ -635,18 +870,6 @@ td[class*="-cell"]:hover {
   position: relative;
 }
 
-/* Badge clignotant pour longue intervention */
-.badge-long {
-  position: absolute;
-  top: 2px;
-  right: 2px;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background-color: red;
-  animation: blink 1s infinite;
-  z-index: 2;
-}
 .legend-indicateurs {
   margin-top: 10px;
   font-size: 12px;
@@ -656,11 +879,21 @@ td[class*="-cell"]:hover {
   display: inline-block;
 }
 
+/* Styles pour les selects */
+select[multiple] {
+  height: auto;
+  max-height: 300px;
+  overflow-y: auto;
+}
 
-@keyframes blink {
-  0% { opacity: 1; }
-  50% { opacity: 0; }
-  100% { opacity: 1; }
+select option:hover {
+  background-color: #f0f0f0;
+}
+
+.no-arrow {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
 }
 
 @media (max-width: 768px) {

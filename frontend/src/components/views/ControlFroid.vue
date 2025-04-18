@@ -164,10 +164,10 @@ export default {
   computed: {
     filteredControlPhotos() {
       const validPtoStatuses = [
-        "PTO mal positionné à déplacer et nouveau CAB à poser",
+        "PTO mal positionné a déplacer et nouveau CAB a poser",
         "PTO et CAB absent",
-        "PTO à déplacer par confort et nouveau CAB à poser",
-        "PTO mal positionné à déplacer et nouveau CAB à poser"
+        "PTO a deplacer par confort et nouveau CAB a poser",
+        "conformes a remplacer"
       ];
 
       return this.controlphotos.filter(photo => {

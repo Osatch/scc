@@ -5,7 +5,7 @@
       <UserIcon class="w-6 h-6 text-gray-700" />
       <div class="flex flex-col">
         <span class="text-lg font-semibold">{{ activeAccountName }}</span>
-        <span class="text-xs text-gray-500" v-if="userIP">.         IP: {{ userIP }}</span>
+        
       </div>
     </div>
 

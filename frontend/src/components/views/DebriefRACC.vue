@@ -369,7 +369,7 @@ tbody tr:hover {
 
 .popup-content {
   background: #fff;
-  padding: 20px;
+  padding: 40px;
   border-radius: 8px;
   max-width: 500px;
   width: 90%;
