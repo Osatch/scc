@@ -6,7 +6,7 @@
     <nav class="nav-tabs">
       <ul>
         <li v-for="item in menuItems" :key="item.label">
-          <router-link v-if="!item.subItems" :to="'/dashboard' + item.path">
+          <router-link v-if="!item.subItems" :to="'/agent-dashboard' + item.path">
             {{ item.label }}
           </router-link>
           <div v-else>
@@ -17,7 +17,7 @@
             <div v-if="openSubMenus.includes(item.label)" class="dropdown-content">
               <ul>
                 <li v-for="subItem in item.subItems" :key="subItem.label">
-                  <router-link :to="'/dashboard' + subItem.path">
+                  <router-link :to="'/agent-dashboard' + subItem.path">
                     {{ subItem.label }}
                   </router-link>
                 </li>
@@ -41,8 +41,8 @@ export default {
 
     const menuItems = [
       
-      
-      { label: "Relance JJ", path: "/relancejj" },
+      { label: "Gantt", path: "/Agentgantt" },
+      { label: "Relance JJ", path: "/Agentrelancejj" },
       {
         label: "Débrief",
         subItems: [
@@ -50,8 +50,8 @@ export default {
           { label: "SAV", path: "/debrief/sav" },
         ],
       },
-      { label: "Contrôle Photo (à chaud)", path: "/control-photo" },
-      { label: "Contrôle à Froid", path: "/control-froid" },
+      { label: "Contrôle Photo (à chaud)", path: "/AgentControlPhoto" },
+      { label: "Contrôle à Froid", path: "/AgentControlFroid" },
      
       
     ];

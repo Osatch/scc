@@ -1,21 +1,32 @@
 from django.core.management.base import BaseCommand
+from django.utils.timezone import now
 from core.models import RelanceJJ, ARD2, ControlPhoto, Parametres, DebriefSAV, GRDV
 
 class Command(BaseCommand):
     help = (
-        "Synchronise les données de RelanceJJ (activite=RACC) + ARD2 (etat=NOK) "
-        "dans DebriefSAV selon le mapping défini."
+        "Synchronise uniquement les données de RelanceJJ (activite=SAV, statut=Cloturée, date=AUJOURD'HUI) "
+        "avec ARD2 (etat=NOK) dans DebriefSAV selon le mapping défini."
     )
 
     def handle(self, *args, **kwargs):
-        relances = RelanceJJ.objects.filter(activite="RACC")
-        self.stdout.write(self.style.NOTICE(f"Relances RACC détectées : {relances.count()}"))
-
+        today = now().date()
         compteur = 0
 
+        # ✅ Étape 1 : ne prendre que les SAV du jour, Cloturées
+        relances = RelanceJJ.objects.filter(
+            activite="SAV",
+            statut="Cloturée",
+            date_rdv=today
+        ).select_related("grdv")
+
+        self.stdout.write(self.style.NOTICE(f"Relances SAV Cloturées pour aujourd’hui : {relances.count()}"))
+
         for relance in relances:
-            # Ne traite que si ARD2 existe et NOK
-            ard2 = ARD2.objects.filter(jeton_commande=relance.jeton_commande, etat_intervention="NOK").first()
+            # ✅ Étape 2 : ne prendre que si ARD2 est NOK
+            ard2 = ARD2.objects.filter(
+                jeton_commande=relance.jeton_commande,
+                etat_intervention="NOK"
+            ).first()
             if not ard2:
                 continue
 
@@ -23,15 +34,8 @@ class Command(BaseCommand):
             parametre = Parametres.objects.filter(numero_technicien=relance.numero).first()
             grdv = relance.grdv
 
-            # Détermine la valeur de synchronisation
-            if relance.statut == "Cloturée" and ard2.etat_intervention == "NOK":
-                synchro_value = "Echec"
-            elif relance.statut == "Taguée":
-                synchro_value = "Taguée"
-            elif relance.statut == "Cloturée" and ard2.etat_intervention == "OK":
-                synchro_value = "OK"
-            else:
-                synchro_value = ""
+            # ✅ Synchro est toujours "Echec" ici
+            synchro_value = "Echec"
 
             defaults = {
                 "date": relance.date_rdv,
@@ -50,14 +54,20 @@ class Command(BaseCommand):
                 "tel_contact": grdv.tel_contact if grdv else None,
             }
 
-            instance, created = DebriefSAV.objects.update_or_create(
-                jeton=relance,
-                defaults=defaults
-            )
+            instance = DebriefSAV.objects.filter(jeton=relance).first()
+
+            if instance:
+                for key, value in defaults.items():
+                    setattr(instance, key, value)
+                instance.save()
+                created = False
+            else:
+                instance = DebriefSAV.objects.create(jeton=relance, **defaults)
+                created = True
 
             compteur += 1
             self.stdout.write(self.style.SUCCESS(
                 f"{'Créé' if created else 'Mis à jour'} : {relance.jeton_commande}"
             ))
 
-        self.stdout.write(self.style.SUCCESS(f"Total synchronisés : {compteur}"))
+        self.stdout.write(self.style.SUCCESS(f"✅ Total synchronisés aujourd’hui (SAV + Cloturée + NOK) : {compteur}"))

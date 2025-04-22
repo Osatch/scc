@@ -18,10 +18,16 @@ class Command(BaseCommand):
             f"Nombre de RelanceJJ pour aujourd'hui ({today}) avec activité RACC : {relances.count()}"
         ))
 
-        # Pré-charger les ARD2 pour accès rapide
         ard2_map = {a.jeton_commande: a for a in ARD2.objects.all()}
+        cp_existing = {
+            (c.jeton, c.date): c
+            for c in ControlPhoto.objects.filter(date=today)
+        }
 
-        created, updated = 0, 0
+        to_create = []
+        to_update = []
+        created = 0
+        updated = 0
 
         for relance in relances:
             jeton = relance.jeton_commande
@@ -46,19 +52,32 @@ class Command(BaseCommand):
                 "synchro": ard.etat_intervention if ard else None,
             }
 
-            cp_instance = ControlPhoto.objects.filter(jeton=jeton, date=date_rdv).first()
-
-            if cp_instance:
+            key = (jeton, date_rdv)
+            if key in cp_existing:
+                instance = cp_existing[key]
                 for field, value in defaults.items():
-                    setattr(cp_instance, field, value)
-                cp_instance.save()
+                    setattr(instance, field, value)
+                to_update.append(instance)
                 updated += 1
                 action = "Mis à jour"
             else:
-                ControlPhoto.objects.create(jeton=jeton, date=date_rdv, **defaults)
+                instance = ControlPhoto(jeton=jeton, date=date_rdv, **defaults)
+                to_create.append(instance)
                 created += 1
                 action = "Créé"
 
             self.stdout.write(self.style.SUCCESS(f"{action} ControlPhoto pour jeton {jeton}, date {date_rdv}"))
+
+        if to_create:
+            ControlPhoto.objects.bulk_create(to_create, batch_size=100)
+        if to_update:
+            ControlPhoto.objects.bulk_update(
+                to_update,
+                fields=[
+                    "heure", "tech", "numero", "groupe_tech", "actif_depuis", "zone_manager",
+                    "statut", "secteur", "societe", "synchro"
+                ],
+                batch_size=100
+            )
 
         self.stdout.write(self.style.NOTICE(f"Terminé : {created} créés, {updated} mis à jour."))

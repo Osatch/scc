@@ -538,7 +538,7 @@ class ControlPhoto(models.Model):
         ('PTO et CAB absents', 'PTO et CAB absents'),
         ("Remise en conformité", "Remise en conformité"),
         ("NE", "NE"),
-        ("PTO et CAB presents", "PTO et CAB presents"),
+        ("PTO et CAB presents,conformes et exploitables", "PTO et CAB presents,conformes et exploitables"),
         ("conformes a remplacer", "conformes a remplacer"),
         ("PTO a remettre en conformité et CAB conforme", "PTO a remettre en conformité et CAB conforme"),
         ("PTO present et CAB non conforme a remplacer", "PTO present et CAB non conforme a remplacer"),
@@ -659,17 +659,20 @@ class DebriefRACC(models.Model):
     APPEL_TECH_CHOICES = [
         ("Pas d'appel", "Pas d'appel"),
         ("Appel à chaud", "Appel à chaud"),
+        ("Appel après clôture","Appel après clôture"),
+
     ]
     SYNCHRO_CHOICES = [
         ('Echec', 'Echec'),
         ('Taguées', 'Taguées'),
     ]
     TYPE_ECHEC_CHOICES = [
-        ('Echec client', 'Echec client'),
+        ("Echec client", "Echec client"),
         ("Echec d'acces", "Echec d'acces"),
     ]
     RESULTAT_CONTROLE_CHOICES = [
         ('RAS', 'RAS'),
+        ('Ecart detecte','Ecart detecte'),
     ]
 
     appel_tech = models.CharField(
@@ -696,7 +699,7 @@ class DebriefRACC(models.Model):
     )
     pec_par = models.CharField(max_length=255, null=True, blank=True, verbose_name="PEC par")
     resultat_controle = models.CharField(
-        max_length=10,
+        max_length=100,
         choices=RESULTAT_CONTROLE_CHOICES,
         null=True,
         blank=True,

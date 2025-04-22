@@ -109,9 +109,9 @@ github
 
 git init
 git add .
-git commit -m "16-04  +render+db"
+git commit -m "18-04 11 +render+db"
 git remote add origin https://github.com/Osatch/scc.git
-git push -u origin main --force
+git push -u origin main 
 
 
 

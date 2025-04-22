@@ -69,7 +69,7 @@ export default {
         if (role === 'admin' || role === 'manager') {
           this.$router.push('/dashboard/gantt');
         } else if (role === 'agent') {
-          this.$router.push('/agent-dashboard/relancejj');
+          this.$router.push('/agent-dashboard/Agentrelancejj');
         } else {
           this.$router.push('/');
         }

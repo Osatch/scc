@@ -18,7 +18,11 @@ import AgentHeader from "./components/Agent-header.vue";
 import AgentControlPhoto from "./components/views-agent/Agent-ControlPhoto.vue";
 import AgentControlFroid from "./components/views-agent/Agent-ControlFroid.vue";
 import Analytiques from "./components/views/Analytiques.vue";
-
+import AgentDebriefRACC from "./components/views-agent/Agent-DebriefRACC.vue";
+import AgentDebriefSAV from "./components/views-agent/Agent-DebriefSAV.vue";
+import AgentRelancejj from "./components/views-agent/Agent-Relancejj.vue";
+import AgentGantt from "./components/views-agent/Agent-Gantt.vue";
+import GanttAnalytiques from "./components/views/ganttanalytiques.vue"; // ✅ Ajouté ici
 
 import axios from "axios";
 
@@ -32,9 +36,10 @@ const routes = [
       header: AgentHeader,
     },
     children: [
-      { path: "relancejj", component: RelanceJJ },
-      { path: "debrief/racc", component: DebriefRACC },
-      { path: "debrief/sav", component: DebriefSAV },
+      { path: "Agentgantt", component: AgentGantt },
+      { path: "Agentrelancejj", component: AgentRelancejj },
+      { path: "debrief/racc", component: AgentDebriefRACC },
+      { path: "debrief/sav", component: AgentDebriefSAV },
       { path: "AgentControlPhoto", component: AgentControlPhoto },
       { path: "AgentControlFroid", component: AgentControlFroid },
     ],
@@ -55,8 +60,13 @@ const routes = [
       { path: "interventions/racc", component: InterventionsRACC },
       { path: "parametres", component: Parametres },
       { path: "ARD2", component: ARD2 },
-      {path: "analytiques",component:Analytiques}
-      
+      {
+        path: "analytiques",
+        component: Analytiques,
+        children: [
+          { path: "gantt", component: GanttAnalytiques }, // ✅ Route enfant ajoutée ici
+        ],
+      },
     ],
     meta: { requiresAuth: true },
   },
@@ -72,13 +82,11 @@ router.beforeEach(async (to, from, next) => {
   const accessToken = localStorage.getItem("access");
   const refreshToken = localStorage.getItem("refresh");
 
-  // Si une authentification est requise
   if (authRequired) {
     if (!accessToken) {
       return next("/");
     }
 
-    // Vérifie si le token est expiré en faisant un appel test
     try {
       await axios.get(`${import.meta.env.VITE_API_URL}/api/user/profile/`, {
         headers: { Authorization: `Bearer ${accessToken}` },
@@ -87,7 +95,6 @@ router.beforeEach(async (to, from, next) => {
     } catch (error) {
       if (error.response?.status === 401 && refreshToken) {
         try {
-          // Tente un refresh
           const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/token/refresh/`, {
             refresh: refreshToken,
           });

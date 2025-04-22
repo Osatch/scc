@@ -78,34 +78,55 @@
     </div>
 
     <!-- Popup de modification -->
-    <div v-if="showPopup" class="popup-overlay" @click="closePopup">
+      <div v-if="showPopup" class="popup-overlay" @click="closePopup">
       <div class="popup-content" @click.stop>
-        <h3>Modifier le Debrief</h3>
-        <p><strong>Jeton :</strong> {{ selectedItem.jeton }}</p>
+          <h3>Modifier le Debrief</h3>
+          <p><strong>Jeton :</strong> {{ selectedItem.jeton }}</p>
+          <p><strong>PEC par :</strong> {{ selectedItem.pec_par || activeAccountName }}</p>
 
-        <div class="form-group">
+          <div class="form-group">
           <label>Code Clôture Technicien</label>
           <textarea v-model="selectedItem.code_cloture_technicien" placeholder="Code clôture..." class="styled-textarea"></textarea>
-        </div>
+          </div>
 
-        <div class="form-group">
+          <div class="form-group">
+          <label>Appel Tech</label>
+          <select v-model="selectedItem.appel_tech" class="styled-textarea">
+              <option value="">- Sélectionner -</option>
+              <option value="Pas d'appel">Pas d'appel</option>
+              <option value="Appel à chaud">Appel à chaud</option>
+              <option value="Appel après clôture">Appel après clôture</option>
+          </select>
+          </div>
+
+          <div class="form-group">
+          <label>Résultat Contrôle</label>
+          <select v-model="selectedItem.resultat_controle" class="styled-textarea">
+              <option value="">- Sélectionner -</option>
+              <option value="RAS">RAS</option>
+              <option value="Ecart detecte">Ecart detecte</option>
+          </select>
+          </div>
+
+          <div class="form-group">
           <label>Diagnostic</label>
           <textarea v-model="selectedItem.diagnostic" placeholder="Diagnostic..." class="styled-textarea"></textarea>
-        </div>
+          </div>
 
-        <div class="form-group">
+          <div class="form-group">
           <label>Action</label>
           <textarea v-model="selectedItem.action" placeholder="Action..." class="styled-textarea"></textarea>
-        </div>
+          </div>
 
-        <div class="form-buttons">
+          <div class="form-buttons">
           <button @click="saveChanges">Enregistrer</button>
           <button @click="closePopup" class="cancel-btn">Fermer</button>
-        </div>
+          </div>
 
-        <div v-if="reason" class="reason-message">{{ reason }}</div>
+          <div v-if="reason" class="reason-message">{{ reason }}</div>
       </div>
-    </div>
+      </div>
+
   </div>
 </template>
 
@@ -124,7 +145,8 @@ export default {
       itemsPerPage: 50,
       showPopup: false,
       selectedItem: null,
-      reason: ''
+      reason: '',
+      activeAccountName: ''
     };
   },
   computed: {
@@ -157,6 +179,17 @@ export default {
         console.error('Erreur récupération debriefs', err);
       }
     },
+    async fetchAccountName() {
+      try {
+        const token = localStorage.getItem('access');
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/user/profile/`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        this.activeAccountName = response.data.name || 'Utilisateur inconnu';
+      } catch {
+        this.activeAccountName = 'Erreur de chargement';
+      }
+    },
     clearFilters() {
       this.selectedDate = '';
       this.selectedTech = '';
@@ -166,6 +199,9 @@ export default {
     },
     openPopup(item) {
       this.selectedItem = { ...item };
+      if (!this.selectedItem.pec_par) {
+        this.selectedItem.pec_par = this.activeAccountName;
+      }
       this.showPopup = true;
     },
     closePopup() {
@@ -190,6 +226,7 @@ export default {
   },
   mounted() {
     this.fetchDebriefs();
+    this.fetchAccountName();
   }
 };
 </script>
@@ -355,90 +392,90 @@ tbody tr:hover {
 
 /* Popup */
 .popup-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
+position: fixed;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+background: rgba(0,0,0,0.5);
+display: flex;
+justify-content: center;
+align-items: center;
+z-index: 1000;
 }
 
 .popup-content {
-  background: #fff;
-  padding: 40px;
-  border-radius: 8px;
-  max-width: 500px;
-  width: 90%;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  position: relative;
+background: #fff;
+padding: 30px;
+border-radius: 8px;
+max-width: 400px; /* Réduction de taille */
+width: 90%;
+box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+position: relative;
 }
 
 .popup-content h3 {
-  margin-bottom: 15px;
-  color: #007bff;
+margin-bottom: 15px;
+color: #007bff;
 }
 
 .form-group {
-  margin-bottom: 15px;
+margin-bottom: 15px;
 }
 
 .popup-content label {
-  font-weight: bold;
-  display: block;
-  margin-bottom: 5px;
+font-weight: bold;
+display: block;
+margin-bottom: 5px;
 }
 
 .styled-textarea {
-  width: 100%;
-  min-height: 60px;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  resize: vertical;
-  font-family: inherit;
-  font-size: 13px;
+width: 100%;
+min-height: 60px;
+padding: 10px;
+border: 1px solid #ccc;
+border-radius: 6px;
+resize: vertical;
+font-family: inherit;
+font-size: 13px;
 }
 
 .form-buttons {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 10px;
+display: flex;
+justify-content: flex-end;
+gap: 10px;
+margin-top: 10px;
 }
 
 .popup-content button {
-  padding: 8px 16px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: bold;
+padding: 8px 16px;
+background-color: #007bff;
+color: white;
+border: none;
+border-radius: 4px;
+cursor: pointer;
+font-weight: bold;
 }
 
 .cancel-btn {
-  background-color: #6c757d;
+background-color: #6c757d;
 }
 
 .popup-content button:hover {
-  opacity: 0.9;
+opacity: 0.9;
 }
 
 .reason-message {
-  margin-top: 10px;
-  color: green;
-  font-weight: bold;
-  text-align: center;
+margin-top: 10px;
+color: green;
+font-weight: bold;
+text-align: center;
 }
 
 .clickable {
-  cursor: pointer;
-  text-decoration: underline;
-  color: #007bff;
+cursor: pointer;
+text-decoration: underline;
+color: #007bff;
 }
 
 /* Responsive */

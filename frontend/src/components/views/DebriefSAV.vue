@@ -76,10 +76,30 @@
       <div class="popup-content" @click.stop>
         <h3>Modifier le Debrief</h3>
         <p><strong>Jeton :</strong> {{ selectedItem.jeton_commande }}</p>
+        <p><strong>PEC par :</strong> {{ selectedItem.pec_par }}</p>
 
         <div class="form-group">
           <label>Code Clôture</label>
           <textarea v-model="selectedItem.code_cloture" class="styled-textarea" placeholder="Code clôture..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Appel Tech</label>
+          <select v-model="selectedItem.appel_tech" class="styled-textarea">
+            <option value="">- Sélectionner -</option>
+            <option value="Pas d'appel">Pas d'appel</option>
+            <option value="Appel à chaud">Appel à chaud</option>
+            <option value="Appel après clôture">Appel après clôture</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Résultat Contrôle</label>
+          <select v-model="selectedItem.resultat_controle" class="styled-textarea">
+            <option value="">- Sélectionner -</option>
+            <option value="RAS">RAS</option>
+            <option value="Ecart detecte">Ecart detecte</option>
+          </select>
         </div>
 
         <div class="form-group">
@@ -118,7 +138,8 @@ export default {
       itemsPerPage: 50,
       showPopup: false,
       selectedItem: null,
-      reason: ''
+      reason: '',
+      activeAccountName: ''
     };
   },
   computed: {
@@ -151,6 +172,18 @@ export default {
         console.error('Erreur récupération debriefs SAV', err);
       }
     },
+
+    async fetchAccountName() {
+      try {
+        const token = localStorage.getItem('access');
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/user/profile/`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        this.activeAccountName = response.data.name || 'Utilisateur inconnu';
+      } catch {
+        this.activeAccountName = 'Erreur de chargement';
+      }
+    },
     clearFilters() {
       this.selectedDate = '';
       this.selectedTech = '';
@@ -160,6 +193,9 @@ export default {
     },
     openPopup(item) {
       this.selectedItem = { ...item };
+      if (!this.selectedItem.pec_par || this.selectedItem.pec_par === '-') {
+        this.selectedItem.pec_par = this.activeAccountName;
+      }
       this.showPopup = true;
     },
     closePopup() {
@@ -184,6 +220,7 @@ export default {
   },
   mounted() {
     this.fetchDebriefs();
+    this.fetchAccountName();
   }
 };
 </script>

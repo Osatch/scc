@@ -35,6 +35,11 @@
             <option value="18:00-">Après 18h00</option>
           </select>
         </div>
+        <!-- Nouveau filtre Société -->
+        <div class="filter-group">
+          <label for="filter-societe">Société</label>
+          <input type="text" id="filter-societe" v-model="selectedSociete" placeholder="Filtrer par société" />
+        </div>
       </div>
       <div class="filter-actions">
         <button @click="clearFilters">Effacer</button>
@@ -158,16 +163,17 @@ export default {
       selectedJeton: "",
       selectedDate: "",
       selectedCreneau: "",
-      selectedStatutPTO: ""
+      selectedStatutPTO: "",
+      selectedSociete: "" // Nouvelle propriété pour le filtre société
     };
   },
   computed: {
     filteredControlPhotos() {
       const validPtoStatuses = [
-        "PTO mal positionné à déplacer et nouveau CAB à poser",
+        "PTO mal positionné a déplacer et nouveau CAB a poser",
         "PTO et CAB absent",
-        "PTO à déplacer par confort et nouveau CAB à poser",
-        "PTO mal positionné à déplacer et nouveau CAB à poser"
+        "PTO a deplacer par confort et nouveau CAB a poser",
+        "conformes a remplacer"
       ];
 
       return this.controlphotos.filter(photo => {
@@ -177,6 +183,7 @@ export default {
         const statutMatch = !this.selectedStatut || photo.statut === this.selectedStatut;
         const jetonMatch = !this.selectedJeton || (photo.jeton && photo.jeton.toLowerCase().includes(this.selectedJeton.toLowerCase()));
         const dateMatch = !this.selectedDate || photo.date === this.selectedDate;
+        const societeMatch = !this.selectedSociete || (photo.societe && photo.societe.toLowerCase().includes(this.selectedSociete.toLowerCase()));
 
         let creneauMatch = true;
         if (this.selectedCreneau && photo.heure) {
@@ -190,7 +197,7 @@ export default {
 
         const ptoMatch = validPtoStatuses.includes(photo.statut_pto);
 
-        return agentMatch && statutMatch && jetonMatch && dateMatch && creneauMatch && ptoMatch;
+        return agentMatch && statutMatch && jetonMatch && dateMatch && creneauMatch && ptoMatch && societeMatch;
       });
     },
     paginatedControlPhotos() {
@@ -220,6 +227,7 @@ export default {
       this.selectedDate = "";
       this.selectedCreneau = "";
       this.selectedStatutPTO = "";
+      this.selectedSociete = ""; // Réinitialisation du filtre société
       this.currentPage = 1;
     },
     nextPage() {
@@ -376,7 +384,7 @@ th {
   color: white;
   text-transform: uppercase;
   font-weight: bold;
-  
+
   top: 0;
   z-index: 10;
 }

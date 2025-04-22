@@ -37,6 +37,11 @@
           <label for="filter-secteur">Secteur</label>
           <input type="text" id="filter-secteur" v-model="selectedSecteur" placeholder="Filtrer par secteur" />
         </div>
+        <!-- Filtre Société -->
+        <div class="filter-group">
+          <label for="filter-societe">Société</label>
+          <input type="text" id="filter-societe" v-model="selectedSociete" placeholder="Filtrer par société" />
+        </div>
       </div>
       
       <!-- Filtres supplémentaires (affichés/masqués) -->
@@ -59,7 +64,6 @@
             <option value="PTO present et CAB non conforme a remplacer">PTO présent et CAB non conforme à remplacer</option>
             <option value="PTO mal positionné a déplacer et nouveau CAB a poser">PTO mal positionné à déplacer et nouveau CAB à poser</option>
             <option value="PTO et CAB absent">PTO et CAB absent</option>
-           
             <option value="PTO a deplacer par confort et nouveau CAB a poser">PTO à déplacer par confort et nouveau CAB à poser</option>
           </select>
         </div>
@@ -219,6 +223,7 @@ export default {
       selectedDate: "",
       selectedTechnicien: "",
       selectedSecteur: "",
+      selectedSociete: "",
       selectedJeton: "",
       selectedStatutPto: "",
       selectedStatutAppel: "",
@@ -240,6 +245,7 @@ export default {
           && (!this.selectedDate || photo.date === this.selectedDate)
           && (!this.selectedTechnicien || (photo.tech && photo.tech.toLowerCase().includes(this.selectedTechnicien.toLowerCase())))
           && (!this.selectedSecteur || (photo.secteur && photo.secteur.toLowerCase().includes(this.selectedSecteur.toLowerCase())))
+          && (!this.selectedSociete || (photo.societe && photo.societe.toLowerCase().includes(this.selectedSociete.toLowerCase())))
           && (!this.selectedJeton || (photo.jeton && photo.jeton.toLowerCase().includes(this.selectedJeton.toLowerCase())))
           && (!this.selectedStatutPto || photo.statut_pto === this.selectedStatutPto)
           && (!this.selectedStatutAppel || photo.statut_appel === this.selectedStatutAppel)
@@ -274,6 +280,7 @@ export default {
       this.selectedDate = "";
       this.selectedTechnicien = "";
       this.selectedSecteur = "";
+      this.selectedSociete = "";
       this.selectedJeton = "";
       this.selectedStatutPto = "";
       this.selectedStatutAppel = "";
