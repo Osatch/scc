@@ -2,29 +2,51 @@
   <div class="analytics-container">
     <!-- Nouveau bandeau d'en-tête -->
     <div class="section-header">
-      <h2 class="section-title">Rubrique TECHNOSMART — Analytiques</h2>
-    </div>
-
-    <h1 class="page-title">📊 Tableau de Bord Analytique</h1>
-    <p class="page-subtitle">
-      Visualisez l’évolution horaire du taux de conformité (% OK) sur les interventions SAV & RACC. Cliquez sur une carte pour explorer les données en détail.
+      <h2 class="section-title"><h1 class="page-title">Tableau de Bord Analytique</h1></h2>
+      <p class="page-subtitle">
+      Visualisez l evolution horaire du taux de conformite (% OK) sur les interventions SAV & RACC. Cliquez sur une carte pour explorer les données en détail.
     </p>
 
-    <div class="cards-grid" v-if="isRootRoute">
-      <router-link to="/dashboard/analytiques/gantt" class="stat-card">
-        <div class="card-content">
-          <div class="icon-wrapper">
-            <svg class="icon-chart" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M3 3v18h18" />
-              <path d="M7 14v4" />
-              <path d="M11 10v8" />
-              <path d="M15 6v12" />
-            </svg>
+    </div>
+
+    <div class="cards-wrapper" v-if="isRootRoute">
+    
+  
+
+    
+          <div class="cards-grid" v-if="isRootRoute">
+            <router-link to="/dashboard/analytiques/gantt" class="stat-card">
+              <div class="card-content">
+                <div class="icon-wrapper">
+                  <svg class="icon-chart" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 3v18h18" />
+                    <path d="M7 14v4" />
+                    <path d="M11 10v8" />
+                    <path d="M15 6v12" />
+                  </svg>
+                </div>
+                <h3 class="card-title">Taux de transfo par crénau</h3>
+                <p class="stat-description">Évolution horaire – SAV & RACC</p>
+              </div>
+            </router-link>
           </div>
-          <h3 class="card-title">% OK / (OK + NOK)</h3>
-          <p class="stat-description">Évolution horaire – SAV & RACC</p>
-        </div>
-      </router-link>
+
+          <div class="cards-grid" v-if="isRootRoute">
+            <router-link to="/dashboard/analytiques/ganttdp" class="stat-card">
+              <div class="card-content">
+                <div class="icon-wrapper">
+                  <svg class="icon-chart" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 3v18h18" />
+                    <path d="M7 14v4" />
+                    <path d="M11 10v8" />
+                    <path d="M15 6v12" />
+                  </svg>
+                </div>
+                <h3 class="card-title">Taux de transfo par Departement</h3>
+                <p class="stat-description">SAV & RACC dans tous les departements</p>
+              </div>
+            </router-link>
+          </div>
     </div>
 
     <div class="analytics-views-container">
@@ -68,7 +90,7 @@ export default {
 <style scoped>
 .analytics-container {
   padding: 30px 40px;
-  margin-left: 200px;
+ 
   transition: margin-left 0.3s;
   background-color: #f9fafc;
   min-height: 100vh;
@@ -79,13 +101,17 @@ export default {
   font-size: 2rem;
   font-weight: bold;
   color: #2c3e50;
+  margin-left: 200px;
   margin-bottom: 10px;
+  
+  
 }
 
 .page-subtitle {
   font-size: 1rem;
   color: #7f8c8d;
   margin-bottom: 30px;
+  margin-left: 200px;
 }
 
 .cards-grid {
@@ -94,6 +120,7 @@ export default {
   flex-wrap: wrap;
   gap: 30px;
   margin-bottom: 40px;
+  margin-left: 200px;
 }
 
 .stat-card {
@@ -169,12 +196,15 @@ export default {
 }
 
 .section-title {
+  
   font-size: 1.1rem;
   font-weight: 600;
   color: #2c3e50;
   margin: 0;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  margin-left: 200px;
+  margin-top: 100px;
 }
 
 /* Responsive */

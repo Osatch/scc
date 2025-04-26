@@ -108,7 +108,7 @@
             <td>{{ relance.departement }}</td>
             <td>{{ relance.techniciens }}</td>
             <td>{{ relance.societe }}</td>
-            <td>{{ relance.pec }}</td>
+            <td class="clickable" @click="openRetardPopup(relance)">{{ relance.pec }}</td>
             <td :class="getStatusClass(relance.statut)">{{ relance.statut }}</td>
             <td>{{ relance.heure_prevue }}</td>
             <td>{{ relance.heure_debut || '-' }}</td>
@@ -150,6 +150,40 @@
         <button @click="closePopup" class="close-button">Fermer</button>
       </div>
     </div>
+   <!-- Popup Statuer sur Retard -->
+<div v-if="showRetardPopup" class="popup-overlay" @click="closeRetardPopup">
+  <div class="popup-content" @click.stop>
+    <h3>Statuer sur le Retard</h3>
+    <p><strong>Jeton :</strong> {{ selectedRelance.jeton_commande }}</p>
+    <p><strong>Technicien :</strong> {{ selectedRelance.techniciens }}</p>
+    <p><strong>PEC :</strong> {{ selectedRelance.pec || activeAccountName }}</p>
+
+    <div class="form-group">
+      <label>Type de Statut</label>
+      <select v-model="retardForm.type_statut">
+        <option value="">- Sélectionner -</option>
+        <option value="Retard démarrage">Retard démarrage</option>
+        <option value="Retard clôture">Retard clôture</option>
+        <option value="Faux démarrage">Faux démarrage</option>
+        <option value="Arrivé en avance">Arrivé en avance</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Détails</label>
+      <textarea v-model="retardForm.details" placeholder="Ajouter des précisions..."></textarea>
+    </div>
+
+    <div class="form-buttons">
+      <button @click="saveRetardStatut">Enregistrer</button>
+      <button @click="closeRetardPopup" class="cancel-btn">Fermer</button>
+    </div>
+
+    <div v-if="retardMessage" class="reason-message">{{ retardMessage }}</div>
+  </div>
+</div>
+
+
   </div>
 </template>
 
@@ -178,22 +212,25 @@ export default {
       comments: [],
       currentPage: 1,
       itemsPerPage: 50,
-      currentTime: new Date()
+      currentTime: new Date(),
+      showRetardPopup: false,
+      retardForm: {
+        type_statut: '',
+        details: ''
+      },
+      retardMessage: '',
+      activeAccountName: localStorage.getItem("activeAccountName") || "Utilisateur inconnu"
     };
   },
   computed: {
     filteredRelances() {
       return this.relances.filter(relance => {
-        // Filtre de base
         const statutMatch = this.selectedStatut === "" || 
           (this.selectedStatut === "Vide" && !relance.statut) ||
           relance.statut === this.selectedStatut;
-        
         const dateMatch = !this.selectedDate || relance.date_rdv === this.selectedDate;
-        
         const departementMatch = !this.selectedDepartement || 
           relance.departement.toLowerCase().includes(this.selectedDepartement.toLowerCase());
-        
         let creneauMatch = true;
         if (this.selectedCreneau) {
           const [start, end] = this.selectedCreneau.split('-');
@@ -208,8 +245,6 @@ export default {
             creneauMatch = false;
           }
         }
-        
-        // Filtres supplémentaires
         const jetonMatch = !this.selectedJeton || 
           relance.jeton_commande.toLowerCase().includes(this.selectedJeton.toLowerCase());
         const technicienMatch = !this.selectedTechnicien || 
@@ -218,7 +253,6 @@ export default {
           relance.pec.toLowerCase().includes(this.selectedPec.toLowerCase());
         const societeMatch = !this.selectedSociete ||
           (relance.societe && relance.societe.toLowerCase().includes(this.selectedSociete.toLowerCase()));
-        
         return statutMatch && dateMatch && departementMatch && creneauMatch &&
                jetonMatch && technicienMatch && pecMatch && societeMatch;
       });
@@ -272,18 +306,14 @@ export default {
       if (!relance.heure_prevue || relance.heure_debut || relance.heure_fin) {
         return false;
       }
-      
       const today = new Date(this.currentTime);
       const todayDate = today.toISOString().split('T')[0];
-      
       if (relance.date_rdv !== todayDate) {
         return false;
       }
-      
       const [hours, minutes] = relance.heure_prevue.split(':').map(Number);
       const interventionTime = new Date(today);
       interventionTime.setHours(hours, minutes, 0, 0);
-      
       return today > interventionTime;
     },
     openPopup(relance) {
@@ -310,10 +340,46 @@ export default {
     hideComments() {
       this.showComments = false;
       this.comments = [];
+    },
+    openRetardPopup(relance) {
+      this.selectedRelance = relance;
+      this.showRetardPopup = true;
+      this.retardForm = { type_statut: '', details: '' };
+      this.retardMessage = '';
+    },
+    closeRetardPopup() {
+      this.showRetardPopup = false;
+      this.selectedRelance = null;
+    },
+    async saveRetardStatut() {
+      if (!this.retardForm.type_statut) {
+        this.retardMessage = "Veuillez sélectionner un type de statut.";
+        return;
+      }
+      try {
+        const token = localStorage.getItem('access');
+        await axios.patch(`${import.meta.env.VITE_API_URL}/api/relances/${this.selectedRelance.id}/statuer_retard/`, {
+          type_statut_retard: this.retardForm.type_statut,
+          details_retard: this.retardForm.details,
+          pec: this.selectedRelance.pec || this.activeAccountName
+        }, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        this.retardMessage = "✅ Statut enregistré avec succès.";
+        setTimeout(() => {
+          this.closeRetardPopup();
+          this.fetchRelances();
+        }, 1000);
+      } catch (error) {
+        console.error("Erreur lors de l'enregistrement :", error);
+        this.retardMessage = "❌ Erreur lors de l'enregistrement.";
+      }
     }
   }
 };
 </script>
+
+
 
 <style scoped>
 .main-content {
@@ -582,6 +648,85 @@ tbody tr:hover {
 
 .comments-section li:last-child {
   border-bottom: none;
+}
+/* Style spécifique pour le popup de statut retard */
+.popup-content h3 {
+  margin-bottom: 15px;
+  font-size: 20px;
+  color: #333;
+  text-align: center;
+}
+
+.popup-content p {
+  margin: 5px 0;
+  font-size: 14px;
+  color: #555;
+}
+
+.form-group {
+  margin-bottom: 15px;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: #333;
+}
+
+.form-group select,
+.form-group textarea {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  resize: vertical;
+}
+
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: #007bff;
+  outline: none;
+}
+
+.form-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+.form-buttons button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.form-buttons button:first-child {
+  background-color: #28a745;
+  color: white;
+}
+
+.form-buttons button:first-child:hover {
+  background-color: #218838;
+}
+
+.form-buttons .cancel-btn {
+  background-color: #dc3545;
+  color: white;
+}
+
+.form-buttons .cancel-btn:hover {
+  background-color: #c82333;
+}
+
+.reason-message {
+  margin-top: 10px;
+  text-align: center;
+  font-weight: bold;
+  color: #17a2b8;
 }
 
 /* Responsive */

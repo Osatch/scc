@@ -61,12 +61,15 @@ export default {
 
         const { access, refresh, role } = response.data;
 
+        // Stockage des tokens et du rôle
         localStorage.setItem('access', access);
         localStorage.setItem('refresh', refresh);
         localStorage.setItem('role', role);
 
-        // Redirection selon le rôle
-        if (role === 'admin' || role === 'manager') {
+        // 🎯 Redirection selon le rôle
+        if (role === 'admin') {
+          this.$router.push('/admin/logs');   // ✅ Redirection dédiée pour l'admin
+        } else if (role === 'manager' || role=='chef_plateau') {
           this.$router.push('/dashboard/gantt');
         } else if (role === 'agent') {
           this.$router.push('/agent-dashboard/Agentrelancejj');

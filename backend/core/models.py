@@ -50,8 +50,8 @@ class CustomUserManager(BaseUserManager):
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True, max_length=191)
-    first_name = models.CharField(max_length=30, blank=True)
-    last_name = models.CharField(max_length=30, blank=True)
+    first_name = models.CharField(max_length=250, blank=True)
+    last_name = models.CharField(max_length=250, blank=True)
     # Champ pour définir le rôle de l'utilisateur
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='user')
     is_active = models.BooleanField(default=True)
@@ -350,8 +350,12 @@ class ARD2(models.Model):
   
 
 # Relance jj =====================================================================================
+
 import unicodedata
 from django.db import models
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 class RelanceJJ(models.Model):
     ACTIVITE_CHOICES = [
@@ -361,6 +365,12 @@ class RelanceJJ(models.Model):
     STATUT_CHOICES = [
         ('Cloturée', 'Cloturée'),
         ('Taguée', 'Taguée'),
+    ]
+    TYPE_STATUT_RETARD_CHOICES = [
+        ('Retard démarrage', 'Retard démarrage'),
+        ('Retard clôture', 'Retard clôture'),
+        ('Faux démarrage', 'Faux démarrage'),
+        ('Arrivé en avance', 'Arrivé en avance'),
     ]
 
     grdv = models.ForeignKey(
@@ -386,6 +396,32 @@ class RelanceJJ(models.Model):
     commentaire_cloture = models.TextField(null=True, blank=True, verbose_name="Commentaire clôture")
     heure_debut = models.TimeField(null=True, blank=True, verbose_name="Heure début")
     heure_fin = models.TimeField(null=True, blank=True, verbose_name="Heure fin")
+
+    # ========= Champs ajoutés pour statuer sur les retards =========
+    type_statut_retard = models.CharField(
+        max_length=30,
+        choices=TYPE_STATUT_RETARD_CHOICES,
+        blank=True,
+        verbose_name="Type de Statut de Retard"
+    )
+    details_retard = models.TextField(
+        blank=True,
+        verbose_name="Détails sur le retard"
+    )
+    pec_retard_par = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="Statuté par"
+    )
+    date_statut_retard = models.DateTimeField(
+        auto_now_add=True,
+        null=True,  # IMPORTANT pour éviter l'erreur de migration
+        blank=True,
+        verbose_name="Date de la prise de statut"
+    )
+    # ===============================================================
 
     def save(self, *args, **kwargs):
         if self.grdv:
@@ -417,7 +453,6 @@ class RelanceJJ(models.Model):
 
     def __str__(self):
         return f"{self.jeton_commande} - {self.date_rdv} - {self.activite}"
-
 
 
 #model param =======================================================================================

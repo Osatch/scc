@@ -2,8 +2,15 @@ from rest_framework import serializers
 from django import forms
 from .models import (
     Gantt, GRDV, GanttStatistics, ARD2, Parametres, RelanceJJ, NOK,
-    ControlPhoto, Controlafroid, DebriefRACC, DebriefSAV, InterventionsSAV, InterventionsRACC, Commentaire,ImportARDLog 
+    ControlPhoto, Controlafroid, DebriefRACC, DebriefSAV, InterventionsSAV, InterventionsRACC, Commentaire,ImportARDLog,CustomUser
 )
+# serializers.py admin
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ['id', 'email', 'first_name', 'last_name', 'role']
 
 # Serializer pour le modèle Gantt
 class GanttSerializer(serializers.ModelSerializer):
@@ -118,3 +125,19 @@ class ImportARDLogSerializer(serializers.ModelSerializer):
     class Meta:
         model = ImportARDLog
         fields = ['id', 'fichier_nom', 'import_date', 'duree', 'resultat', 'utilisateur_email']
+
+class StatutRetardSerializer(serializers.ModelSerializer):
+    pec_retard_par = serializers.ReadOnlyField(source='pec_retard_par.username')
+    date_statut_retard = serializers.ReadOnlyField()
+
+    class Meta:
+        model = RelanceJJ
+        fields = [
+            'id',
+            'jeton_commande',
+            'techniciens',
+            'type_statut_retard',
+            'details_retard',
+            'pec_retard_par',
+            'date_statut_retard',
+        ]

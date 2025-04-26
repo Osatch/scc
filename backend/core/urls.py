@@ -23,10 +23,16 @@ from .views import (
     commentaire_detail,  # Vues de commentaire 
     upload_ard_file,
     upload_and_process_ard,# historique ard2 
-    gantt_partial_update,  # 👈 AJOUTE CELUI-CI ICI
+    gantt_partial_update,  # Vue pour mise à jour partielle Gantt
+    statuer_retard,#le form de relance jj
+    user_list, 
+    user_detail,
 )
 
 urlpatterns = [
+    # partie admin
+    path('users/', user_list, name='user-list'),
+    path('users/<int:pk>/', user_detail, name='user-detail'),
     # Endpoints pour JWT
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
@@ -47,10 +53,13 @@ urlpatterns = [
     
     # Relances JJ
     path('relances/', relancejj_list, name='relancejj-list'),
+    path('relances/<int:pk>/statuer_retard/', statuer_retard, name='statuer-retard'),
+
     
-    # Gantt
+    # Gantt - Routes corrigées
     path('gantt/', gantt_list, name='gantt-list'),
     path('gantt/<int:pk>/', gantt_detail, name='gantt-detail'),
+    path('gantt/<int:pk>/update/', gantt_partial_update, name='gantt-partial-update'),
     
     # Statistiques Gantt
     path('gantt-statistics/', gantt_statistics_list, name='gantt-statistics-list'),
@@ -94,10 +103,13 @@ urlpatterns = [
     path('commentaires/', commentaire_list, name='commentaire_list'),
     path('commentaires/<int:pk>/', commentaire_detail, name='commentaire_detail'),
 
-    #import ard2 file le csv
-    path('upload_ard_file/', upload_ard_file),
-    #l'import 
+    # Import ARD2 file (CSV)
+    path('upload_ard_file/', upload_ard_file, name='upload_ard_file'),
+    
+    # Traitement ARD
     path('upload_and_process_ard/', upload_and_process_ard, name='upload_and_process_ard'),
-    # le form de gantt 
-    path('gantt/<int:pk>/', gantt_partial_update, name='gantt_partial_update'),
 ]
+
+
+
+

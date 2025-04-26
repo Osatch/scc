@@ -33,9 +33,7 @@
         @change="handleArdUpload"
       />
       
-      <div v-if="lastImportTime" class="text-xs text-gray-500">
-        Dernier import: {{ formatDateTime(lastImportTime) }}
-      </div>
+      
     </div>
 
     <!-- Boutons stats, refresh, logout -->

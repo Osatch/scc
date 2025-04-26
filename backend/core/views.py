@@ -15,17 +15,73 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from .models import (
     Gantt, GanttStatistics, ARD2, Parametres, RelanceJJ, NOK,
     ControlPhoto, Controlafroid, DebriefRACC, DebriefSAV,
-    InterventionsSAV, InterventionsRACC, Commentaire, Parametres
+    InterventionsSAV, InterventionsRACC, Commentaire, Parametres,CustomUser
 )
 from .serializers import (
     GanttSerializer, GanttStatisticsSerializer, ARD2Serializer, ParametresSerializer,
     RelanceJJSerializer, NOKSerializer, ControlPhotoSerializer, ControlafroidSerializer,
     DebriefRACCSerializer, DebriefSAVSerializer, InterventionsSAVSerializer, InterventionsRACCSerializer,
-    CommentaireSerializer, ParametresSerializer
+    CommentaireSerializer, ParametresSerializer,StatutRetardSerializer,UserSerializer 
 )
 from .forms import ParametresForm
 from django.conf import settings
 import os
+
+#========la partie admin ====================
+
+
+
+# 🔹 Liste des utilisateurs + Création
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def user_list(request):
+    if request.user.role != 'admin':
+        return Response({'error': 'Accès refusé'}, status=403)
+
+    if request.method == 'GET':
+        users = CustomUser.objects.all()
+        serializer = UserSerializer(users, many=True)
+        return Response(serializer.data)
+
+    elif request.method == 'POST':
+        serializer = UserSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=201)
+        return Response(serializer.errors, status=400)
+
+# 🔹 Détail utilisateur : GET, PUT, PATCH, DELETE
+@api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
+@permission_classes([IsAuthenticated])
+def user_detail(request, pk):
+    if request.user.role != 'admin':
+        return Response({'error': 'Accès refusé'}, status=403)
+
+    user = get_object_or_404(CustomUser, pk=pk)
+
+    if request.method == 'GET':
+        serializer = UserSerializer(user)
+        return Response(serializer.data)
+
+    elif request.method == 'PUT':
+        serializer = UserSerializer(user, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=400)
+
+    elif request.method == 'PATCH':
+        serializer = UserSerializer(user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=400)
+
+    elif request.method == 'DELETE':
+        user.delete()
+        return Response({'message': 'Utilisateur supprimé avec succès'}, status=204)
+
+
 
 # ======================= VUES POUR INTERVENTIONS RACC =======================
 @api_view(['GET', 'POST'])
@@ -572,11 +628,16 @@ def upload_ard_file(request):
 
 
 #--------------------------------------------------------------------------------------------------
+from django.db import connection
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def upload_and_process_ard(request):
     from datetime import date
-    import time, io, os
+    import time, io, os, traceback
     from django.conf import settings
     from .models import ImportARDLog
     from .serializers import ImportARDLogSerializer
@@ -592,18 +653,39 @@ def upload_and_process_ard(request):
             return Response({'status': 'error', 'message': 'Aucun fichier CSV trouvé.'}, status=404)
 
         latest_file = sorted(csv_files, key=lambda x: os.path.getmtime(os.path.join(save_dir, x)), reverse=True)[0]
-        latest_path = os.path.join(save_dir, latest_file)
 
         start_time = time.time()
 
-        # 🛠 Exécution des scripts Django
+        # 🛠 Exécution des scripts Django avec suivi détaillé
         output = io.StringIO()
-        call_command('import_ard2', stdout=output)
-        call_command('sync_relancejj', stdout=output)
-        call_command('import_gantt', date=str(date.today()), stdout=output)
-        call_command('sync_controlphoto', stdout=output)
-        call_command('sync_dr', stdout=output)
-        call_command('sync_ds', stdout=output)
+
+        commands = [
+            ('import_ard2', {}),
+            ('sync_relancejj', {}),
+            ('import_gantt', {'date': str(date.today())}),
+            ('sync_controlphoto', {}),
+            ('sync_dr', {}),
+            ('sync_ds', {}),
+        ]
+
+        for cmd, kwargs in commands:
+            print(f"⚡ Exécution de : {cmd}")
+            output.write(f"\n--- Lancement de la commande : {cmd} ---\n")
+            try:
+                cmd_output = io.StringIO()
+                call_command(cmd, stdout=cmd_output, **kwargs)
+                output.write(cmd_output.getvalue())
+                output.write(f"--- ✅ Commande {cmd} terminée avec succès ---\n")
+
+                # 💾 Assurer la fin des écritures BDD et libérer la connexion
+                connection.close()
+
+                # ⏱ Pause pour garantir la disponibilité des données
+                time.sleep(1)
+
+            except Exception as cmd_err:
+                output.write(f"--- ❌ Erreur lors de l'exécution de {cmd} : {str(cmd_err)} ---\n")
+                raise
 
         duration = round(time.time() - start_time, 2)
 
@@ -617,10 +699,34 @@ def upload_and_process_ard(request):
 
         return Response({
             'status': 'success',
-            'message': '✅ Mise à jour effectuée avec succès.',
+            'message': f'✅ Mise à jour effectuée avec succès en {duration} secondes.',
             'duration': duration,
             'log': ImportARDLogSerializer(log).data
         })
 
     except Exception as e:
-        return Response({'status': 'error', 'message': str(e)}, status=500)
+        error_trace = traceback.format_exc()
+        return Response({
+            'status': 'error',
+            'message': f"Erreur pendant le traitement : {str(e)}",
+            'trace': error_trace
+        }, status=500)
+
+
+#le frome de relancejj 
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+def statuer_retard(request, pk):
+    relance = get_object_or_404(RelanceJJ, pk=pk)
+    
+    type_statut = request.data.get("type_statut_retard")
+    details = request.data.get("details_retard")
+    pec_agent = request.data.get("pec")
+
+    if type_statut:
+        relance.commentaire_cloture = f"{type_statut} - {details}" if details else type_statut
+    if pec_agent:
+        relance.pec = pec_agent
+
+    relance.save()
+    return Response({"message": "Retard statué avec succès."})

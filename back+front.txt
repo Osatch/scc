@@ -54,7 +54,7 @@ stucture du code
     │   ├── admin.py
     │   ├── apps.py
     │   ├── migrations/
-    │   ├── management/commands/import_grdv.py , import_gantt.py , import_ard.py , import_parametres.py , sync_relancejj.py , sync_controlphoto.py, sync_dr.py , sync_ds.py   │   ├── templates/
+    │   ├── management/commands/import_grdv.py , import_gantt.py , import_ard.py , import_parametres.py , sync_relancejj.py , sync_controlphoto.py, sync_dr.py , sync_ds.py   
     │   ├── static/
     │   ├── manage.py
     │   ├── requirements.txt
@@ -67,8 +67,13 @@ stucture du code
     │   ├── views-agent/
     │   │   ├── Agent-ControlPhoto.vue
     │   │   ├── Agent-ControlFroid.vue
+    │   │   ├── Agent-DebriefSAV.vue
+    │   │   ├── Agent-DebriefRACC.vue
+    │   │   ├── Agent-Gantt.vue
+    │   │   ├── Agent-Relancejj.vue
     │   ├── views/
     │   │   ├── Analytiques.vue
+    │   │   ├── ganttanalytiques.vue
     │   │   ├── Ard2Table.vue
     │   │   ├── Gantt.vue
     │   │   ├── GanttStat.vue
@@ -86,6 +91,7 @@ stucture du code
     │   └── Dashboard.vue
     │   ├── Agent-dashboard.vue
     │   ├── Agent-sidebar.vue
+    │   ├── Admin-space/AdminDashboard.vue #ici je veux creer un espace admine pour la creation des logs 
     ├── App.vue
     ├── main.js
     ├── rooter.js
@@ -109,7 +115,7 @@ github
 
 git init
 git add .
-git commit -m "18-04 11 +render+db"
+git commit -m "22-04 26 +render+db"
 git remote add origin https://github.com/Osatch/scc.git
 git push -u origin main 
 
@@ -179,19 +185,19 @@ Agent :
 
 
 
-
-
-python bot/grdv.py
-python manage.py import_grdv
 python manage.py import_parametres
 
-python manage.py import_ard2
+python Bot/grdv.py
+python manage.py import_grdv
+
+python manage.py import_ard2  
 python manage.py import_parametres
 python manage.py sync_relancejj
-python manage.py import_gantt  --date 2025-04-17
+python manage.py import_gantt  
 python manage.py sync_controlphoto
 python manage.py sync_dr
 python manage.py sync_ds
+-
 python scheduler.py
 
 
